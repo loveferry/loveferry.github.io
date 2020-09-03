@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/ferry-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/ferry-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/ferry-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;继上一篇 Spring Security（一） 体系结构之认证 后，这里研究一下Spring Security一个重要配置–认证配置。AuthenticationConfiguration是Spring提供的认证配置的配置类，该配置类的主要作用是用于生成一个全局的AuthenticationManagerBuilder注入到Spring容器中。使用者注入该配置类然后获取Au">
+<meta name="keywords" content="Spring,Java,Spring Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Security（二） 认证配置类">
+<meta property="og:url" content="https://ferry.org.cn/Spring-Security-Authentication-Configuration.html">
+<meta property="og:site_name" content="儿女意向来痴">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;继上一篇 Spring Security（一） 体系结构之认证 后，这里研究一下Spring Security一个重要配置–认证配置。AuthenticationConfiguration是Spring提供的认证配置的配置类，该配置类的主要作用是用于生成一个全局的AuthenticationManagerBuilder注入到Spring容器中。使用者注入该配置类然后获取Au">
+<meta property="og:locale" content="zh-CH">
+<meta property="og:image" content="https://ferry.org.cn/Spring-Security-Authentication-Configuration/AuthenticationManagerBuilder-extends.png">
+<meta property="og:updated_time" content="2020-07-20T12:03:27.749Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Security（二） 认证配置类">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;继上一篇 Spring Security（一） 体系结构之认证 后，这里研究一下Spring Security一个重要配置–认证配置。AuthenticationConfiguration是Spring提供的认证配置的配置类，该配置类的主要作用是用于生成一个全局的AuthenticationManagerBuilder注入到Spring容器中。使用者注入该配置类然后获取Au">
+<meta name="twitter:image" content="https://ferry.org.cn/Spring-Security-Authentication-Configuration/AuthenticationManagerBuilder-extends.png">
+
+<link rel="canonical" href="https://ferry.org.cn/Spring-Security-Authentication-Configuration.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CH'
+  };
+</script>
+
+  <title>Spring Security（二） 认证配置类 | 儿女意向来痴</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">儿女意向来痴</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">35</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/Spring-Security-Authentication-Configuration.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ferry-215x215.gif">
+      <meta itemprop="name" content="ferry">
+      <meta itemprop="description" content="虽未满百岁已如歌归于其居">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="儿女意向来痴">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring Security（二） 认证配置类
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-26 12:08:25" itemprop="dateCreated datePublished" datetime="2020-06-26T12:08:25+08:00">2020-06-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-07-20 20:03:27" itemprop="dateModified" datetime="2020-07-20T20:03:27+08:00">2020-07-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring-Security/" itemprop="url" rel="index"><span itemprop="name">Spring Security</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&emsp;&emsp;继上一篇 <a href="Spring-Security-Architecture-Authentication.html">Spring Security（一） 体系结构之认证</a> 后，这里研究一下Spring Security一个重要配置–认证配置。<code>AuthenticationConfiguration</code>是Spring提供的认证配置的配置类，该配置类的主要作用是用于生成一个全局的<code>AuthenticationManagerBuilder</code>注入到Spring容器中。使用者注入该配置类然后获取AuthenticationManagerBuilder再生成<code>AuthenticationManager</code>。</p>
+<a id="more"></a>
+<p>&emsp;&emsp;AuthenticationConfiguration中最核心的方法就是<code>getAuthenticationManager()</code>，其他的方法都是为这个方法服务的，该方法主要目的就是生成一个全局的认证管理器，但在讲解这个方法之前，需要先介绍一下在这个方法中用到的几个类。</p>
+<h1 id="AuthenticationManagerBuilder"><a href="#AuthenticationManagerBuilder" class="headerlink" title="AuthenticationManagerBuilder"></a>AuthenticationManagerBuilder</h1><p>&emsp;&emsp;<strong>这个类采取的是建造者模式，用于创建一个认证管理器(AuthenticationManager)，能够轻松的建造出一个基于内存的认证，LDAP认证或者是基于jdbc的认证，添加<code>UserDetailsService</code>以及添加<code>AuthenticationProvider</code></strong> 。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> AuthenticationManagerBuilder <span class="title">authenticationManagerBuilder</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">                ObjectPostProcessor&lt;Object&gt; objectPostProcessor, ApplicationContext context)</span> </span>&#123;</span><br><span class="line">    LazyPasswordEncoder defaultPasswordEncoder = <span class="keyword">new</span> LazyPasswordEncoder(context);</span><br><span class="line">    AuthenticationEventPublisher authenticationEventPublisher = getBeanOrNull(context, AuthenticationEventPublisher<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line"></span><br><span class="line">    DefaultPasswordEncoderAuthenticationManagerBuilder result = <span class="keyword">new</span> DefaultPasswordEncoderAuthenticationManagerBuilder(objectPostProcessor, defaultPasswordEncoder);</span><br><span class="line">    <span class="keyword">if</span> (authenticationEventPublisher != <span class="keyword">null</span>) &#123;</span><br><span class="line">        result.authenticationEventPublisher(authenticationEventPublisher);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;以上代码片段是截取自<code>AuthenticationConfiguration</code>类。<code>ObjectPostProcessor&lt;Object&gt; objectPostProcessor</code>是后置处理器，他的一个重要实现是<code>AutowireBeanFactoryObjectPostProcessor</code>，作用是生成Spring bean。<code>ApplicationContext context</code>是应用上下文。</p>
+<p>&emsp;&emsp;这里初始化了一个解码器，解码器的类型是该配置类中的内部类<code>LazyPasswordEncoder</code>,这个内部类采用了委托模式，它从Spring 上下文中寻找解码器，如果找到了就委托给这个解码器，如果没找到就调用<code>PasswordEncoderFactories.createDelegatingPasswordEncoder();</code>生成解码器。而这个方法生成的是<code>DelegatingPasswordEncoder</code>的实例，该类的设计采用的是也是委托模式，他实际委派的对象是聚合了多个不同的解码器。</p>
+<p>&emsp;&emsp;接下来从上下文中获取认证事件发布器，如果找到了就将该发布器的引用赋值给稍后生成的<code>AuthenticationManagerBuilder</code>。</p>
+<p>&emsp;&emsp;注入到Spring上下文中的AuthenticationManagerBuilder的实例类型是<code>DefaultPasswordEncoderAuthenticationManagerBuilder</code>，这是认证配置类中的一个内部类，其内部方法实现都是调用父类的方法的，只不过实现类添加了一个解码器的属性，通过构造器将传入一个解码器，在进行配置的时候将解码器传递给对应的认证配置对象。</p>
+<p>&emsp;&emsp;需要注意的是，使用AuthenticationManagerBuilder.build()构造出来的AuthenticationManager是<code>ProviderManager</code>的实例。看一下它的继承关系。</p>
+<p><img src="/Spring-Security-Authentication-Configuration/AuthenticationManagerBuilder-extends.png" alt="继承关系"></p>
+<p>&emsp;&emsp;通过继承关系可以看出，AuthenticationManagerBuilder和它的父类AbstractConfiguredecurityBuilder都没有实现build方法，所以调用的是AbstractSecurityBuilder方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> O <span class="title">build</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.building.compareAndSet(<span class="keyword">false</span>, <span class="keyword">true</span>)) &#123;</span><br><span class="line">        <span class="keyword">this</span>.object = doBuild();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.object;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> AlreadyBuiltException(<span class="string">"This object has already been built"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;调用了<code>doBuild()</code>方法并返回其结果，AuthenticationManagerBuilder没有实现此方法，而父类AbstractConfiguredecurityBuilder实现了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> O <span class="title">doBuild</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (configurers) &#123;</span><br><span class="line">        buildState = BuildState.INITIALIZING;</span><br><span class="line">        </span><br><span class="line">        beforeInit();</span><br><span class="line">        init();</span><br><span class="line">        </span><br><span class="line">        buildState = BuildState.CONFIGURING;</span><br><span class="line">        </span><br><span class="line">        beforeConfigure();</span><br><span class="line">        configure();</span><br><span class="line">        </span><br><span class="line">        buildState = BuildState.BUILDING;</span><br><span class="line">        </span><br><span class="line">        O result = performBuild();</span><br><span class="line">        </span><br><span class="line">        buildState = BuildState.BUILT;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;可以看到，最终返回的是<code>performBuild()</code>方法的返回值，而AuthenticationManagerBuilder实现了此方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> ProviderManager <span class="title">performBuild</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!isConfigured()) &#123;</span><br><span class="line">        logger.debug(<span class="string">"No authenticationProviders and no parentAuthenticationManager defined. Returning null."</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ProviderManager providerManager = <span class="keyword">new</span> ProviderManager(authenticationProviders, parentAuthenticationManager);</span><br><span class="line">    <span class="keyword">if</span> (eraseCredentials != <span class="keyword">null</span>) &#123;</span><br><span class="line">        providerManager.setEraseCredentialsAfterAuthentication(eraseCredentials);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (eventPublisher != <span class="keyword">null</span>) &#123;</span><br><span class="line">        providerManager.setAuthenticationEventPublisher(eventPublisher);</span><br><span class="line">    &#125;</span><br><span class="line">    providerManager = postProcess(providerManager);</span><br><span class="line">    <span class="keyword">return</span> providerManager;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;显然，使用AuthenticationManagerBuilder的build方法构造AuthenticationManager其实例的类型就是ProviderManager。</p>
+<h1 id="AuthenticationManagerDelegator"><a href="#AuthenticationManagerDelegator" class="headerlink" title="AuthenticationManagerDelegator"></a>AuthenticationManagerDelegator</h1><p>&emsp;&emsp;这个类是配置类中的一个内部类，他的作用是在获取认证管理器的时候防止出现无限递归（具体在什么样的情况下会出现无限递归我还没搞明白，源码注释是这么说的），它是采取了委托模式，将实际的认证任务委托给了前面我们初始化出来的AuthenticationManagerBuilder生成的认证管理器。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">AuthenticationManagerDelegator</span> <span class="keyword">implements</span> <span class="title">AuthenticationManager</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> AuthenticationManagerBuilder delegateBuilder;</span><br><span class="line">    <span class="keyword">private</span> AuthenticationManager delegate;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Object delegateMonitor = <span class="keyword">new</span> Object();</span><br><span class="line">    AuthenticationManagerDelegator(AuthenticationManagerBuilder delegateBuilder) &#123;</span><br><span class="line">        Assert.notNull(delegateBuilder, <span class="string">"delegateBuilder cannot be null"</span>);</span><br><span class="line">        <span class="keyword">this</span>.delegateBuilder = delegateBuilder;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span></span></span><br><span class="line"><span class="function">                <span class="keyword">throws</span> AuthenticationException </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.delegate != <span class="keyword">null</span>) &#123; </span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">this</span>.delegate.authenticate(authentication);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>.delegateMonitor) &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">this</span>.delegate == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">this</span>.delegate = <span class="keyword">this</span>.delegateBuilder.getObject();</span><br><span class="line">                <span class="keyword">this</span>.delegateBuilder = <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.delegate.authenticate(authentication);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"AuthenticationManagerDelegator [delegate="</span> + <span class="keyword">this</span>.delegate + <span class="string">"]"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;通过源码可以看到，在调用认证方法时，判断委托对象delegate是否为空，如果为空那么就构造一个认证管理器赋值给委托对象并且使用委托对象完成认证。</p>
+<h1 id="GlobalAuthenticationConfigurerAdapter"><a href="#GlobalAuthenticationConfigurerAdapter" class="headerlink" title="GlobalAuthenticationConfigurerAdapter"></a>GlobalAuthenticationConfigurerAdapter</h1><p>&emsp;&emsp;这个一个安全配置抽象类，里面对实现的接口<code>SecurityConfigurer</code>中的方法进行了空实现。在安全配置类AuthenticationConfiguration中，有多个它的子类被注入到Spring上下文中，随后被应用在了上下文中的AuthenticationManagerBuilder中。接下来我们抽取AuthenticationConfiguration中的部分代码展示。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> List&lt;GlobalAuthenticationConfigurerAdapter&gt; globalAuthConfigurers = Collections.emptyList();</span><br><span class="line"></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> GlobalAuthenticationConfigurerAdapter <span class="title">enableGlobalAuthenticationAutowiredConfigurer</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">        ApplicationContext context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> EnableGlobalAuthenticationAutowiredConfigurer(context);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> InitializeUserDetailsBeanManagerConfigurer <span class="title">initializeUserDetailsBeanManagerConfigurer</span><span class="params">(ApplicationContext context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> InitializeUserDetailsBeanManagerConfigurer(context);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> InitializeAuthenticationProviderBeanManagerConfigurer <span class="title">initializeAuthenticationProviderBeanManagerConfigurer</span><span class="params">(ApplicationContext context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> InitializeAuthenticationProviderBeanManagerConfigurer(context);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Autowired</span>(required = <span class="keyword">false</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setGlobalAuthenticationConfigurers</span><span class="params">(List&lt;GlobalAuthenticationConfigurerAdapter&gt; configurers)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    Collections.sort(configurers, AnnotationAwareOrderComparator.INSTANCE);</span><br><span class="line">    <span class="keyword">this</span>.globalAuthConfigurers = configurers;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里面涉及三个子类：</p>
+<blockquote>
+<p><code>EnableGlobalAuthenticationAutowiredConfigurer</code>：看源码就是在init方法中获取使用了<code>EnableGlobalAuthentication</code>注解的bean，然后通过debug日志打印，再就没有其他操作了。</p>
+</blockquote>
+<blockquote>
+<p><code>InitializeUserDetailsBeanManagerConfigurer</code>：初始化一个认证数据服务配置对象应用到全局的 AuthenticationManagerBuilder 中，其主要作用就是初始化一个认证实现添加到Spring上下文的 AuthenticationManagerBuilder bean中，其类型为<code>DaoAuthenticationProvider</code>，获取Spring上下文中的<code>UserDetailsService</code>，<code>PasswordEncoder</code>和<code>UserDetailsPasswordService</code>，将其放入认证对象中。默认的表单登陆认证就是在这里配置的。这里加载的<code>UserDetailsService</code>bean是在<code>UserDetailsServiceAutoConfiguration</code>配置类中初始化的，初始化了一个基于内存的数据服务对象，Spring Security的默认的UUID密码就是在这里设置进去的，是从<code>SecurityProperties.User</code>类中获取。</p>
+</blockquote>
+<blockquote>
+<p><code>InitializeAuthenticationProviderBeanManagerConfigurer</code>：初始化一个认证管理配置对象，从Spring上下文中获取 AuthenticationProvider 并加载到 AuthenticationManagerBuilder 中。</p>
+</blockquote>
+<p>&emsp;&emsp;说到这里，认证的全局配置基本说完了，这里总结一下，在<code>AuthenticationConfiguration</code>中，初始化了三个认证配置对象加载到Spring上下文中并且注入到自身对象中，其次初始化了<code>AuthenticationManagerBuilder</code>并且将之前的三个配置类应用到此对象中，然后将对象加载到Spring上下文中，这是一个全局的构造器，用来生成一个全局的认证配置器。此外，该类还提供了一个获取全局认证器的方法。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/Spring/" rel="tag"><i class="fa fa-tag"></i> Spring</a>
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+              <a href="/tags/Spring-Security/" rel="tag"><i class="fa fa-tag"></i> Spring Security</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oracle-sql-optimize.html" rel="prev" title="oracle sql 调优">
+      <i class="fa fa-chevron-left"></i> oracle sql 调优
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Spring-Security-Architecture-Authentication.html" rel="next" title="Spring Security（一） 体系结构">
+      Spring Security（一） 体系结构 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#AuthenticationManagerBuilder"><span class="nav-number">1.</span> <span class="nav-text">AuthenticationManagerBuilder</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#AuthenticationManagerDelegator"><span class="nav-number">2.</span> <span class="nav-text">AuthenticationManagerDelegator</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GlobalAuthenticationConfigurerAdapter"><span class="nav-number">3.</span> <span class="nav-text">GlobalAuthenticationConfigurerAdapter</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ferry"
+      src="/images/ferry-215x215.gif">
+  <p class="site-author-name" itemprop="name">ferry</p>
+  <div class="site-description" itemprop="description">虽未满百岁已如歌归于其居</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/loveferry" title="GitHub → https://github.com/loveferry" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ferry_sy@163.com" title="E-Mail → mailto:ferry_sy@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ferry</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-CH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/ferry-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/ferry-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/ferry-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;Oracle数据库是目前世界上使用最为广泛的数据库管理系统，作为一个通用的数据库系统，它具有完整的数据管理功能；作为一个关系数据库，它是一个完备关系的产品；作为分布式数据库它实现了分布式处理功能。">
+<meta name="keywords" content="docker中安装oracle,oracle数据迁移">
+<meta property="og:type" content="article">
+<meta property="og:title" content="oracle">
+<meta property="og:url" content="https://ferry.org.cn/oracle.html">
+<meta property="og:site_name" content="儿女意向来痴">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;Oracle数据库是目前世界上使用最为广泛的数据库管理系统，作为一个通用的数据库系统，它具有完整的数据管理功能；作为一个关系数据库，它是一个完备关系的产品；作为分布式数据库它实现了分布式处理功能。">
+<meta property="og:locale" content="zh-CH">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-linux.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-test.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-run.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-1.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-2.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-3.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-4.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-5.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-6.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-7.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-8.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-9.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-10.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-11.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-12.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-13.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-14.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-15.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-16.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-17.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-18.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-19.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-20.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-21.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-22.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/docker-search-1.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/docker-search-2.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/docker-image.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/docker-container.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/hosts.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-directories-1.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-directories-2.png">
+<meta property="og:updated_time" content="2020-07-04T01:02:10.865Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="oracle">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;Oracle数据库是目前世界上使用最为广泛的数据库管理系统，作为一个通用的数据库系统，它具有完整的数据管理功能；作为一个关系数据库，它是一个完备关系的产品；作为分布式数据库它实现了分布式处理功能。">
+<meta name="twitter:image" content="https://ferry.org.cn/oracle/oracle-install-linux.png">
+
+<link rel="canonical" href="https://ferry.org.cn/oracle.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CH'
+  };
+</script>
+
+  <title>oracle | 儿女意向来痴</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">儿女意向来痴</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">35</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/oracle.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ferry-215x215.gif">
+      <meta itemprop="name" content="ferry">
+      <meta itemprop="description" content="虽未满百岁已如歌归于其居">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="儿女意向来痴">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          oracle
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-17 18:44:30" itemprop="dateCreated datePublished" datetime="2018-12-17T18:44:30+08:00">2018-12-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-07-04 09:02:10" itemprop="dateModified" datetime="2020-07-04T09:02:10+08:00">2020-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/数据库/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&emsp;&emsp;Oracle数据库是目前世界上使用最为广泛的数据库管理系统，作为一个通用的数据库系统，它具有完整的数据管理功能；作为一个关系数据库，它是一个完备关系的产品；作为分布式数据库它实现了分布式处理功能。</p>
+<a id="more"></a>
+<h3 id="安装oracle"><a href="#安装oracle" class="headerlink" title="安装oracle"></a>安装oracle</h3><h4 id="基于centOS-7-安装oracle12c"><a href="#基于centOS-7-安装oracle12c" class="headerlink" title="基于centOS 7 安装oracle12c"></a>基于centOS 7 安装oracle12c</h4><h5 id="依赖安装，环境准备"><a href="#依赖安装，环境准备" class="headerlink" title="依赖安装，环境准备"></a>依赖安装，环境准备</h5><p>&emsp;&emsp;<strong>以下操作请登录 root 用户执行</strong>。</p>
+<ul>
+<li>安装依赖</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install binutils compat-libcap1 compat-libstdc++-33 compat-libstdc++-33.i686 gcc gcc-c++ glibc glibc.i686 glibc-devel glibc-devel.i686 ksh libgcc libgcc.i686 libstdc++ libstdc++.i686 libstdc++-devel libstdc++-devel.i686 libaio libaio.i686 libaio-devel libaio-devel.i686 ibXext ibXext.i686 libX11 libX11.i686 libxcb libxcb.i686 libXi libXi.i686 make sysstat</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改系统内核参数</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/sysctl.conf</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在文件末尾加以下几行</span></span><br><span class="line">kernel.shmmni=4096</span><br><span class="line">kernel.sem=250 32000 100 128</span><br><span class="line">fs.file-max=6815744</span><br><span class="line">fs.aio-max-nr=1048576</span><br><span class="line">net.ipv4.ip_local_port_range=9000 65500</span><br><span class="line">net.core.rmem_default=262144</span><br><span class="line">net.core.rmem_max=4194304</span><br><span class="line">net.core.wmem_default=262144</span><br><span class="line">net.core.wmem_max=1048576</span><br></pre></td></tr></table></figure>
+<ul>
+<li>使修改的内核参数生效</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sysctl -p</span><br></pre></td></tr></table></figure>
+<ul>
+<li>创建用户和组</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">groupadd oinstall  </span><br><span class="line">groupadd dba  </span><br><span class="line">groupadd oper  </span><br><span class="line">useradd -g oinstall -G dba,oper oracle</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置 oracle 用户密码</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">passwd oracle</span><br></pre></td></tr></table></figure>
+<ul>
+<li>限制资源参数</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/pam.d/login</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在文件末尾加以下几行</span></span><br><span class="line">session    required     pam_selinux.so open</span><br><span class="line">session    required     pam_namespace.so</span><br><span class="line"></span><br><span class="line">session    required     pam_limits.so</span><br><span class="line"></span><br><span class="line">session    optional     pam_keyinit.so force revoke</span><br><span class="line">session    include      system-auth</span><br><span class="line">session   optional     pam_ck_connector.so</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改用户限制</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/security/limits.conf</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在文件末尾加以下几行</span></span><br><span class="line">oracle  soft  nproc   2047</span><br><span class="line">oracle  hard  nproc   16384</span><br><span class="line">oracle  soft  nofile  1024</span><br><span class="line">oracle  hard  nofile  65536</span><br><span class="line">oracle  soft  stack   10240</span><br><span class="line">oracle  hard  stack   32768</span><br></pre></td></tr></table></figure>
+<ul>
+<li>创建交换空间</li>
+</ul>
+<p>&emsp;&emsp;若系统已有交换空间且大于8G，则这一步不用执行，oracle 大小大概在7.*G,若交换空间小于所需空间，安装时会安装失败。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dd <span class="keyword">if</span>=/dev/zero of=/var/swap bs=1024 count=8388608</span><br><span class="line">mkswap /var/swap</span><br><span class="line">chmod 0600 /var/swap</span><br><span class="line">swapon /var/swap</span><br></pre></td></tr></table></figure>
+<ul>
+<li>系统启动时自动启用交换分区</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/fstab</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/var/swap swap swap default 0 0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>创建目录</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /u01/app</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改目录属主和属组</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chown -R oracle:oinstall /u01/app</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<strong>以下操作请登录 oracle 用户执行</strong>。</p>
+<ul>
+<li>配置环境</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi ~/.bash_profile</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">umask</span> 022</span><br><span class="line"><span class="built_in">export</span> ORACLE_BASE=/u01/app/oracle</span><br></pre></td></tr></table></figure>
+<ul>
+<li>配置立即生效</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bash_profile</span><br></pre></td></tr></table></figure>
+<ul>
+<li>下载安装文件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -b -c -O linuxx64_12201_database.zip https://download.oracle.com/otn/linux/oracle12c/122010/linuxx64_12201_database.zip?AuthParam=1581938083_d20f5a2be1ce563b28554044efc3c94d</span><br></pre></td></tr></table></figure>
+<ul>
+<li>解压</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unzip linuxx64_12201_database.zip</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里选择 oracle12c 的linux 64位的版本。注意，官网下载需要登录，先登录，然后点击下载，在浏览器中复制下载链接使用wget进行下载，<code>-b</code>参数表明wget进行后台下载，<code>-c</code>参数表明断点续传，<code>-O</code>参数为下载的文件命名。<code>AuthParam</code>参数有时效性，是oracle官网登录后点击下载然后生成的，所以这个下载链接需要自己去生成。</p>
+<p><img src="/oracle/oracle-install-linux.png" alt="查找"></p>
+<ul>
+<li>解压</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">unzip linuxx64_12201_database.zip</span><br></pre></td></tr></table></figure>
+<h5 id="通过X11实现linux图形化界面本地显示-MAC"><a href="#通过X11实现linux图形化界面本地显示-MAC" class="headerlink" title="通过X11实现linux图形化界面本地显示-MAC"></a>通过X11实现linux图形化界面本地显示-MAC</h5><p>&emsp;&emsp;Windows环境使用xshell连接centos显示图形化界面可自行百度。mac下通过 Xquartz 协助完成图形化界面在本地显示的需求。</p>
+<ul>
+<li>mac下载Xquartz</li>
+</ul>
+<p>&emsp;&emsp;去<a href="https://www.xquartz.org/" target="_blank" rel="noopener">官网</a>下载安装包并按照提示安装。</p>
+<ul>
+<li>服务端设置</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/ssh/sshd_config</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">X11Forwarding yes</span><br><span class="line">X11DisplayOffset 10</span><br><span class="line">X11UseLocalhost no</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart sshd.service</span><br></pre></td></tr></table></figure>
+<ul>
+<li>mac设置</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /private/etc/ssh/sshd_config</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">X11Forwarding yes</span><br><span class="line">X11UseLocalhost no</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;重启mac。</p>
+<h5 id="安装数据库软件"><a href="#安装数据库软件" class="headerlink" title="安装数据库软件"></a>安装数据库软件</h5><ul>
+<li>登录oracle用户</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -X oracle@ip</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;使用 <code>-X</code> 即使用 XQuartz 。</p>
+<ul>
+<li>尝试安装</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> tmp/</span><br><span class="line">./database/runInstaller</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;若出现下面错误，则登录root用户检查<code>/usr/bin/xdpyinfo</code>是否存在。</p>
+<p><img src="/oracle/oracle-install-test.png" alt="查找"></p>
+<ul>
+<li>下载xdpyinfo并设置xhost</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum -y install xdpyinfo</span><br><span class="line"><span class="built_in">export</span> DISPLAY=:1.0</span><br><span class="line">xhost +</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;若提示xhost找不到，则安装所以依赖。查找缺失依赖<code>yum whatprovides &quot;*/xhost&quot;</code>,安装依赖<code>yum -y install ***</code>,安装完成再执行<code>xhost +</code>。若报错<code>unable to open display &quot;&quot;</code>，则先安装vnc服务，再设置xhost。</p>
+<ul>
+<li>vnc服务安装</li>
+</ul>
+<p>&emsp;&emsp;终端输入<code>vncserver</code>测试是否安装了vnc服务，若未安装则安装vnc。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install tigervnc-server</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vncserver</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;按提示键入用户名密码。</p>
+<ul>
+<li>设置 xhost</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> DISPLAY=localhost:1</span><br><span class="line">xhost +</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;设置好xhost后退出root用户登录oracle用户<code>ssh -X oracle@ip</code>。</p>
+<ul>
+<li>设置 DISPLAY</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> DISPLAY=localhost:1.0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>尝试安装</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> tmp/</span><br><span class="line">./database/runInstaller</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;出现下图，那基本上就是可以，稍等一会，安装界面就会在本地显示了。若弹出的界面中文乱码了，最简单的方式就是设置零时环境变量，将语言设置成英文<code>export LANG=en_US.UTF-8</code>。也有可能会出现一切正常但是安装画面并未显示的情况，此时我们退出重新登录oracle用户，查看DISPLAY变量是否有值，若有值可以先不设置临时值，直接运行脚本看看能否显示安装界面。</p>
+<p><img src="/oracle/oracle-install-run.png" alt="查找"></p>
+<p>&emsp;&emsp;下面就是正常的安装了。</p>
+<p><img src="/oracle/oracle-install-1.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-2.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-3.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-4.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-5.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-6.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-7.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-8.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-9.png" alt="查找"></p>
+<p>&emsp;&emsp;这一步报错了，那么我们根据他的错误提示解决就好了。这里是说系统缺少一个工具，那么我们登录root用户安装一下<code>yum -y install smartmontools</code>,然后点击<code>Check Again</code>。</p>
+<p><img src="/oracle/oracle-install-10.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-11.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-12.png" alt="查找"></p>
+<p>&emsp;&emsp;这一步按照他的提示去root用户下执行这两个文件。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh /u01/app/oraInventory/orainstRoot.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh /u01/app/oracle/product/12.2.0/dbhome_1/root.sh</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里会让你输入服务器的bin目录，默认是<code>/usr/local/bin</code>，然后会让你确认是否安装Oracle跟踪文件分析器，这里输入yes。两个脚本执行完成后，在安装界面点击OK，继续下一步。</p>
+<p><img src="/oracle/oracle-install-13.png" alt="查找"></p>
+<p>&emsp;&emsp;到这里，数据库软件就安装完成了。</p>
+<ul>
+<li>配置环境变量</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi ~/.bash_profile</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> ORACLE_HOME=/u01/app/oracle/product/12.2.0/dbhome_1</span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:<span class="variable">$ORACLE_HOME</span>/bin</span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> ORACLE_SID=orcl</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bash_profile</span><br></pre></td></tr></table></figure>
+<ul>
+<li>创建监听</li>
+</ul>
+<p>&emsp;&emsp;退出当前登录并重新登录oracle用户。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> LANG=en_US.UTF-8</span><br><span class="line">netca</span><br></pre></td></tr></table></figure>
+<p><img src="/oracle/oracle-install-14.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-15.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-16.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-17.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-18.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-19.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-20.png" alt="查找"></p>
+<p>&emsp;&emsp;此时，我们的监听就创建完成了，在弹出的页面点击finish就可以退出了。</p>
+<ul>
+<li>创建数据库</li>
+</ul>
+<p>&emsp;&emsp;退出当前登录并重新登录oracle用户。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> LANG=en_US.UTF-8</span><br><span class="line">dbca</span><br></pre></td></tr></table></figure>
+<p><img src="/oracle/oracle-install-21.png" alt="查找"></p>
+<p><img src="/oracle/oracle-install-22.png" alt="查找"></p>
+<p>&emsp;&emsp;这里填入管理员，例如sys/system用户的密码，勾选创建容器服务器，并设置容器名称。</p>
+<p>&emsp;&emsp;接下来一路默认就好了。</p>
+<p>&emsp;&emsp;登录oracle用户，启动监听和容器。</p>
+<ul>
+<li>启动监听</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsnrctl start</span><br></pre></td></tr></table></figure>
+<ul>
+<li>启动容器</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlplus sys as sysdba</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">startup</span><br></pre></td></tr></table></figure>
+<h4 id="docker中安装oracle"><a href="#docker中安装oracle" class="headerlink" title="docker中安装oracle"></a>docker中安装oracle</h4><p>&emsp;&emsp;docker的安装这里我就不再赘述了,自行百度,使用docker安装oracle数据库其实还是很简单的,基本上就是一个命令的事情,在这里主要是记录一下我踩过的坑.</p>
+<p>&emsp;&emsp;这里先简单说一下docker.简单的说,docker就像是一个容器管理器,你可以自己下载你想要的容器,然后将容器在docker中运行,docker中的每一个容器都有自己的运行环境,不会相互干扰.接下来还会陆陆续续将一些docker的命令.</p>
+<p>&emsp;&emsp;网上有的教程是什么自己下载oracle的压缩文件,然后进行一系列操作,主要是为了数据能够存储宿主机.但是就我这几天的摸索看来,完全没有必要啊,docker是可以将进行容器和宿主机交互的,使用<code>docker cp</code>指令进行文件复制就好了啊,具体用法自行百度.可能有人担心docker中运行的服务在机器重启后数据会不会丢失或者损坏,这个是不会的,只要你操作正常,比如你在mac上安装了docker,docker上运行着oracle容器,你下班正常关机,第二天重启,然后重启docker容器就好了,数据并不会丢失的.当然,前提是你没有删除容器.</p>
+<h5 id="查找并拉取镜像"><a href="#查找并拉取镜像" class="headerlink" title="查找并拉取镜像"></a>查找并拉取镜像</h5><ul>
+<li><p>镜像: docker中镜像的概念可以理解为软件包.</p>
+</li>
+<li><p>查找镜像 : 两种方式</p>
+</li>
+</ul>
+<p>&emsp;&emsp;第一种是通过官网网站 <a href="hub.docker.com">hub.docker.com</a> 来查找镜像.</p>
+<p><img src="/oracle/docker-search-1.png" alt="查找"></p>
+<p>&emsp;&emsp;可以通过左上角的搜索框搜索你想要的镜像,蓝色的就是镜像的名称了,你可以点击<code>details</code>进去查看该镜像的详细信息.</p>
+<p>&emsp;&emsp;第二种方式: 通过终端搜索镜像</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker search oracle12c</span><br></pre></td></tr></table></figure>
+<p><img src="/oracle/docker-search-2.png" alt="运行结果"></p>
+<p>&emsp;&emsp;<strong>这里很重要</strong>这里我还是推荐使用第一种方法,可以进入官网查看镜像的详细信息,包括镜像版本之类的,也有这个镜像具体的操作步骤,如果镜像对应的服务有用户名密码什么的,在详细信息里面应该都有讲到.想我当初傻乎乎的蒙着头拉取镜像,结果版本几次都不对,要知道oracle还是蛮大的!!!哭…</p>
+<ul>
+<li>拉取镜像</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull container-registry.oracle.com/database/enterprise</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里pull后面的就是我们刚才查找得到的镜像名称,然后默默地等它下载完成… 这里有一个问题,如果你pull失败,仔细看一下错误信息,可能是你没有登录docker导致你没有办法拉取仓库中的镜像.这里不得不提一句,docekr中的提示还是很棒的,我在踩坑这段时间还是帮了我不少忙.回归正传,登录docker直接执行<code>docker login</code>然后按照提示输入用户名密码就好了,如果你还没注册<a href="hub.docker.com">hub.docker.com</a></p>
+<h5 id="运行镜像"><a href="#运行镜像" class="headerlink" title="运行镜像"></a>运行镜像</h5><ul>
+<li>查看我们刚才拉取的镜像</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker image ls</span><br></pre></td></tr></table></figure>
+<p><img src="/oracle/docker-image.png" alt="运行结果"></p>
+<ul>
+<li>运行</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name oracle12c -p 1521:1521 -p 8081:8080 container-registry.oracle.com/database/enterprise:12.2.0.1</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>参数解释<br>run:run命令就是用来运行镜像文件的呀…通常使用docker run 镜像名称或者镜像的IMAGE ID 组成来运行镜像<br>-d:后台运行<br>–name:重命名运行镜像生成的容器<br>-p:端口映射,如上面的,将容器的1521端口映射到宿主机的1521端口,将容器的8080端口映射到宿主机的8081端口<br>-v:可以将容器的指定目录映射到宿主机的指定目录,这个操作很骚气,很多人喜欢,但是我觉得没有必要啊,防止误删容器数据丢失??你别瞎几把删除容器不就好了…<br>-it:-i以交互模式运行容器,-t为容器重新分配一个伪输入终端.这两个指令通常是搭配在一起使用.使用这个命令就是在生成容器之后模拟出来一个终端让你可以对这个容器进行操作,当然,像oracle,使用-it一般也需要在后面加上启动参数,选择以什么用户进入容器</p>
+</blockquote>
+<ul>
+<li>进入容器</li>
+</ul>
+<p>&emsp;&emsp;我一般不采用运行镜像的使用使用-it进入容器shell,而是等run命令执行完返回容器id之后先查看一下这个容器状态.然后进入容器操作.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker container ls</span><br><span class="line">docker <span class="built_in">exec</span> -it 70819e3636ca /bin/bash</span><br></pre></td></tr></table></figure>
+<p><img src="/oracle/docker-container.png" alt="运行结果"></p>
+<p>&emsp;&emsp;在这里需要注意一点,我们可以从上面的截图看到端口映射的情况,它是将容器的1521端口映射到宿主机的0.0.0.0:51521上,所以我们需要看一下宿主机的ip映射情况.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/hosts</span><br></pre></td></tr></table></figure>
+<p><img src="/oracle/hosts.png" alt="运行结果"></p>
+<p>&emsp;&emsp;可以看到hosts文件是我的机器的ip映射关系.这里我们需要在最后一行添加一行<code>0.0.0.0 127.0.0.1</code>,将0.0.0.0映射到127.0.0.1上,这样我们在后面使用宿主机的客户端设置连接ip地址时使用127.0.0.1才能连上oracle.</p>
+<h3 id="数据库操作"><a href="#数据库操作" class="headerlink" title="数据库操作"></a>数据库操作</h3><h4 id="启动和停止监听与容器"><a href="#启动和停止监听与容器" class="headerlink" title="启动和停止监听与容器"></a>启动和停止监听与容器</h4><ul>
+<li>启动监听</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsnrctl start</span><br></pre></td></tr></table></figure>
+<ul>
+<li>关闭监听</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsnrctl stop</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看状态</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsnrctl status</span><br></pre></td></tr></table></figure>
+<ul>
+<li>启动容器</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlplus sys as sysdba</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">startup</span><br></pre></td></tr></table></figure>
+<ul>
+<li>关闭容器</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlplus sys as sysdba</span><br></pre></td></tr></table></figure>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shutdown</span><br></pre></td></tr></table></figure>
+<h4 id="连接数据库"><a href="#连接数据库" class="headerlink" title="连接数据库"></a>连接数据库</h4><ul>
+<li>在oracle用户下执行：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlplus sys/oracle as sysdba</span><br></pre></td></tr></table></figure>
+<h4 id="创建表空间，用户"><a href="#创建表空间，用户" class="headerlink" title="创建表空间，用户"></a>创建表空间，用户</h4><p>&emsp;&emsp;以下操作登录sys/system用户执行。</p>
+<ul>
+<li>创建表空间</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLESPACE</span> ferry <span class="keyword">DATAFILE</span> <span class="string">'/u01/app/oracle/admin/ORCL/dpdump/ferry.dbf'</span> <span class="keyword">SIZE</span> <span class="number">50</span>M <span class="keyword">AUTOEXTEND</span> <span class="keyword">ON</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;on后面可以指定每次自增长空间大小,路径为绝对路径，不存在则报错。</p>
+<ul>
+<li>创建用户并指定表空间</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">user</span> ferry <span class="keyword">identified</span> <span class="keyword">by</span> ferry <span class="keyword">default</span> <span class="keyword">tablespace</span> ferry;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>用户授权</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">grant</span> dba <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">connect</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">alter</span> <span class="keyword">session</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">any</span> <span class="keyword">context</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">procedure</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">sequence</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">session</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">synonym</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">table</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">type</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">user</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">view</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">any</span> <span class="keyword">table</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> DEBUG <span class="keyword">CONNECT</span> <span class="keyword">SESSION</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">query</span> rewrite <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">select</span> <span class="keyword">any</span> dictionary <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">unlimited</span> <span class="keyword">tablespace</span> <span class="keyword">to</span> ferry;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">read</span>,write <span class="keyword">on</span> <span class="keyword">directory</span> DATA_PUMP_DIR <span class="keyword">to</span> ferry;</span><br></pre></td></tr></table></figure>
+<h4 id="删除用户，表空间"><a href="#删除用户，表空间" class="headerlink" title="删除用户，表空间"></a>删除用户，表空间</h4><p>&emsp;&emsp;以下操作登录sys/system用户执行。</p>
+<ul>
+<li>删除用户</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">drop</span> <span class="keyword">user</span> ferry <span class="keyword">cascade</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;加上cascade是将用户的数据库数据一并删除，并没有删除相应的表空间。</p>
+<ul>
+<li>删除表空间</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> <span class="keyword">TABLESPACE</span> ferry <span class="keyword">INCLUDING</span> <span class="keyword">CONTENTS</span> <span class="keyword">AND</span> <span class="keyword">DATAFILES</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;若删除的表空间是默认的表空间，则会提示不能删除默认表空间，需要先修改默认表空间然后才能删除。</p>
+<ul>
+<li>查看并修改默认表空间</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 查看默认表空间</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> database_properties <span class="keyword">where</span> property_name=<span class="string">'DEFAULT_PERMANENT_TABLESPACE'</span>;</span><br><span class="line"><span class="comment">-- 修改默认表空间</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">database</span> <span class="keyword">default</span> <span class="keyword">tablespace</span> <span class="keyword">USERS</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="wm-concat"><a href="#wm-concat" class="headerlink" title="wm_concat"></a>wm_concat</h4><p>&emsp;&emsp;在oracle11g和12c上已经摒弃了wm_concat函数，但是我们的程序中可能依旧使用了这个函数，为了数据库的迁移省事，可以选择自己创建一个wm_concat函数。但是注意，即使创建了该函数，在使用的过程中，也需要用to_char(wm_concat())方式，才能完全替代之前的应用。</p>
+<h5 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h5><p>&emsp;&emsp;以下操作登录sys/system用户执行。</p>
+<ul>
+<li>解锁WMSYS用户</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">alter</span> <span class="keyword">user</span> wmsys <span class="keyword">account</span> <span class="keyword">unlock</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>授权WMSYS用户</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">grant</span> dba <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">connect</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">alter</span> <span class="keyword">session</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">any</span> <span class="keyword">context</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">procedure</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">sequence</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">session</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">synonym</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">table</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">type</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">user</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">view</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">create</span> <span class="keyword">any</span> <span class="keyword">table</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> DEBUG <span class="keyword">CONNECT</span> <span class="keyword">SESSION</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">query</span> rewrite <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">select</span> <span class="keyword">any</span> dictionary <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">unlimited</span> <span class="keyword">tablespace</span> <span class="keyword">to</span> wmsys;</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">read</span>,write <span class="keyword">on</span> <span class="keyword">directory</span> DATA_PUMP_DIR <span class="keyword">to</span> wmsys;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;以WMSYS用户连接数据库并执行下面的操作.</p>
+<ul>
+<li>创建包，包体和函数</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">OR</span> <span class="keyword">REPLACE</span> <span class="keyword">TYPE</span> WM_CONCAT_IMPL <span class="keyword">AS</span> <span class="keyword">OBJECT</span></span><br><span class="line"><span class="comment">-- AUTHID CURRENT_USER AS OBJECT</span></span><br><span class="line">(</span><br><span class="line">CURR_STR <span class="built_in">VARCHAR2</span>(<span class="number">32767</span>), </span><br><span class="line"><span class="keyword">STATIC</span> <span class="keyword">FUNCTION</span> ODCIAGGREGATEINITIALIZE(SCTX <span class="keyword">IN</span> <span class="keyword">OUT</span> WM_CONCAT_IMPL) <span class="keyword">RETURN</span> <span class="built_in">NUMBER</span>,</span><br><span class="line"><span class="keyword">MEMBER</span> <span class="keyword">FUNCTION</span> ODCIAGGREGATEITERATE(<span class="keyword">SELF</span> <span class="keyword">IN</span> <span class="keyword">OUT</span> WM_CONCAT_IMPL,</span><br><span class="line">P1 <span class="keyword">IN</span> <span class="built_in">VARCHAR2</span>) <span class="keyword">RETURN</span> <span class="built_in">NUMBER</span>,</span><br><span class="line"><span class="keyword">MEMBER</span> <span class="keyword">FUNCTION</span> ODCIAGGREGATETERMINATE(<span class="keyword">SELF</span> <span class="keyword">IN</span> WM_CONCAT_IMPL,</span><br><span class="line">RETURNVALUE <span class="keyword">OUT</span> <span class="built_in">VARCHAR2</span>,</span><br><span class="line">FLAGS <span class="keyword">IN</span> <span class="built_in">NUMBER</span>)</span><br><span class="line"><span class="keyword">RETURN</span> <span class="built_in">NUMBER</span>,</span><br><span class="line"><span class="keyword">MEMBER</span> <span class="keyword">FUNCTION</span> ODCIAGGREGATEMERGE(<span class="keyword">SELF</span> <span class="keyword">IN</span> <span class="keyword">OUT</span> WM_CONCAT_IMPL,</span><br><span class="line">SCTX2 <span class="keyword">IN</span> WM_CONCAT_IMPL) <span class="keyword">RETURN</span> <span class="built_in">NUMBER</span></span><br><span class="line">);</span><br><span class="line">/</span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 定义类型body:</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">OR</span> <span class="keyword">REPLACE</span> <span class="keyword">TYPE</span> <span class="keyword">BODY</span> WM_CONCAT_IMPL</span><br><span class="line"><span class="keyword">IS</span></span><br><span class="line"><span class="keyword">STATIC</span> <span class="keyword">FUNCTION</span> ODCIAGGREGATEINITIALIZE(SCTX <span class="keyword">IN</span> <span class="keyword">OUT</span> WM_CONCAT_IMPL)</span><br><span class="line"><span class="keyword">RETURN</span> <span class="built_in">NUMBER</span></span><br><span class="line"><span class="keyword">IS</span></span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line">SCTX := WM_CONCAT_IMPL(<span class="literal">NULL</span>) ;</span><br><span class="line">RETURN ODCICONST.SUCCESS;</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line">MEMBER FUNCTION ODCIAGGREGATEITERATE(SELF IN OUT WM_CONCAT_IMPL,</span><br><span class="line">P1 IN VARCHAR2)</span><br><span class="line">RETURN NUMBER</span><br><span class="line">IS</span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line"><span class="keyword">IF</span>(CURR_STR <span class="keyword">IS</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>) <span class="keyword">THEN</span></span><br><span class="line">CURR_STR := CURR_STR || <span class="string">','</span> || P1;</span><br><span class="line">ELSE</span><br><span class="line">CURR_STR := P1;</span><br><span class="line"><span class="keyword">END</span> <span class="keyword">IF</span>;</span><br><span class="line">RETURN ODCICONST.SUCCESS;</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line">MEMBER FUNCTION ODCIAGGREGATETERMINATE(SELF IN WM_CONCAT_IMPL,</span><br><span class="line">RETURNVALUE OUT VARCHAR2,</span><br><span class="line">FLAGS IN NUMBER)</span><br><span class="line">RETURN NUMBER</span><br><span class="line">IS</span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line">RETURNVALUE := CURR_STR ;</span><br><span class="line">RETURN ODCICONST.SUCCESS;</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line">MEMBER FUNCTION ODCIAGGREGATEMERGE(SELF IN OUT WM_CONCAT_IMPL,</span><br><span class="line">SCTX2 IN WM_CONCAT_IMPL)</span><br><span class="line">RETURN NUMBER</span><br><span class="line">IS</span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line"><span class="keyword">IF</span>(SCTX2.CURR_STR <span class="keyword">IS</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>) <span class="keyword">THEN</span></span><br><span class="line">SELF.CURR_STR := SELF.CURR_STR || <span class="string">','</span> || SCTX2.CURR_STR ;</span><br><span class="line"><span class="keyword">END</span> <span class="keyword">IF</span>;</span><br><span class="line">RETURN ODCICONST.SUCCESS;</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line">/</span><br><span class="line"><span class="comment">--自定义行变列函数:</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">OR</span> <span class="keyword">REPLACE</span> <span class="keyword">FUNCTION</span> wm_concat(P1 <span class="built_in">VARCHAR2</span>)</span><br><span class="line"><span class="keyword">RETURN</span> <span class="built_in">VARCHAR2</span> <span class="keyword">AGGREGATE</span> <span class="keyword">USING</span> WM_CONCAT_IMPL ;</span><br><span class="line">/</span><br></pre></td></tr></table></figure>
+<ul>
+<li>创建同义词并授权</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">public</span> <span class="keyword">synonym</span> WM_CONCAT_IMPL <span class="keyword">for</span> wmsys.WM_CONCAT_IMPL</span><br><span class="line">/</span><br><span class="line"><span class="keyword">create</span> <span class="keyword">public</span> <span class="keyword">synonym</span> wm_concat <span class="keyword">for</span> wmsys.wm_concat</span><br><span class="line">/</span><br><span class="line"> </span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">execute</span> <span class="keyword">on</span> WM_CONCAT_IMPL <span class="keyword">to</span> <span class="keyword">public</span></span><br><span class="line">/</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">execute</span> <span class="keyword">on</span> wm_concat <span class="keyword">to</span> <span class="keyword">public</span></span><br><span class="line">/</span><br></pre></td></tr></table></figure>
+<h5 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h5><p>&emsp;&emsp;若容器中没有用户 wmsys，可以随便选择一个用户创建此函数，例如，这里使用ferry用户创建该函数。</p>
+<p>&emsp;&emsp;以 ferry 用户连接数据库并执行下面的操作.</p>
+<ul>
+<li>创建包，包体和函数</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">OR</span> <span class="keyword">REPLACE</span> <span class="keyword">TYPE</span> WM_CONCAT_IMPL <span class="keyword">AS</span> <span class="keyword">OBJECT</span></span><br><span class="line"><span class="comment">-- AUTHID CURRENT_USER AS OBJECT</span></span><br><span class="line">(</span><br><span class="line">CURR_STR <span class="built_in">VARCHAR2</span>(<span class="number">32767</span>), </span><br><span class="line"><span class="keyword">STATIC</span> <span class="keyword">FUNCTION</span> ODCIAGGREGATEINITIALIZE(SCTX <span class="keyword">IN</span> <span class="keyword">OUT</span> WM_CONCAT_IMPL) <span class="keyword">RETURN</span> <span class="built_in">NUMBER</span>,</span><br><span class="line"><span class="keyword">MEMBER</span> <span class="keyword">FUNCTION</span> ODCIAGGREGATEITERATE(<span class="keyword">SELF</span> <span class="keyword">IN</span> <span class="keyword">OUT</span> WM_CONCAT_IMPL,</span><br><span class="line">P1 <span class="keyword">IN</span> <span class="built_in">VARCHAR2</span>) <span class="keyword">RETURN</span> <span class="built_in">NUMBER</span>,</span><br><span class="line"><span class="keyword">MEMBER</span> <span class="keyword">FUNCTION</span> ODCIAGGREGATETERMINATE(<span class="keyword">SELF</span> <span class="keyword">IN</span> WM_CONCAT_IMPL,</span><br><span class="line">RETURNVALUE <span class="keyword">OUT</span> <span class="built_in">VARCHAR2</span>,</span><br><span class="line">FLAGS <span class="keyword">IN</span> <span class="built_in">NUMBER</span>)</span><br><span class="line"><span class="keyword">RETURN</span> <span class="built_in">NUMBER</span>,</span><br><span class="line"><span class="keyword">MEMBER</span> <span class="keyword">FUNCTION</span> ODCIAGGREGATEMERGE(<span class="keyword">SELF</span> <span class="keyword">IN</span> <span class="keyword">OUT</span> WM_CONCAT_IMPL,</span><br><span class="line">SCTX2 <span class="keyword">IN</span> WM_CONCAT_IMPL) <span class="keyword">RETURN</span> <span class="built_in">NUMBER</span></span><br><span class="line">);</span><br><span class="line">/</span><br><span class="line"> </span><br><span class="line"><span class="comment">-- 定义类型body:</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">OR</span> <span class="keyword">REPLACE</span> <span class="keyword">TYPE</span> <span class="keyword">BODY</span> WM_CONCAT_IMPL</span><br><span class="line"><span class="keyword">IS</span></span><br><span class="line"><span class="keyword">STATIC</span> <span class="keyword">FUNCTION</span> ODCIAGGREGATEINITIALIZE(SCTX <span class="keyword">IN</span> <span class="keyword">OUT</span> WM_CONCAT_IMPL)</span><br><span class="line"><span class="keyword">RETURN</span> <span class="built_in">NUMBER</span></span><br><span class="line"><span class="keyword">IS</span></span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line">SCTX := WM_CONCAT_IMPL(<span class="literal">NULL</span>) ;</span><br><span class="line">RETURN ODCICONST.SUCCESS;</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line">MEMBER FUNCTION ODCIAGGREGATEITERATE(SELF IN OUT WM_CONCAT_IMPL,</span><br><span class="line">P1 IN VARCHAR2)</span><br><span class="line">RETURN NUMBER</span><br><span class="line">IS</span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line"><span class="keyword">IF</span>(CURR_STR <span class="keyword">IS</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>) <span class="keyword">THEN</span></span><br><span class="line">CURR_STR := CURR_STR || <span class="string">','</span> || P1;</span><br><span class="line">ELSE</span><br><span class="line">CURR_STR := P1;</span><br><span class="line"><span class="keyword">END</span> <span class="keyword">IF</span>;</span><br><span class="line">RETURN ODCICONST.SUCCESS;</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line">MEMBER FUNCTION ODCIAGGREGATETERMINATE(SELF IN WM_CONCAT_IMPL,</span><br><span class="line">RETURNVALUE OUT VARCHAR2,</span><br><span class="line">FLAGS IN NUMBER)</span><br><span class="line">RETURN NUMBER</span><br><span class="line">IS</span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line">RETURNVALUE := CURR_STR ;</span><br><span class="line">RETURN ODCICONST.SUCCESS;</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line">MEMBER FUNCTION ODCIAGGREGATEMERGE(SELF IN OUT WM_CONCAT_IMPL,</span><br><span class="line">SCTX2 IN WM_CONCAT_IMPL)</span><br><span class="line">RETURN NUMBER</span><br><span class="line">IS</span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line"><span class="keyword">IF</span>(SCTX2.CURR_STR <span class="keyword">IS</span> <span class="keyword">NOT</span> <span class="literal">NULL</span>) <span class="keyword">THEN</span></span><br><span class="line">SELF.CURR_STR := SELF.CURR_STR || <span class="string">','</span> || SCTX2.CURR_STR ;</span><br><span class="line"><span class="keyword">END</span> <span class="keyword">IF</span>;</span><br><span class="line">RETURN ODCICONST.SUCCESS;</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line"><span class="keyword">END</span>;</span><br><span class="line">/</span><br><span class="line"><span class="comment">--自定义行变列函数:</span></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">OR</span> <span class="keyword">REPLACE</span> <span class="keyword">FUNCTION</span> wm_concat(P1 <span class="built_in">VARCHAR2</span>)</span><br><span class="line"><span class="keyword">RETURN</span> <span class="built_in">VARCHAR2</span> <span class="keyword">AGGREGATE</span> <span class="keyword">USING</span> WM_CONCAT_IMPL ;</span><br><span class="line">/</span><br></pre></td></tr></table></figure>
+<ul>
+<li>创建同义词并授权</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="keyword">public</span> <span class="keyword">synonym</span> WM_CONCAT_IMPL <span class="keyword">for</span> ferry.WM_CONCAT_IMPL</span><br><span class="line">/</span><br><span class="line"><span class="keyword">create</span> <span class="keyword">public</span> <span class="keyword">synonym</span> wm_concat <span class="keyword">for</span> ferry.wm_concat</span><br><span class="line">/</span><br><span class="line"> </span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">execute</span> <span class="keyword">on</span> WM_CONCAT_IMPL <span class="keyword">to</span> <span class="keyword">public</span></span><br><span class="line">/</span><br><span class="line"><span class="keyword">grant</span> <span class="keyword">execute</span> <span class="keyword">on</span> wm_concat <span class="keyword">to</span> <span class="keyword">public</span></span><br><span class="line">/</span><br></pre></td></tr></table></figure>
+<h4 id="数据库导入导出"><a href="#数据库导入导出" class="headerlink" title="数据库导入导出"></a>数据库导入导出</h4><p>&emsp;&emsp;这里使用的是 impdp/expdp 命令进行导入导出的,需要在oracle用户下执行命令。</p>
+<ul>
+<li>数据导出</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">expdp user_name/password@127.0.0.1:1521/ORCL directory=DATA_PUMP_DIR dumpfile=ferry.dmp [version=11.2.0.2.0]</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;用户名和密码就是你要导出的数据库所属的用户,IP地址和端口号是服务器的,服务名是你这个用户登录所使用的服务名,当然,我觉得这里如果你是用SID的,那么替换成SID我觉得也没问题,目录指定你要到处的dump的存放位置,这个我们一般使用oracle自带的那么目录,如下图,指定文件名就没什么好说的了,后缀别搞错就行了,最后面的版本号是可选的,当你将高版本的数据迁移到低版本时,你需要指定导出dump的版本,这样你在低版本的数据库中执行导入才不会有问题,但是,高版本导出低版本数据也是有可能发生错误的,比如你高版本oracle服务器端使用了高版本的特性,但是你指定的导出版本没有这个特性,那么就可能会报错啊(事实是,我指定低版本号执行导出确实有过报错,大概是数据类型过长还是什么的我忘了,以上导出版本冲突是我的猜想…).</p>
+<p><img src="/oracle/oracle-directories-1.png" alt="目录"></p>
+<p><img src="/oracle/oracle-directories-2.png" alt="目录"></p>
+<p>&emsp;&emsp;上图1是通过客户端<code>oracle sql developer</code>登录你要导出的用户查看当前用户的目录访问权限并查看指定目录的系统路径,在导出成功后可以在此系统路径下找到导出的日志文件和dump.</p>
+<p>&emsp;&emsp;上图2是通过客户端<code>PL/SQL</code>登录你要导出的用户查看当前用户的目录访问权限,在你想查看的目录上鼠标右键-edit查看该目录的系统路径.</p>
+<p>&emsp;&emsp;你以为导出就到此结束了么,或者你以为导出成功拿到dump就结束了么??不!!!你得拿到你导出的这个dump的schema和tablespace信息,这个信息没拿到,你怎么执行导入操作呢?</p>
+<ul>
+<li>获取导出数据的schema和表空间</li>
+</ul>
+<p>&emsp;&emsp;schema一般情况下都是和用户一一对应的,所以我们这直接取导出数据的用户名就好了,表空间就需要在服务器上使用sqlplus连接该用户,执行<code>select default_tablespace from user_users;</code>查看当前用户的表空间,或者可以使用客户端连接登录该用户执行sql,多样化嘛,怎么方便怎么来.</p>
+<ul>
+<li>数据导入</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">impdp user_name/password@127.0.0.1:1521/ORCL remap_schema=from_schema:to_schema remap_tablespace=from_tablespace:to_tablespace directory=DATA_PUMP_DIR dumpfile=ferry.dmp</span><br></pre></td></tr></table></figure>
+<h4 id="事务锁查询与杀死"><a href="#事务锁查询与杀死" class="headerlink" title="事务锁查询与杀死"></a>事务锁查询与杀死</h4><p>&emsp;&emsp;查询与杀死操作在同一个session中处理。</p>
+<ul>
+<li>查询</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> sess.sid,</span><br><span class="line">sess.serial<span class="comment">#,</span></span><br><span class="line">lo.oracle_username,</span><br><span class="line">lo.os_user_name,</span><br><span class="line">ao.object_name,</span><br><span class="line">lo.locked_mode</span><br><span class="line"><span class="keyword">from</span> v$locked_object lo,</span><br><span class="line">dba_objects ao,</span><br><span class="line">v$<span class="keyword">session</span> sess</span><br><span class="line"><span class="keyword">where</span> ao.object_id = lo.object_id <span class="keyword">and</span> lo.session_id = sess.sid;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>杀死</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">SYSTEM</span> <span class="keyword">KILL</span> <span class="keyword">SESSION</span> <span class="string">'SID,SERIR#'</span>;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/docker中安装oracle/" rel="tag"><i class="fa fa-tag"></i> docker中安装oracle</a>
+              <a href="/tags/oracle数据迁移/" rel="tag"><i class="fa fa-tag"></i> oracle数据迁移</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mysql.html" rel="prev" title="mysql">
+      <i class="fa fa-chevron-left"></i> mysql
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/software-install.html" rel="next" title="常用软件安装">
+      常用软件安装 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装oracle"><span class="nav-number">1.</span> <span class="nav-text">安装oracle</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#基于centOS-7-安装oracle12c"><span class="nav-number">1.1.</span> <span class="nav-text">基于centOS 7 安装oracle12c</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#依赖安装，环境准备"><span class="nav-number">1.1.1.</span> <span class="nav-text">依赖安装，环境准备</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#通过X11实现linux图形化界面本地显示-MAC"><span class="nav-number">1.1.2.</span> <span class="nav-text">通过X11实现linux图形化界面本地显示-MAC</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装数据库软件"><span class="nav-number">1.1.3.</span> <span class="nav-text">安装数据库软件</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#docker中安装oracle"><span class="nav-number">1.2.</span> <span class="nav-text">docker中安装oracle</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#查找并拉取镜像"><span class="nav-number">1.2.1.</span> <span class="nav-text">查找并拉取镜像</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#运行镜像"><span class="nav-number">1.2.2.</span> <span class="nav-text">运行镜像</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库操作"><span class="nav-number">2.</span> <span class="nav-text">数据库操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#启动和停止监听与容器"><span class="nav-number">2.1.</span> <span class="nav-text">启动和停止监听与容器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#连接数据库"><span class="nav-number">2.2.</span> <span class="nav-text">连接数据库</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建表空间，用户"><span class="nav-number">2.3.</span> <span class="nav-text">创建表空间，用户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除用户，表空间"><span class="nav-number">2.4.</span> <span class="nav-text">删除用户，表空间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#wm-concat"><span class="nav-number">2.5.</span> <span class="nav-text">wm_concat</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#方法一"><span class="nav-number">2.5.1.</span> <span class="nav-text">方法一</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#方法二"><span class="nav-number">2.5.2.</span> <span class="nav-text">方法二</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据库导入导出"><span class="nav-number">2.6.</span> <span class="nav-text">数据库导入导出</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#事务锁查询与杀死"><span class="nav-number">2.7.</span> <span class="nav-text">事务锁查询与杀死</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ferry"
+      src="/images/ferry-215x215.gif">
+  <p class="site-author-name" itemprop="name">ferry</p>
+  <div class="site-description" itemprop="description">虽未满百岁已如歌归于其居</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/loveferry" title="GitHub → https://github.com/loveferry" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ferry_sy@163.com" title="E-Mail → mailto:ferry_sy@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ferry</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>

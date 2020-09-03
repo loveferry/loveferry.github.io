@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/ferry-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/ferry-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/ferry-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;linux常用的指令，用到一个记一个！！！">
+<meta name="keywords" content="yum,locate">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux常用指令">
+<meta property="og:url" content="https://ferry.org.cn/linux-order.html">
+<meta property="og:site_name" content="儿女意向来痴">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;linux常用的指令，用到一个记一个！！！">
+<meta property="og:locale" content="zh-CH">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/linux-yum-search.png">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/linux-yum-list.png">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/linux-yum-list-i.png">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/linux-yum-list-updates.png">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/linux-yum-info.png">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/linux_file_permissions.png">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/linux_permission_num1.png">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/linux_permission_num2.png">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/du-s.png">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/du-h.png">
+<meta property="og:image" content="https://ferry.org.cn/linux-order/du-c.png">
+<meta property="og:updated_time" content="2020-07-04T01:02:10.852Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="linux常用指令">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;linux常用的指令，用到一个记一个！！！">
+<meta name="twitter:image" content="https://ferry.org.cn/linux-order/linux-yum-search.png">
+
+<link rel="canonical" href="https://ferry.org.cn/linux-order.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CH'
+  };
+</script>
+
+  <title>linux常用指令 | 儿女意向来痴</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">儿女意向来痴</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">35</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/linux-order.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ferry-215x215.gif">
+      <meta itemprop="name" content="ferry">
+      <meta itemprop="description" content="虽未满百岁已如歌归于其居">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="儿女意向来痴">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux常用指令
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-17 18:42:29" itemprop="dateCreated datePublished" datetime="2018-12-17T18:42:29+08:00">2018-12-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-07-04 09:02:10" itemprop="dateModified" datetime="2020-07-04T09:02:10+08:00">2020-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&emsp;&emsp;linux常用的指令，用到一个记一个！！！</p>
+<a id="more"></a>
+<h3 id="yum"><a href="#yum" class="headerlink" title="yum"></a>yum</h3><p>&emsp;&emsp;Yum是一个用来安装软件的软件，使用Yum指令可以安装以<code>.rpm</code>结尾的软件包，实际上很多软件包又依赖于其他软件包，众多的软件包之间的依赖关系复杂，使用rpm指令安装略显复杂，所以有了Yum的诞生，使用Yum可以很方便的安装你所需要的软件包，他会自动下载安装目标软件需要的依赖。</p>
+<h4 id="查询软件包"><a href="#查询软件包" class="headerlink" title="查询软件包"></a>查询软件包</h4><ul>
+<li>根据关键字查询可安装的软件包</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum search mysql</span><br></pre></td></tr></table></figure>
+<p><img src="/linux-order/linux-yum-search.png" alt="运行结果"></p>
+<ul>
+<li>根据关键字检索系统中已安装的软件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum list installed mysql-community-client</span><br></pre></td></tr></table></figure>
+<p><img src="/linux-order/linux-yum-list.png" alt="运行结果"></p>
+<ul>
+<li>结合通配符检索系统中已安装的软件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum list installed mysql-community*</span><br></pre></td></tr></table></figure>
+<p><img src="/linux-order/linux-yum-list-i.png" alt="运行结果"></p>
+<p>&emsp;&emsp;很奇怪，我使用<code>yum list installed mysql*</code>进行检索就没有找到，多打几个字可以检索到软件，不懂。。</p>
+<ul>
+<li>显示所有可更新的软件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum list updates</span><br></pre></td></tr></table></figure>
+<p><img src="/linux-order/linux-yum-list-updates.png" alt="运行结果"></p>
+<ul>
+<li>显示详细信息</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum info mysql-community-client*</span><br></pre></td></tr></table></figure>
+<p><img src="/linux-order/linux-yum-info.png" alt="运行结果"></p>
+<h4 id="安装软件包"><a href="#安装软件包" class="headerlink" title="安装软件包"></a>安装软件包</h4><p>&emsp;&emsp;使用yum指令进行软件的安装，可以使用<code>-y</code>（安装过程中提示全部选择’y’），<code>-p</code>（不显示安装过程）或者<code>-h</code>（帮助）。</p>
+<ul>
+<li>安装</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install mysql-community-server</span><br></pre></td></tr></table></figure>
+<h4 id="更新软件"><a href="#更新软件" class="headerlink" title="更新软件"></a>更新软件</h4><ul>
+<li>更新全部软件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum update</span><br></pre></td></tr></table></figure>
+<ul>
+<li>更新指定软件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum update mysql-community-client</span><br></pre></td></tr></table></figure>
+<h4 id="移除软件包"><a href="#移除软件包" class="headerlink" title="移除软件包"></a>移除软件包</h4><ul>
+<li>移除</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum remove mysql-community-client</span><br></pre></td></tr></table></figure>
+<h4 id="清除缓存（-var-cache-yum）"><a href="#清除缓存（-var-cache-yum）" class="headerlink" title="清除缓存（/var/cache/yum）"></a>清除缓存（/var/cache/yum）</h4><ul>
+<li>清除软件包</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum clean packages</span><br></pre></td></tr></table></figure>
+<ul>
+<li>清除headers</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum clean headers</span><br></pre></td></tr></table></figure>
+<ul>
+<li>一步到位直接清除所有</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum clean all</span><br></pre></td></tr></table></figure>
+<h3 id="查看网卡信息"><a href="#查看网卡信息" class="headerlink" title="查看网卡信息"></a>查看网卡信息</h3><h4 id="linux"><a href="#linux" class="headerlink" title="linux"></a>linux</h4><p>&emsp;&emsp;<a href="https://blog.51cto.com/13150617/1963833" target="_blank" rel="noopener">查看网卡信息</a></p>
+<h3 id="locate"><a href="#locate" class="headerlink" title="locate"></a>locate</h3><ul>
+<li>安装</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install mlocate</span><br></pre></td></tr></table></figure>
+<ul>
+<li>更新索引数据库</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">updatedb</span><br></pre></td></tr></table></figure>
+<ul>
+<li>搜索</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">locate -i /etc/mysql</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;搜索etc目录下的包含mysql的目录或者文件，不区分大小写，去掉-i区分大小写。</p>
+<ul>
+<li>mac下更新索引数据库</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo /usr/libexec/locate.updatedb</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;mac下<code>locate</code>的updatedb指令在这个位置,所以直接运行这个指令就好了,使用<code>sudo</code>命令扩大权限,使得索引数据库更加完善.</p>
+<p>&emsp;&emsp;为了方便起见,不至于每次更新数据库都执行这么一长串命令,可以设置别名.</p>
+<ul>
+<li>设置别名</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> <span class="string">'alias updatedb="sudo /usr/libexec/locate.updatedb"'</span> &gt;&gt; ~/.bash_profile</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;此时直接使用<code>updatedb</code>即可执行更新索引数据库的操作</p>
+<h3 id="MAC本地使用ssh连接服务器"><a href="#MAC本地使用ssh连接服务器" class="headerlink" title="MAC本地使用ssh连接服务器"></a>MAC本地使用ssh连接服务器</h3><p>&emsp;&emsp;服务器端设置:修改配置文件<code>/etc/ssh/sshd_config</code>,将<code>PubkeyAuthentication</code>设置为yes，允许使用公密钥登陆，将<code>PasswordAuthentication</code>设置为yes，允许使用密码登陆</p>
+<ul>
+<li>一般指令</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh user@ip</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;端口号默认是22，如果服务器改了端口号，那么需要显式指定端口<code>ssh -p port user@ip</code>，会车之后会要求输入密码，ssh认证完成之后如果是第一次连接，那么会弹出提示，大意是第一次连接这个服务器，问你要不要继续连接，当输入<code>yes</code>后会将这个服务器的信息保存到<code>~/.ssh/known_hosts</code>文件中，下次登陆该服务器就不会有提示了。</p>
+<p>&emsp;&emsp;采用别名登陆：本地的<code>~/.ssh/config</code>文件(若无则新建文件)中添加以下内容。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Host ferry</span><br><span class="line">HostName ip</span><br><span class="line">Port 22</span><br><span class="line">User root</span><br><span class="line">IdentityFile    /usr/<span class="built_in">local</span>/aliyun/SSH-ferry-aliyun-private</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>Host</code>设置服务器的别名，配置好后可以通过别名来进行登陆;<code>HostName</code>为IP地址;<code>Port</code>为端口号，ssh的端口号默认为22;<code>User</code>为要登陆的用户;<code>IdentityFile</code>为密钥的绝对路径,如果没有给定密钥路径，连接时会要求输入密码。</p>
+<ul>
+<li>连接指令</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh ferry</span><br></pre></td></tr></table></figure>
+<h3 id="用-Sublime-Text-编辑-SSH-远程文件-MAC"><a href="#用-Sublime-Text-编辑-SSH-远程文件-MAC" class="headerlink" title="用 Sublime Text 编辑 SSH 远程文件(MAC)"></a>用 Sublime Text 编辑 SSH 远程文件(MAC)</h3><p>&emsp;&emsp;本地的<code>~/.ssh/config</code>文件中添加以下内容</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Host ferry</span><br><span class="line">HostName ip</span><br><span class="line">Port 22</span><br><span class="line">User root</span><br><span class="line">IdentityFile    /usr/<span class="built_in">local</span>/aliyun/SSH-ferry-aliyun-private</span><br><span class="line">RemoteForward 52698 localhost:52698</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;登陆远程服务器，然后执行以下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo wget -O /usr/<span class="built_in">local</span>/bin/subl \</span><br><span class="line">https://raw.github.com/aurora/rmate/master/rmate</span><br><span class="line">sudo chmod a+x /usr/<span class="built_in">local</span>/bin/subl</span><br><span class="line">sudo mv /usr/<span class="built_in">local</span>/bin/subl ~bin/</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;安装<code>rmate</code>并将其重命名为subl.最后让subl这个指令全局可用。此时，就可以用ssh连接到服务器，然后用<code>subl [-w] fileName</code>在本地用sublime打开文件进行编辑,-w参数会让shell不可操作，必须关闭打开的文件后才可以继续执行命令。</p>
+<h3 id="SSH自动断开连接问题"><a href="#SSH自动断开连接问题" class="headerlink" title="SSH自动断开连接问题"></a>SSH自动断开连接问题</h3><p>&emsp;&emsp;使用ssh连接服务器，如果超过一定时间无操作就会断开连接，就很烦。</p>
+<ul>
+<li>编辑<code>/etc/ssh/sshd_config</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ClientAliveInterval 60</span><br><span class="line">ClientAliveCountMax 3</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;以上两个参数表示每隔60秒服务端向客户端发送一次心跳，若客户端3次无响应则断开连接。</p>
+<h3 id="用户的创建与删除"><a href="#用户的创建与删除" class="headerlink" title="用户的创建与删除"></a>用户的创建与删除</h3><ul>
+<li>创建用户(adduser/useradd)</li>
+</ul>
+<p>&emsp;&emsp;在CentOs下创建用户使用两个指令没有区别，在home下自动创建目录，没有设置密码，需要使用passwd命令修改密码。而在Ubuntu下useradd与adduser有所不同,adduser在使用该命令创建用户是会在/home下自动创建与用户名同名的用户目录，系统shell版本，会在创建时会提示输入密码，更加友好。useradd在使用该命令创建用户是不会在/home下自动创建与用户名同名的用户目录，而且不会自动选择shell版本，也没有设置密码，那么这个用户是不能登录的，需要使用passwd命令修改密码。</p>
+<ul>
+<li>删除用户</li>
+</ul>
+<p>&emsp;&emsp;userdel只能删除用户，并不会删除相关的目录文件。userdel -r 可以删除用户及相关目录。</p>
+<h3 id="文件、目录权限"><a href="#文件、目录权限" class="headerlink" title="文件、目录权限"></a>文件、目录权限</h3><p>&emsp;&emsp;Linux系统是多用户操作系统，因此其中的每个文件和目录都有访问许可权限，用它来确定谁能通过何种方式对文件和目录进行访问和操作。</p>
+<ul>
+<li>权限的分类</li>
+</ul>
+<blockquote>
+<p><code>r</code>读权限：可以打开文件、目录读取查看；<br><code>w</code>写权限：对文件、目录可以编写更改；<br><code>x</code>执行权限：对文件可执行(可执行文件)、对目录可查找该目录下的内容；<br><code>-</code>没有权限。</p>
+</blockquote>
+<ul>
+<li>权限所属对象</li>
+</ul>
+<blockquote>
+<p><code>u</code>拥有者：生成文件或目录时登录的当前人，权限最高；<br><code>g</code>同组人：系统管理员分配的同组的一个或几个人；<br><code>o</code>其他人：除拥有者，同组人以外的人；<br><code>a</code>所有人：包括拥有者、同组人及其他人。</p>
+</blockquote>
+<h4 id="chmod"><a href="#chmod" class="headerlink" title="chmod"></a>chmod</h4><ul>
+<li>使用字母表示权限</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod g+rwx,o+r dir</span><br></pre></td></tr></table></figure>
+<p><img src="/linux-order/linux_file_permissions.png" alt="设置权限"></p>
+<ul>
+<li>使用数字表示权限</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod 555 1.txt</span><br></pre></td></tr></table></figure>
+<p><img src="/linux-order/linux_permission_num1.png" alt="设置权限"></p>
+<p><img src="/linux-order/linux_permission_num2.png" alt="设置权限"></p>
+<h4 id="chown"><a href="#chown" class="headerlink" title="chown"></a>chown</h4><ul>
+<li>更改某个文件或目录的属主和属组，可用于授权[- R 递归式地改动指定目录及其下的所有子目录和文件的拥有者。]。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chown -R ferry:ferry 1.txt</span><br></pre></td></tr></table></figure>
+<h3 id="系统服务管理器指令systemctl"><a href="#系统服务管理器指令systemctl" class="headerlink" title="系统服务管理器指令systemctl"></a>系统服务管理器指令<code>systemctl</code></h3><p>&emsp;&emsp;systemctl命令是系统服务管理器指令，它实际上将 service 和 chkconfig 这两个命令组合到一起。</p>
+<h4 id="常用指令"><a href="#常用指令" class="headerlink" title="常用指令"></a>常用指令</h4><ul>
+<li>启动服务</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start tomcat.service</span><br></pre></td></tr></table></figure>
+<ul>
+<li>重启服务</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl restart tomcat.service</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看服务状态</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status tomcat.service</span><br></pre></td></tr></table></figure>
+<ul>
+<li>关闭服务</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop tomcat.service</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置开机自启</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> tomcat.service</span><br></pre></td></tr></table></figure>
+<ul>
+<li>禁用开机自启</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="built_in">disable</span> tomcat.service</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看所有已启动的服务</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list -units --<span class="built_in">type</span>=service</span><br></pre></td></tr></table></figure>
+<h4 id="将服务配置成系统服务"><a href="#将服务配置成系统服务" class="headerlink" title="将服务配置成系统服务"></a>将服务配置成系统服务</h4><ul>
+<li>创建服务的配置文件，以redis为例</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /lib/systemd/system/redisd.service</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 基础信息</span></span><br><span class="line">[Unit]</span><br><span class="line"><span class="comment"># 描述</span></span><br><span class="line">Description=Redis</span><br><span class="line"><span class="comment"># 在某个服务启动后启动</span></span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line"><span class="comment"># 服务信息</span></span><br><span class="line">[Service]</span><br><span class="line">Type=forking</span><br><span class="line"><span class="comment"># 启动服务的命令</span></span><br><span class="line">ExecStart=/usr/<span class="built_in">local</span>/bin/redis-server /usr/<span class="built_in">local</span>/bin/usr/<span class="built_in">local</span>/redis-4.0.14/redis.conf</span><br><span class="line"><span class="comment"># 终止服务的命令</span></span><br><span class="line">ExecStop=/usr/<span class="built_in">local</span>/bin/redis-cli -h 127.0.0.1 -p 6379 shutdown</span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装相关信息</span></span><br><span class="line">[Install]</span><br><span class="line"><span class="comment"># WantedBy 是以哪种方式启动：multi-user.target表明当系统以多用户方式（默认的运行级别）启动时，这个服务需要被自动运行。</span></span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;具体这个配置文件还可以指定哪些参数可以自行百度。</p>
+<ul>
+<li>可执行权限</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x /lib/systemd/system/redisd.service</span><br></pre></td></tr></table></figure>
+<ul>
+<li>刷新配置</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;注意，每次修改<code>/lib/systemd/system/*.service</code>文件都需要刷新配置才可以进行启动。</p>
+<ul>
+<li>启动服务</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start redisd.service</span><br></pre></td></tr></table></figure>
+<h3 id="wget"><a href="#wget" class="headerlink" title="wget"></a>wget</h3><p>&emsp;&emsp;Linux系统中的wget是一个下载文件的工具，它用在命令行下。wget支持HTTP，HTTPS和FTP协议，可以使用HTTP代理。wget 非常稳定，它在带宽很窄的情况下和不稳定网络中有很强的适应性.如果是由于网络的原因下载失败，wget会不断的尝试，直到整个文件下载完毕。如果是服务器打断下载过程，它会再次联到服务器上从停止的地方继续下载。这对从那些限定了链接时间的服务器上下载大文件非常有用。</p>
+<ul>
+<li>命令参数</li>
+</ul>
+<p><strong>启动参数</strong></p>
+<p>-V, –version 显示wget的版本后退出</p>
+<p>-h, –help 打印语法帮助</p>
+<p>-b, –background 启动后转入后台执行</p>
+<p>-e, –execute=COMMAND 执行`.wgetrc’格式的命令，wgetrc格式参见/etc/wgetrc或~/.wgetrc</p>
+<p><strong>记录和输入文件参数</strong></p>
+<p>-o, –output-file=FILE 把记录写到FILE文件中</p>
+<p>-a, –append-output=FILE 把记录追加到FILE文件中</p>
+<p>-d, –debug 打印调试输出</p>
+<p>-q, –quiet 安静模式(没有输出)</p>
+<p>-v, –verbose 冗长模式(这是缺省设置)</p>
+<p>-nv, –non-verbose 关掉冗长模式，但不是安静模式</p>
+<p>-i, –input-file=FILE 下载在FILE文件中出现的URLs</p>
+<p>-F, –force-html 把输入文件当作HTML格式文件对待</p>
+<p>-B, –base=URL 将URL作为在-F -i参数指定的文件中出现的相对链接的前缀</p>
+<p>–sslcertfile=FILE 可选客户端证书</p>
+<p>–sslcertkey=KEYFILE 可选客户端证书的KEYFILE</p>
+<p>–egd-file=FILE 指定EGD socket的文件名</p>
+<p><strong>下载参数</strong></p>
+<p>–bind-address=ADDRESS 指定本地使用地址(主机名或IP，当本地有多个IP或名字时使用)</p>
+<p>-t, –tries=NUMBER 设定最大尝试链接次数(0 表示无限制).</p>
+<p>-O –output-document=FILE 把文档写到FILE文件中</p>
+<p>-nc, –no-clobber 不要覆盖存在的文件或使用.#前缀</p>
+<p>-c, –continue 接着下载没下载完的文件</p>
+<p>–progress=TYPE 设定进程条标记</p>
+<p>-N, –timestamping 不要重新下载文件除非比本地文件新</p>
+<p>-S, –server-response 打印服务器的回应</p>
+<p>–spider 不下载任何东西</p>
+<p>-T, –timeout=SECONDS 设定响应超时的秒数</p>
+<p>-w, –wait=SECONDS 两次尝试之间间隔SECONDS秒</p>
+<p>–waitretry=SECONDS 在重新链接之间等待1…SECONDS秒</p>
+<p>–random-wait 在下载之间等待0…2*WAIT秒</p>
+<p>-Y, –proxy=on/off 打开或关闭代理</p>
+<p>-Q, –quota=NUMBER 设置下载的容量限制</p>
+<p>–limit-rate=RATE 限定下载输率</p>
+<p><strong>目录参数</strong></p>
+<p>-nd –no-directories 不创建目录</p>
+<p>-x, –force-directories 强制创建目录</p>
+<p>-nH, –no-host-directories 不创建主机目录</p>
+<p>-P, –directory-prefix=PREFIX 将文件保存到目录 PREFIX/…</p>
+<p>–cut-dirs=NUMBER 忽略 NUMBER层远程目录</p>
+<p><strong>HTTP 选项参数</strong></p>
+<p>–http-user=USER 设定HTTP用户名为 USER.</p>
+<p>–http-passwd=PASS 设定http密码为 PASS</p>
+<p>-C, –cache=on/off 允许/不允许服务器端的数据缓存 (一般情况下允许)</p>
+<p>-E, –html-extension 将所有text/html文档以.html扩展名保存</p>
+<p>–ignore-length 忽略 `Content-Length’头域</p>
+<p>–header=STRING 在headers中插入字符串 STRING</p>
+<p>–proxy-user=USER 设定代理的用户名为 USER</p>
+<p>–proxy-passwd=PASS 设定代理的密码为 PASS</p>
+<p>–referer=URL 在HTTP请求中包含 `Referer: URL’头</p>
+<p>-s, –save-headers 保存HTTP头到文件</p>
+<p>-U, –user-agent=AGENT 设定代理的名称为 AGENT而不是 Wget/VERSION</p>
+<p>–no-http-keep-alive 关闭 HTTP活动链接 (永远链接)</p>
+<p>–cookies=off 不使用 cookies</p>
+<p>–load-cookies=FILE 在开始会话前从文件 FILE中加载cookie</p>
+<p>–save-cookies=FILE 在会话结束后将 cookies保存到 FILE文件中</p>
+<p><strong>FTP 选项参数</strong></p>
+<p>-nr, –dont-remove-listing 不移走 `.listing’文件</p>
+<p>-g, –glob=on/off 打开或关闭文件名的 globbing机制</p>
+<p>–passive-ftp 使用被动传输模式 (缺省值).</p>
+<p>–active-ftp 使用主动传输模式</p>
+<p>–retr-symlinks 在递归的时候，将链接指向文件(而不是目录)</p>
+<p><strong>递归下载参数</strong></p>
+<p>-r, –recursive 递归下载－－慎用!</p>
+<p>-l, –level=NUMBER 最大递归深度 (inf 或 0 代表无穷)</p>
+<p>–delete-after 在现在完毕后局部删除文件</p>
+<p>-k, –convert-links 转换非相对链接为相对链接</p>
+<p>-K, –backup-converted 在转换文件X之前，将之备份为 X.orig</p>
+<p>-m, –mirror 等价于 -r -N -l inf -nr</p>
+<p>-p, –page-requisites 下载显示HTML文件的所有图片</p>
+<p><strong>递归下载中的包含和不包含(accept/reject)</strong></p>
+<p>-A, –accept=LIST 分号分隔的被接受扩展名的列表</p>
+<p>-R, –reject=LIST 分号分隔的不被接受的扩展名的列表</p>
+<p>-D, –domains=LIST 分号分隔的被接受域的列表</p>
+<p>–exclude-domains=LIST 分号分隔的不被接受的域的列表</p>
+<p>–follow-ftp 跟踪HTML文档中的FTP链接</p>
+<p>–follow-tags=LIST 分号分隔的被跟踪的HTML标签的列表</p>
+<p>-G, –ignore-tags=LIST 分号分隔的被忽略的HTML标签的列表</p>
+<p>-H, –span-hosts 当递归时转到外部主机</p>
+<p>-L, –relative 仅仅跟踪相对链接</p>
+<p>-I, –include-directories=LIST 允许目录的列表</p>
+<p>-X, –exclude-directories=LIST 不被包含目录的列表</p>
+<p>-np, –no-parent 不要追溯到父目录</p>
+<p>wget -S –spider url 不下载只显示过程</p>
+<h3 id="less命令"><a href="#less命令" class="headerlink" title="less命令"></a>less命令</h3><p>&emsp;&emsp;使用<code>less</code>打开文件查看并快速定位文件内容，常用于查看日志文件。</p>
+<ul>
+<li>打开文件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">less catalina.out</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;可以在打开的时候添加参数进行文件内容定位，比如说定位到第100行，最后一行等，但是在我实际应用的过程中基本没有用到，感觉华而不实，故此处不做介绍。</p>
+<ul>
+<li>全局导航</li>
+</ul>
+<p>g: 定位到文件的第一行</p>
+<p>G: 定位到文件的最后一行</p>
+<p>v: 调用编辑器进入编辑模式</p>
+<p>q: 退出</p>
+<ul>
+<li>行导航</li>
+</ul>
+<p>j: 向下移动一行</p>
+<p>k: 向上移动一行</p>
+<p>=: 显示当前行信息，如行号、字节位置等</p>
+<ul>
+<li>页导航</li>
+</ul>
+<p>b: 向上翻一页</p>
+<p>空格: 向下翻一页</p>
+<p>u: 向上翻半页</p>
+<p>d: 向下翻半页</p>
+<ul>
+<li>标记导航</li>
+</ul>
+<p>ma: 在当前位置标记，标记名为<code>a</code><br>‘a: 跳转到标记名为<code>a</code>的标记处</p>
+<ul>
+<li>搜索</li>
+</ul>
+<p>/text: 搜索<code>text</code>并定义到下一个匹配的文本，匹配内容高亮显示，在次搜索模式下，n: 定位到下一个匹配内容，N: 定位到上一个匹配内容。</p>
+<p>?text: 搜索<code>text</code>并定义到上一个匹配的文本，匹配内容高亮显示，在次搜索模式下，n: 定位到下一个匹配内容，N: 定位到上一个匹配内容。</p>
+<ul>
+<li>实时查看文件内容</li>
+</ul>
+<p>F: 实现类似<code>tail -f *.log</code>的效果，可以实时查看文件的最新内容。使用<code>Ctrl C</code>退出这种状态。</p>
+<h3 id="查看磁盘空间使用情况"><a href="#查看磁盘空间使用情况" class="headerlink" title="查看磁盘空间使用情况"></a>查看磁盘空间使用情况</h3><h4 id="du命令"><a href="#du命令" class="headerlink" title="du命令"></a>du命令</h4><p>&emsp;&emsp;du命令是对文件和目录磁盘使用的空间的查看，显示每个文件和目录的磁盘使用空间。是通过搜索文件来计算每个文件的大小然后累加，du能看到的文件只是一些当前存在的，没有被删除的。他计算的大小就是当前他认为存在的所有文件大小的累加和。</p>
+<ul>
+<li>缺省参数</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;显示当前目录下的子目录和文件的大小及名称，并递归查询并显示子目录下的目录文件的大小，最后一行为当前目录的大小。</p>
+<ul>
+<li>du file1/directory1 file2/directory2 … </li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du catalina.out</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;显示指定的文件/目录的大小。如果指定的是目录，还会递归查询并显示指定目录的子目录的大小。</p>
+<ul>
+<li>du -s</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">du -s</span><br><span class="line">du -s apache-tomcat-8.5.47/</span><br></pre></td></tr></table></figure>
+<p><img src="/linux-order/du-s.png" alt="查看"></p>
+<p>&emsp;&emsp;显示指定的文件/目录占用磁盘空间大小，不显示子目录</p>
+<ul>
+<li>du -h</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du -h</span><br></pre></td></tr></table></figure>
+<p><img src="/linux-order/du-h.png" alt="查看"></p>
+<p>&emsp;&emsp;优化显示占用磁盘空间大小，会过滤文件，只显示目录。</p>
+<ul>
+<li>du -ah</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du -ah logs/</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;优化显示指定文件/目录占用磁盘空间大小，递归查询并优化显示指定目录的子目录的占用磁盘空间大小。</p>
+<ul>
+<li>du -c</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du -c README.md  RUNNING.txt</span><br></pre></td></tr></table></figure>
+<p><img src="/linux-order/du-c.png" alt="查看"></p>
+<p>&emsp;&emsp;查看文件占用磁盘空间大小并显示统计。</p>
+<ul>
+<li>du | sort -nr</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du | sort -nr</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;对目录文件大小进行顺序排序。</p>
+<p>&emsp;&emsp;还有一些其他的参数可以使用，这里不做介绍，以上的参数可以组合使用，完成对目录磁盘空间占用大小的统计查看。</p>
+<ul>
+<li>查看指定目录下的文件/目录大小并优化显示并排序</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du -ah apache-tomcat-8.5.47 | sort -nr</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>查看当前目录的各个子目录/文件的大小</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du --max-depth=1 -h</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du -hd1</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;两条命令的效果是一样的。</p>
+<h4 id="df命令"><a href="#df命令" class="headerlink" title="df命令"></a>df命令</h4><p>&emsp;&emsp;df命令用于显示目前在Linux系统上的文件系统的磁盘使用情况统计。通过文件系统来快速获取空间大小的信息，当我们删除一个文件的时候，这个文件不是马上就在文件系统当中消失了，而是暂时消失了，当所有程序都不用时，才会根据OS的规则释放掉已经删除的文件， df记录的是通过文件系统获取到的文件的大小，他比du强的地方就是能够看到已经删除的文件，而且计算大小的时候，把这一部分的空间也加上了，更精确了。</p>
+<p>&emsp;&emsp;当文件系统也确定删除了该文件后，这时候du与df就一致了。</p>
+<p>&emsp;&emsp;这里只记录我最常用的一个命令。优化文件系统的输出显示。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">df -h</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;使用心得，一般情况下，如果磁盘空间满了，我会先用<code>df -h</code>查看文件系统的使用情况，然后使用<code>du</code>命令跟踪定位到具体的某个或某些大文件，并根据实际情况清理释放磁盘空间。</p>
+<h3 id="CentOS7防火墙设置"><a href="#CentOS7防火墙设置" class="headerlink" title="CentOS7防火墙设置"></a>CentOS7防火墙设置</h3><p>&emsp;&emsp;在旧版本的CentOS中，是使用 iptables 命令来设置防火墙的。但是，从CentOS7开始，默认就没有安装iptables，而是改用firewall来配置防火墙。修改了防火墙的设置，必须要重启防火墙才能生效。</p>
+<ul>
+<li><strong>启动,停止和重启</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl start firewalld</span><br><span class="line">systemctl stop firewalld</span><br><span class="line">systemctl restart firewalld</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>添加端口</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --zone=public --add-port=80/tcp --permanent</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>更新防火墙规则</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>查看端口是否开放</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --zone=public --query-port=80/tcp</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>删除</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --zone=public --remove-port=80/tcp --permanent</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>查看防火墙状态</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --state</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>查看防火墙所有设置</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --list-all</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>查看所有打开的端口</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --zone=public --list-ports</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>查看区域信息</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --get-active-zones</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>查看指定接口所属区域</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --get-zone-of-interface=eth0</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>拒绝所有包</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --panic-on</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>取消拒绝状态</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --panic-off</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>查看是否拒绝</strong></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --query-panic</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/yum/" rel="tag"><i class="fa fa-tag"></i> yum</a>
+              <a href="/tags/locate/" rel="tag"><i class="fa fa-tag"></i> locate</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/git.html" rel="prev" title="git">
+      <i class="fa fa-chevron-left"></i> git
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mysql.html" rel="next" title="mysql">
+      mysql <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#yum"><span class="nav-number">1.</span> <span class="nav-text">yum</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#查询软件包"><span class="nav-number">1.1.</span> <span class="nav-text">查询软件包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装软件包"><span class="nav-number">1.2.</span> <span class="nav-text">安装软件包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#更新软件"><span class="nav-number">1.3.</span> <span class="nav-text">更新软件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#移除软件包"><span class="nav-number">1.4.</span> <span class="nav-text">移除软件包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#清除缓存（-var-cache-yum）"><span class="nav-number">1.5.</span> <span class="nav-text">清除缓存（/var/cache/yum）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看网卡信息"><span class="nav-number">2.</span> <span class="nav-text">查看网卡信息</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux"><span class="nav-number">2.1.</span> <span class="nav-text">linux</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#locate"><span class="nav-number">3.</span> <span class="nav-text">locate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MAC本地使用ssh连接服务器"><span class="nav-number">4.</span> <span class="nav-text">MAC本地使用ssh连接服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用-Sublime-Text-编辑-SSH-远程文件-MAC"><span class="nav-number">5.</span> <span class="nav-text">用 Sublime Text 编辑 SSH 远程文件(MAC)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SSH自动断开连接问题"><span class="nav-number">6.</span> <span class="nav-text">SSH自动断开连接问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用户的创建与删除"><span class="nav-number">7.</span> <span class="nav-text">用户的创建与删除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件、目录权限"><span class="nav-number">8.</span> <span class="nav-text">文件、目录权限</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#chmod"><span class="nav-number">8.1.</span> <span class="nav-text">chmod</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#chown"><span class="nav-number">8.2.</span> <span class="nav-text">chown</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统服务管理器指令systemctl"><span class="nav-number">9.</span> <span class="nav-text">系统服务管理器指令systemctl</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#常用指令"><span class="nav-number">9.1.</span> <span class="nav-text">常用指令</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#将服务配置成系统服务"><span class="nav-number">9.2.</span> <span class="nav-text">将服务配置成系统服务</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#wget"><span class="nav-number">10.</span> <span class="nav-text">wget</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#less命令"><span class="nav-number">11.</span> <span class="nav-text">less命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看磁盘空间使用情况"><span class="nav-number">12.</span> <span class="nav-text">查看磁盘空间使用情况</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#du命令"><span class="nav-number">12.1.</span> <span class="nav-text">du命令</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#df命令"><span class="nav-number">12.2.</span> <span class="nav-text">df命令</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CentOS7防火墙设置"><span class="nav-number">13.</span> <span class="nav-text">CentOS7防火墙设置</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ferry"
+      src="/images/ferry-215x215.gif">
+  <p class="site-author-name" itemprop="name">ferry</p>
+  <div class="site-description" itemprop="description">虽未满百岁已如歌归于其居</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/loveferry" title="GitHub → https://github.com/loveferry" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ferry_sy@163.com" title="E-Mail → mailto:ferry_sy@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ferry</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>

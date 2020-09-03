@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/ferry-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/ferry-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/ferry-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;redis学习之路。">
+<meta name="keywords" content="redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis">
+<meta property="og:url" content="https://ferry.org.cn/redis.html">
+<meta property="og:site_name" content="儿女意向来痴">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;redis学习之路。">
+<meta property="og:locale" content="zh-CH">
+<meta property="og:updated_time" content="2020-07-04T01:02:11.069Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="redis">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;redis学习之路。">
+
+<link rel="canonical" href="https://ferry.org.cn/redis.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CH'
+  };
+</script>
+
+  <title>redis | 儿女意向来痴</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">儿女意向来痴</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">35</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/redis.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ferry-215x215.gif">
+      <meta itemprop="name" content="ferry">
+      <meta itemprop="description" content="虽未满百岁已如歌归于其居">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="儿女意向来痴">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          redis
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-03 11:29:50" itemprop="dateCreated datePublished" datetime="2019-06-03T11:29:50+08:00">2019-06-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-07-04 09:02:11" itemprop="dateModified" datetime="2020-07-04T09:02:11+08:00">2020-07-04</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&emsp;&emsp;redis学习之路。</p>
+<a id="more"></a>
+<h3 id="简单配置"><a href="#简单配置" class="headerlink" title="简单配置"></a>简单配置</h3><p>&emsp;&emsp;使用yum安装的redis，他的配置文件的路径为<code>/etc/redis.conf</code>，修改此配置文件以满足我们的要求。</p>
+<ul>
+<li>绑定IP</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">bind</span> 10.15.159.19 127.0.0.1</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;bind可以绑定多个IP地址，中间用空格分隔，也可以将bind注释掉。注意：<font color="#dd0000">你只能通过bind的IP来访问redis服务</font>。将bind注释掉则可以通过任意IP访问redis服务。</p>
+<ul>
+<li>端口号</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">port 6379</span><br></pre></td></tr></table></figure>
+<ul>
+<li>数据库数量</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">databases 16</span><br></pre></td></tr></table></figure>
+<ul>
+<li>连接密码(默认不需要)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">requirepass foobared</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看 redis 当前使用的配置文件目录</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-cli info | grep config</span><br></pre></td></tr></table></figure>
+<h3 id="redis-数据结构"><a href="#redis-数据结构" class="headerlink" title="redis 数据结构"></a>redis 数据结构</h3><p>&emsp;&emsp;redis 一共有五种数据结构，分别为String、List、hash、Set、Zset。</p>
+<p>&emsp;&emsp;原子操作：在多进程（线程）访问共享资源时，能够确保所有其他的进程（线程）都不在同一时间内访问相同的资源。原子操作（atomic operation）是不需要synchronized，这是Java多线程编程的老生常谈了。所谓原子操作是指不会被线程调度机制打断的操作；这种操作一旦开始，就一直运行到结束，中间不会有任何 context switch （切换到另一个线程）。</p>
+<h4 id="字符串类型-String"><a href="#字符串类型-String" class="headerlink" title="字符串类型(String)"></a>字符串类型(String)</h4><p>&emsp;&emsp;空间分配原则：当len小于IMB（1024*1024）时增加字符串分配空间大小为原来的2倍，当len大于等于1M时每次分配 额外多分配1M的空间。取字符串的长度的时间复杂度为O(1)</p>
+<ul>
+<li>赋值(set key value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">set</span> hello world</span><br></pre></td></tr></table></figure>
+<ul>
+<li>取值(get key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">get hello</span><br></pre></td></tr></table></figure>
+<ul>
+<li>自增(incr key)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">incr num</span><br></pre></td></tr></table></figure>
+<ul>
+<li>自减(decr key)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">decr num</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自增/自减该key对应的value值都会相应的加/减1，若该key不存在，则先<code>set key 0</code>然后执行加/减1操作，最后将执行结果返回。如果该key的值不是数字则报错。</p>
+<ul>
+<li>自增N(incrby key increment)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">incrby count 5</span><br></pre></td></tr></table></figure>
+<ul>
+<li>自减N(decrby key increment)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">decrby count 5</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自增N/自减N同自增/自减。</p>
+<ul>
+<li>增加浮点数(incrbyfloat key increment)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">incrbyfloat float1 3</span><br></pre></td></tr></table></figure>
+<ul>
+<li>向尾部追加(append key value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">append hello !</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;向字符串尾部追加内容，返回追加后的字符串长度，若key不存在，则新增。</p>
+<ul>
+<li>字符串长度(strlen key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">strlen hello</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同时设置多个key(mset key value [key value …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mset str1 hehe str2 xixi str3 haha</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同时获取多个key的值(mget key [key …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mget str1 str2 str3</span><br></pre></td></tr></table></figure>
+<h4 id="列表-list"><a href="#列表-list" class="headerlink" title="列表(list)"></a>列表(list)</h4><p>&emsp;&emsp;列表类型存储了一个有序的字符串列表。常用的操作是向两端插入新的元素。时间复杂度为 O（1）。结构为一个链表。记录头和尾的地址。看到这里，Redis 数据类型的列表类型一个重大的作用呼之欲出，那就是队列。新来的请求插入到尾部，新处理过的从头部删除。列表类型就是一个下标从 0 开始的数组。由于是链表存储，那么越靠近头和尾的元素操作越快，越靠近中间则越慢.</p>
+<ul>
+<li>向头部插入(lpush key value [value …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lpush list apple banana pear</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回列表的长度。向头部插入，先向头部插入apple，再向头部插入banana，最后向头部插入pear，所以操作后列表的第一个元素应该是pear。</p>
+<ul>
+<li>向尾部插入(rpush key value [value])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpush list orange grape</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回列表的长度。向尾部插入，orange，grape，所以操作后列表的最后一个元素应该是grape。</p>
+<ul>
+<li>列表元素个数(llen key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">llen list</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回列表的长度。若key不存在，返回0。</p>
+<ul>
+<li>获取列表的子列表(lrange key start end)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lrange list 0 -1</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回第 start 个到第 end 个元素的列表。包含 start 和 end。支持负数索引。-1 表示最后一个元素，-2 表示倒数第二个元素。</p>
+<ul>
+<li>获取指定索引值(lindex key index)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lindex list 0</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;若index为负数则从尾部向前索引，-1为最后一个元素的位置。</p>
+<ul>
+<li>从头部弹出(lpop key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lpop list</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回被弹出的元素。</p>
+<ul>
+<li>从尾部弹出(rpop key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpop list</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回被弹出的元素。</p>
+<ul>
+<li>删除列表中指定值(lrem key count value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lrem list 1 apple</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回删除的数量。count为0，删除所有列表中指定的值；count为正数，从前往后删除count个指定的元素(count大于实际的元素数量时删除所有)；count为负数时，从后往前删除count个指定的元素(count大于实际的元素数量时删除所有)。</p>
+<ul>
+<li>设置索引和值(lset key index value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">rpush fruit apple pear banana orange</span><br><span class="line">lset fruit 0 <span class="string">"greet apple"</span></span><br><span class="line">lrange fruit 0 -1</span><br></pre></td></tr></table></figure>
+<ul>
+<li>保留片段，删除其它(ltrim key start end)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ltrim fruit 0 -2</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;保留start到end之间的所有元素，含start和end。其他全部删除。舒服从末尾向前，-1表示最后一个元素的下标值。</p>
+<ul>
+<li>向列表插入元素(linsert key before|after pivot value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">linsert fruit before pear apple</span><br><span class="line">linsert fruit after pear apple</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;从头部开始遍历，直到发现第一个pivot，根据before|after将value插入pivot之前还是之后。</p>
+<ul>
+<li>把一个列表的一个元素转到另一个列表(rpoplpush source destination)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpoplpush fruit list</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;将source列表的最后一个元素弹出并使用lpush操作插入到destination列表中。</p>
+<h4 id="散列类型-hash"><a href="#散列类型-hash" class="headerlink" title="散列类型(hash)"></a>散列类型(hash)</h4><p>&emsp;&emsp;Redis 是以字典（关联数组）的形式存储的，一个 key 对应一个 value。在字符串类型中，value 只能是一个字符串。那么在散列类型中，value 对应的也是一个字典（关联数组）。那么就可以理解，Redis 的散列类型中，key 对应的 value 是一个二维数组。但是字段的值只可以是字符串。也就是说只能是二维数组，不能有更多的维度。</p>
+<ul>
+<li>赋值(hset key field value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hset map name ferry</span><br></pre></td></tr></table></figure>
+<ul>
+<li>取值(hget key field)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hget map name</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同一个key多个字段赋值(hmset key field value [field value …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hmset map birthday 1995-04-09 sex male</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同一个KEY多个字段取值(hmget key field [field …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hmget map name birthday sex</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取KEY的所有字段和所有值(hgetall key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hgetall map</span><br></pre></td></tr></table></figure>
+<ul>
+<li>字段是否存在(hexists key field)(存在返回1，否则返回0)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexists map name</span><br><span class="line">hexists map age</span><br></pre></td></tr></table></figure>
+<ul>
+<li>当字段不存在时赋值(hsetnx key field value)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hsetnx map height 175</span><br><span class="line">hsetnx map name jack</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;若字段存在返回0，否则设置字段的值并返回1。等效于hexists+hset，但该操作是原子操作，线程安全的。</p>
+<ul>
+<li>自增N(hincrby key field increment)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hincrby map height 2</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除字段(hdel key field [field …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hdel map height</span><br></pre></td></tr></table></figure>
+<ul>
+<li>只获取字段名(hkeys key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hkeys map</span><br></pre></td></tr></table></figure>
+<ul>
+<li>只获取字段值(hvals key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hvals map</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取字段数量(hlen key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hlen map</span><br></pre></td></tr></table></figure>
+<h4 id="集合类型-set"><a href="#集合类型-set" class="headerlink" title="集合类型(set)"></a>集合类型(set)</h4><p>&emsp;&emsp;redis的集合和列表都可以存储多个字符串，它们之间的不同在于，列表可以存储多个相同的字符串，而集合则通过使用散列表（hashtable）来保证自已存储的每个字符串都是各不相同的(这些散列表只有键，但没有与键相关联的值)，redis中的集合是无序的。</p>
+<ul>
+<li>增加(sadd key member [member …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sadd s 1 a 2 b 3 c</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除(srem key member [member …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">srem s 1 2 3</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取集合所有元素(smembers key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">smembers s</span><br></pre></td></tr></table></figure>
+<ul>
+<li>判断指定集合中是否存在某个元素(sismember key member)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sismember s a</span><br></pre></td></tr></table></figure>
+<ul>
+<li>差集运算(sdiff key [key …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sadd b 1 2 3 a b c</span><br><span class="line">sdiff a b</span><br><span class="line">sdiff b a</span><br></pre></td></tr></table></figure>
+<ul>
+<li>交集运算(sinter key [key …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sinter s b</span><br></pre></td></tr></table></figure>
+<ul>
+<li>并集运算(sunion key [key …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sunion s b</span><br></pre></td></tr></table></figure>
+<ul>
+<li>差集/交集/并集运算结果存储在一个集合中(sdiffstore/sinterstore/sunionstore destination key [key …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sdiffstore bs b s</span><br><span class="line">sinterstore sbs b s</span><br><span class="line">sunionstore sb s b</span><br></pre></td></tr></table></figure>
+<ul>
+<li>随机获取元素(srandmember key [count])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">srandmember b -10</span><br></pre></td></tr></table></figure>
+<p>&amp;emsp&emsp;若count不存在，随机从集合中获取一个元素输出；若count等于0，输出空；若count大于0，输出不重复的count个元素（count大于实际数量时输出集合中所有元素）；若count小于0，输出可重复的count个元素。</p>
+<ul>
+<li>随机弹出一个元素(spop key [count])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">spop b 10</span><br></pre></td></tr></table></figure>
+<p>&amp;emsp&emsp;若count不存在，随机从集合中弹出一个元素并输出该元素；若count等于0，弹出0个元素并输出空；若count大于0，弹出不重复的count个元素（count大于实际数量时弹出集合中所有元素）并输出这些被弹出的元素；若count小于0，报错<code>(error) ERR index out of range</code>。</p>
+<h4 id="有序集合-zset"><a href="#有序集合-zset" class="headerlink" title="有序集合(zset)"></a>有序集合(zset)</h4><p>&emsp;&emsp;有序集合和散列一样，都用于存储键值对：有序集合的键被称为成员（member),每个成员都是各不相同的。有序集合的值则被称为分值（score），分值必须为浮点数。有序集合是redis里面唯一一个既可以根据成员访问元素(这一点和散列一样),又可以根据分值以及分值的排列顺序访问元素的结构。</p>
+<ul>
+<li>增加(zadd key [NX|XX] [CH] [INCR] score member [score member …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zadd z 1 a 2 b 3 c 4 d 5 e 6 f 7 g</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取分数(zscore key member)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zscore z e</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取排名在某个范围内的元素列表，闭区间(zrange key start stop [withscores])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zrange z 0 10 withscores</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;若withscores参数不存在，则按顺序输出范围内的元素，若withscores参数存在，则一行元素，一行分值按顺序输出范围内的元素-分值。若start/stop为-1，则取顺序是最后的元素-分值；为-2，则取顺序是倒数第二的元素-分值；以此类推。</p>
+<ul>
+<li>获取指定分数范围的元素列表，闭区间,limit参数分页(zrangebyscore key min max [withscores] [limit offset count])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zrangebyscore z 5 10 withscores <span class="built_in">limit</span> 1 2</span><br></pre></td></tr></table></figure>
+<ul>
+<li>增加元素分值(zincrby key increment member)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zincrby z 8 v</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取元素数量(zcard key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zcard z</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取分值范围内的元素个数(zcount key min max)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zcount z 0 10</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除元素(zrem key member [member …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zrem z v z</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除指定排名范围内的元素(zremrangebyrank key start stop)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zremrangebyrank z 0 10</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除指定分值范围内的元素(zremrangebyscore key min max)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zremrangebyscore z 2 10</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取元素正序排名(zrank key member)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zrank z f</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取元素倒序排名(zrevrank key member)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zrevrank z a</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/redis/" rel="tag"><i class="fa fa-tag"></i> redis</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/String.html" rel="prev" title="String">
+      <i class="fa fa-chevron-left"></i> String
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/lambda.html" rel="next" title="lambda">
+      lambda <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简单配置"><span class="nav-number">1.</span> <span class="nav-text">简单配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis-数据结构"><span class="nav-number">2.</span> <span class="nav-text">redis 数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#字符串类型-String"><span class="nav-number">2.1.</span> <span class="nav-text">字符串类型(String)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#列表-list"><span class="nav-number">2.2.</span> <span class="nav-text">列表(list)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#散列类型-hash"><span class="nav-number">2.3.</span> <span class="nav-text">散列类型(hash)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#集合类型-set"><span class="nav-number">2.4.</span> <span class="nav-text">集合类型(set)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#有序集合-zset"><span class="nav-number">2.5.</span> <span class="nav-text">有序集合(zset)</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ferry"
+      src="/images/ferry-215x215.gif">
+  <p class="site-author-name" itemprop="name">ferry</p>
+  <div class="site-description" itemprop="description">虽未满百岁已如歌归于其居</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/loveferry" title="GitHub → https://github.com/loveferry" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ferry_sy@163.com" title="E-Mail → mailto:ferry_sy@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ferry</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>

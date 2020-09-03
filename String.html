@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/ferry-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/ferry-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/ferry-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;在这里记录一下自己对java字符串的学习过程，记录的同时也加深印象。">
+<meta name="keywords" content="java字符串创建,java字符串常用方法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="String">
+<meta property="og:url" content="https://ferry.org.cn/String.html">
+<meta property="og:site_name" content="儿女意向来痴">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;在这里记录一下自己对java字符串的学习过程，记录的同时也加深印象。">
+<meta property="og:locale" content="zh-CH">
+<meta property="og:image" content="https://ferry.org.cn/String/String-create-test.png">
+<meta property="og:image" content="https://ferry.org.cn/String/String-split-test.png">
+<meta property="og:image" content="https://ferry.org.cn/String/String-split-test1.png">
+<meta property="og:image" content="https://ferry.org.cn/String/String-split-test3.png">
+<meta property="og:image" content="https://ferry.org.cn/String/String-split-test2.png">
+<meta property="og:image" content="https://ferry.org.cn/String/string-equals.png">
+<meta property="og:image" content="https://ferry.org.cn/String/string-equalsIgnore.png">
+<meta property="og:image" content="https://ferry.org.cn/String/String-rem-1.png">
+<meta property="og:image" content="https://ferry.org.cn/String/String-rem-2.png">
+<meta property="og:image" content="https://ferry.org.cn/String/String-substring.png">
+<meta property="og:image" content="https://ferry.org.cn/String/String-replace-char.png">
+<meta property="og:image" content="https://ferry.org.cn/String/String-trim.png">
+<meta property="og:updated_time" content="2020-07-04T01:02:10.789Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="String">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;在这里记录一下自己对java字符串的学习过程，记录的同时也加深印象。">
+<meta name="twitter:image" content="https://ferry.org.cn/String/String-create-test.png">
+
+<link rel="canonical" href="https://ferry.org.cn/String.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CH'
+  };
+</script>
+
+  <title>String | 儿女意向来痴</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">儿女意向来痴</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">35</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/String.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ferry-215x215.gif">
+      <meta itemprop="name" content="ferry">
+      <meta itemprop="description" content="虽未满百岁已如歌归于其居">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="儿女意向来痴">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          String
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-17 18:47:47" itemprop="dateCreated datePublished" datetime="2018-12-17T18:47:47+08:00">2018-12-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-07-04 09:02:10" itemprop="dateModified" datetime="2020-07-04T09:02:10+08:00">2020-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&emsp;&emsp;在这里记录一下自己对java字符串的学习过程，记录的同时也加深印象。</p>
+<a id="more"></a>
+<h3 id="字符串创建"><a href="#字符串创建" class="headerlink" title="字符串创建"></a>字符串创建</h3><p>&emsp;&emsp;我们平时使用String str = “This is a string.”这种方式创建的字符串，JVM会将该字符串存储在常量池中，而使用String str = new String(“This is a string.”)创建的字符串和普通的对象一样，会在堆空间开辟一块空间存储该对象，然后在栈空间开辟一块空间存储该对象的地址的值。</p>
+<ul>
+<li>例子</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StringTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        String str = <span class="string">"This is a string."</span>;</span><br><span class="line">        String str1 = <span class="string">"This is a string."</span>;</span><br><span class="line">        String str2 = <span class="string">"This is "</span> + <span class="string">"a string."</span>;</span><br><span class="line">        String str3 = <span class="keyword">new</span> String(<span class="string">"This is a string."</span>);</span><br><span class="line">        System.out.println(str == str1);</span><br><span class="line">        System.out.println(str == str2);</span><br><span class="line">        System.out.println(str == str3);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/String-create-test.png" alt="测试结果"></p>
+<p>&emsp;&emsp;JVM在创建这些对象的时候首先在常量池中查找这些字面量是否存在，如果存在，那么该对象直接引用这个字面量即可，如果不存在那么在常量池中创建这个字面量，然后该对象引用这个字面量。</p>
+<p>&emsp;&emsp;本例中，在创建str对象时，JVM在常量池中没有找到”This is a string”这个字面量，那么先在常量池创建这个字面量，然后变量名为str的对象引用这个字面量。创建变量名为str2的对象时在常量池中找到了这个字面量，所以直接引用这个字面量即可，所以，str和str2的地址值一样。在创建变量名为str3的对象时，首先在常量池寻找”This is “这个字面量，没有找到，那么创建该字面量，再寻找”a string.”这个字面量，没有找到，再创建该字面量，然后将这两个字面量进行拼接之后形成新的字面量”This is a string.”，在常量池中寻找到该字面量，那么直接引用这个字面量，所以str2引用的地址值和str以及str1一样，但是在创建str2这个对象的时候又在常量池中创建了两个字面量，这就是str2和str以及str1创建过程的不同之处。在创建str3对象时，使用了<code>public String(String original)</code>这个构造器来创建对象，很显然，这个构造器就是将一个字符串赋值给另一个对象，但是地址值发生变化，毕竟new了一个对象。</p>
+<h3 id="字符串常用方法"><a href="#字符串常用方法" class="headerlink" title="字符串常用方法"></a>字符串常用方法</h3><h4 id="字符串分割方法"><a href="#字符串分割方法" class="headerlink" title="字符串分割方法"></a>字符串分割方法</h4><ul>
+<li>返回值类型+方法签名</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String[] split(String regex)</span><br><span class="line">String[] split(String regex, <span class="keyword">int</span> limit)</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>String regex 正则表达式分隔符</p>
+</li>
+<li><p>int limit 分割的份数</p>
+</li>
+</ul>
+<h5 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h5><p>&emsp;&emsp;在java中，使用<code>split()</code>方法可以将字符串按照指定的分割符进行分割，String类中重载了该方法。可以看一下一个参数的方法实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> String[] split(String regex) &#123;</span><br><span class="line">    <span class="keyword">return</span> split(regex, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;很显然，传递一个参数调用了传递两个参数的方法，int型的值传递0，也就是说使用regex分割符将字符串分割，返回分割后的不限制分割份数的字符串数组。</p>
+<ul>
+<li>看一下传递一个参数的方法，即不考虑分隔份数的情况下方法的使用。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">    String str = <span class="string">"I-love-you"</span>;</span><br><span class="line">    String[] strs = str.split(<span class="string">"-"</span>);</span><br><span class="line">    System.out.println(<span class="string">"/*---------------------分割符---------------------------*/"</span>);</span><br><span class="line">    System.out.println(<span class="string">"使用普通的字符进行字符串的分隔\t长度："</span>+strs.length);</span><br><span class="line">    <span class="keyword">for</span>(String s : strs)&#123;</span><br><span class="line">        System.out.println(s);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String str1 = <span class="string">"ferry.org.cn"</span>;</span><br><span class="line">    String[] strs1 = str1.split(<span class="string">"\\."</span>);</span><br><span class="line">    System.out.println(<span class="string">"/*---------------------分割符---------------------------*/"</span>);</span><br><span class="line">    System.out.println(<span class="string">"使用转义字符进行字符串的分隔\t长度："</span>+strs1.length);</span><br><span class="line">    <span class="keyword">for</span>(String s : strs1)&#123;</span><br><span class="line">        System.out.println(s);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String sql = <span class="string">"1 = 1 and 2 = 2 or 3 = 3 or4 = 4"</span>;</span><br><span class="line">    String[] sqls = sql.split(<span class="string">"and |or "</span>);</span><br><span class="line">    System.out.println(<span class="string">"/*---------------------分割符---------------------------*/"</span>);</span><br><span class="line">    System.out.println(<span class="string">"使用多个字符进行字符串的分隔\t长度："</span>+sqls.length);</span><br><span class="line">    <span class="keyword">for</span>(String s : sqls)&#123;</span><br><span class="line">        System.out.println(s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/String-split-test.png" alt="运行结果"></p>
+<p>&emsp;&emsp;如果字符串是使用转义字符进行连接的，我们需要以这些转义字符进行字符串的分割，那么需要在转义字符的前面加上<code>\\</code>，不然该分割符是无效的。</p>
+<p>&emsp;&emsp;上面最后一个例子需要注意一下，split方法中可以使用<code>|</code>字符将多个字符作为分隔符。而本例中我使用了两个分割符对该字符串进行分割，<code>and</code>和<code>or</code>，注意，and和or后面都是有空格的，所以，本例中最后一个or4 = 4并没有被分割，因为or和4中间并没有空格。</p>
+<p>&emsp;&emsp;值得一提的是，如果你需要进行分割的字符串并不包含你给定的分割符，那么它会返回一个长度为1的字符串数组，该数组中的唯一一个元素就是待分割的字符串。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">    String str = <span class="string">"I love you"</span>;</span><br><span class="line">    String[] strs = str.split(<span class="string">"-"</span>);</span><br><span class="line">    System.out.println(<span class="string">"/*---------------------分割符---------------------------*/"</span>);</span><br><span class="line">    System.out.println(<span class="string">"使用普通的字符进行字符串的分隔\t长度："</span>+strs.length);</span><br><span class="line">    <span class="keyword">for</span>(String s : strs)&#123;</span><br><span class="line">        System.out.println(s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/String-split-test1.png" alt="运行结果"></p>
+<p>&emsp;&emsp;还有一种可能是需要注意一下的，当你使用多个分割符时，如果待处理的字符串中这几种分割符正好在一起，那么会发生什么呢，看一个例子。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">    String str = <span class="string">"ferry.org.cn"</span>;</span><br><span class="line">    String[] strs = str.split(<span class="string">"\\.|org"</span>);</span><br><span class="line">    System.out.println(<span class="string">"/*---------------------分割符---------------------------*/"</span>);</span><br><span class="line">    System.out.println(<span class="string">"长度："</span>+strs.length);</span><br><span class="line">    <span class="keyword">for</span>(String s : strs)&#123;</span><br><span class="line">        System.out.println(s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/String-split-test3.png" alt="运行结果"></p>
+<p>&emsp;&emsp;运行结果就是：分割成了四个字符串，其中两个为空字符串。那么这个结果怎么产生的呢？这是因为在分割这个字符串时遇到第一个分割符<code>&quot;.&quot;</code>，得到第一个字符串”ferry”和剩余字符串”org.cn”，接着执行遇到第二个分割符<code>&quot;org&quot;</code>,这个分割符位于字符串起始位置，那么就会分割出一个空字符串然后得到剩余字符串”.cn”，继续执行，遇到第三个分割符<code>&quot;.&quot;</code>，位于字符串起始位置，分割得到空字符串和剩余字符串，继续执行，未找到分割符，将剩余字符串添加到集合中并转换成数组返回。</p>
+<ul>
+<li>指定分割份数的分割方法</li>
+</ul>
+<p>&emsp;&emsp;指定分割份数我们考虑四种情况，第一种：limit为负值；第二种：limit为0；第三种：limit值在待分割的字符串能分割的份数的有效范围内；第四种：limit值大于待分割的字符串能分割的份数。当然，第二种情况不用考虑了，前面只传递一个参数分割字符串的正则表达式调用的就是limit=0的方法，该种情况下不考虑分割份数，按给定的正则表达式分割并返回分割后的字符串数组。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">    String str1 = <span class="string">"I-love-you"</span>;</span><br><span class="line">    String[] strs1 = str1.split(<span class="string">"-"</span>, -<span class="number">1</span>);</span><br><span class="line">    System.out.println(<span class="string">"/*---------------------分割符---------------------------*/"</span>);</span><br><span class="line">    System.out.println(<span class="string">"分割份数为负值：\t长度："</span>+strs1.length);</span><br><span class="line">    <span class="keyword">for</span>(String s : strs1)&#123;</span><br><span class="line">        System.out.println(s);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String str2 = <span class="string">"I-love-you"</span>;</span><br><span class="line">    String[] strs2 = str2.split(<span class="string">"-"</span>, <span class="number">2</span>);</span><br><span class="line">    System.out.println(<span class="string">"/*---------------------分割符---------------------------*/"</span>);</span><br><span class="line">    System.out.println(<span class="string">"分割份数在待分割字符串能分割的份数的范围内：\t长度："</span>+strs2.length);</span><br><span class="line">    <span class="keyword">for</span>(String s : strs2)&#123;</span><br><span class="line">        System.out.println(s);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String str3 = <span class="string">"I-love-you"</span>;</span><br><span class="line">    String[] strs3 = str3.split(<span class="string">"-"</span>, <span class="number">999</span>);</span><br><span class="line">    System.out.println(<span class="string">"/*---------------------分割符---------------------------*/"</span>);</span><br><span class="line">    System.out.println(<span class="string">"分割份数大于待分割字符串能分割的份数：\t长度："</span>+strs3.length);</span><br><span class="line">    <span class="keyword">for</span>(String s : strs3)&#123;</span><br><span class="line">        System.out.println(s);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/String-split-test2.png" alt="运行结果"></p>
+<ul>
+<li><p>当limit为负值时，和limit=0返回结果一样，都是能分割几份就分割几份。</p>
+</li>
+<li><p>当limit在分割份数有效范围内时，前面几份分割按指定分割符分割，最后一份则为剩余未分割的字符串。</p>
+</li>
+<li><p>当limit大于有效分割份数时，分割结果与limit=0结果一样。</p>
+</li>
+</ul>
+<h4 id="字符串比较是否相等"><a href="#字符串比较是否相等" class="headerlink" title="字符串比较是否相等"></a>字符串比较是否相等</h4><ul>
+<li>返回值类型+方法签名</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object anObject)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Object anObject: 待比较的Object对象</li>
+</ul>
+<h5 id="用法-1"><a href="#用法-1" class="headerlink" title="用法"></a>用法</h5><ul>
+<li>使用案例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">    String str = <span class="string">"ferry"</span>;</span><br><span class="line">    Object obj = <span class="string">"ferry"</span>;</span><br><span class="line">    System.out.println(str.equals(obj));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/string-equals.png" alt="运行结果"></p>
+<h5 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h5><ul>
+<li>源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object anObject)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span> == anObject) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (anObject <span class="keyword">instanceof</span> String) &#123;</span><br><span class="line">        String anotherString = (String)anObject;</span><br><span class="line">        <span class="keyword">int</span> n = value.length;</span><br><span class="line">        <span class="keyword">if</span> (n == anotherString.value.length) &#123;</span><br><span class="line">            <span class="keyword">char</span> v1[] = value;</span><br><span class="line">            <span class="keyword">char</span> v2[] = anotherString.value;</span><br><span class="line">            <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span> (n-- != <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (v1[i] != v2[i])</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自上而下：</p>
+<ol>
+<li><p>判断两个对象地址值是否相等，相等返回true，否则判断2；</p>
+</li>
+<li><p>判断形参类型是否为字符串，不是字符串返回false，是判断3；</p>
+</li>
+<li><p>将形参强制类型转化为字符串，判断两个字符串长度是否相等，不相等返回false，相等判断4；</p>
+</li>
+<li><p>循环比较两个字符串中的每一个字符是否相等，遇到不相等的，方法返回false，全部相等返回true。</p>
+</li>
+</ol>
+<h4 id="字符串忽略大小写比较是否相等"><a href="#字符串忽略大小写比较是否相等" class="headerlink" title="字符串忽略大小写比较是否相等"></a>字符串忽略大小写比较是否相等</h4><ul>
+<li>返回值类型+方法签名</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">equalsIgnoreCase</span><span class="params">(String anotherString)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>String anatherString: 待比较的字符串对象</li>
+</ul>
+<h5 id="用法-2"><a href="#用法-2" class="headerlink" title="用法"></a>用法</h5><ul>
+<li>使用案例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">    String str = <span class="string">"FERRY"</span>;</span><br><span class="line">    String msg = <span class="string">"ferry"</span>;</span><br><span class="line">    System.out.println(str.equalsIgnoreCase(msg));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/string-equalsIgnore.png" alt="运行结果"></p>
+<h5 id="源码分析-1"><a href="#源码分析-1" class="headerlink" title="源码分析"></a>源码分析</h5><ul>
+<li>源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equalsIgnoreCase</span><span class="params">(String anotherString)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">this</span> == anotherString) ? <span class="keyword">true</span></span><br><span class="line">            : (anotherString != <span class="keyword">null</span>)</span><br><span class="line">            &amp;&amp; (anotherString.value.length == value.length)</span><br><span class="line">            &amp;&amp; regionMatches(<span class="keyword">true</span>, <span class="number">0</span>, anotherString, <span class="number">0</span>, value.length);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这个方法的实现很简单，分为几个步骤：</p>
+<ol>
+<li><p>判断两个字符串的引用是否相等，相等返回true；</p>
+</li>
+<li><p>判断形参是否为空，若为空返回false，否则判断3；</p>
+</li>
+<li><p>判断两个字符串长度是否相等，相等判断4，否则返回false；</p>
+</li>
+<li><p>调用<code>regionMatches()</code>方法判断每个字符是否相等。</p>
+</li>
+</ol>
+<p>&emsp;&emsp;<code>regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len)</code>方法的作用是判断一个区域内两个字符串是否相等，相等返回true，否则返回false。当形参ignoreCase为true时忽略大小写进行比较。</p>
+<h4 id="字符串比较某个区域内是否相等"><a href="#字符串比较某个区域内是否相等" class="headerlink" title="字符串比较某个区域内是否相等"></a>字符串比较某个区域内是否相等</h4><ul>
+<li>返回值类型+方法签名</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">regionMatches</span><span class="params">(<span class="keyword">int</span> toffset, String other, <span class="keyword">int</span> ooffset, <span class="keyword">int</span> len)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">boolean</span> <span class="title">regionMatches</span><span class="params">(<span class="keyword">boolean</span> ignoreCase, <span class="keyword">int</span> toffset, String other, <span class="keyword">int</span> ooffset, <span class="keyword">int</span> len)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>boolean ignoreCase: 是否忽略大小写</p>
+</li>
+<li><p>int toffset: 调用方法的字符串的子区域起始偏移量</p>
+</li>
+<li><p>String other: 待比较字符串</p>
+</li>
+<li><p>int ooffset: 待比较字符串子区域起始偏移量</p>
+</li>
+<li><p>int len: 要比较的字符数量</p>
+</li>
+</ul>
+<h5 id="用法-3"><a href="#用法-3" class="headerlink" title="用法"></a>用法</h5><ul>
+<li>使用案例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">    String str = <span class="string">"I love ferry"</span>;</span><br><span class="line">    String msg = <span class="string">"You love ferry"</span>;</span><br><span class="line">    System.out.println(str.regionMatches(<span class="number">2</span>, msg, <span class="number">4</span>, <span class="number">4</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/String-rem-1.png" alt="运行结果"></p>
+<p>&emsp;&emsp;偏移量的理解，本例中调用该方法的字符串偏移量为2，也就是偏移两个字符，从第三个字符开始比较，同样，msg字符偏移量为4，就是偏移4个字符，从第五个字符开始比较。其实也就是比较<code>&quot;love&quot;</code>和<code>&quot;love&quot;</code>是否相等。</p>
+<ul>
+<li>忽略大小写比较两个字符串某一区域是否相等</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String str = <span class="string">"I love ferry"</span>;</span><br><span class="line">    String msg = <span class="string">"You LOVE ferry"</span>;</span><br><span class="line">    System.out.println(str.regionMatches(<span class="keyword">true</span>, <span class="number">2</span>, msg, <span class="number">4</span>, <span class="number">4</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/String-rem-2.png" alt="运行结果"></p>
+<h5 id="源码分析-2"><a href="#源码分析-2" class="headerlink" title="源码分析"></a>源码分析</h5><ul>
+<li>源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">regionMatches</span><span class="params">(<span class="keyword">int</span> toffset, String other, <span class="keyword">int</span> ooffset, <span class="keyword">int</span> len)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> ta[] = value;</span><br><span class="line">    <span class="keyword">int</span> to = toffset;</span><br><span class="line">    <span class="keyword">char</span> pa[] = other.value;</span><br><span class="line">    <span class="keyword">int</span> po = ooffset;</span><br><span class="line">    <span class="keyword">if</span> ((ooffset &lt; <span class="number">0</span>) || (toffset &lt; <span class="number">0</span>)</span><br><span class="line">            || (toffset &gt; (<span class="keyword">long</span>)value.length - len)</span><br><span class="line">            || (ooffset &gt; (<span class="keyword">long</span>)other.value.length - len)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (len-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (ta[to++] != pa[po++]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自上而下：</p>
+<ol>
+<li><p>获取两个字符串的字符数组和对应的比较字符的起始位置，判断2；</p>
+</li>
+<li><p>如果两个起始位置不合法，返回false，否则判断3；</p>
+</li>
+<li><p>循环判断两个字符串对应的字符是否相等，不相等返回false，循环结束返回true，循环次数为比较长度。</p>
+</li>
+</ol>
+<ul>
+<li>源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">regionMatches</span><span class="params">(<span class="keyword">boolean</span> ignoreCase, <span class="keyword">int</span> toffset, String other, <span class="keyword">int</span> ooffset, <span class="keyword">int</span> len)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> ta[] = value;</span><br><span class="line">    <span class="keyword">int</span> to = toffset;</span><br><span class="line">    <span class="keyword">char</span> pa[] = other.value;</span><br><span class="line">    <span class="keyword">int</span> po = ooffset;</span><br><span class="line">    <span class="keyword">if</span> ((ooffset &lt; <span class="number">0</span>) || (toffset &lt; <span class="number">0</span>)</span><br><span class="line">            || (toffset &gt; (<span class="keyword">long</span>)value.length - len)</span><br><span class="line">            || (ooffset &gt; (<span class="keyword">long</span>)other.value.length - len)) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> (len-- &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">char</span> c1 = ta[to++];</span><br><span class="line">        <span class="keyword">char</span> c2 = pa[po++];</span><br><span class="line">        <span class="keyword">if</span> (c1 == c2) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (ignoreCase) &#123;</span><br><span class="line">            <span class="keyword">char</span> u1 = Character.toUpperCase(c1);</span><br><span class="line">            <span class="keyword">char</span> u2 = Character.toUpperCase(c2);</span><br><span class="line">            <span class="keyword">if</span> (u1 == u2) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (Character.toLowerCase(u1) == Character.toLowerCase(u2)) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自上而下：</p>
+<ol>
+<li><p>获取两个字符串的字符数组和对应的比较字符的起始位置，判断2；</p>
+</li>
+<li><p>如果两个起始位置不合法，返回false，否则判断3；</p>
+</li>
+<li><p>循环判断每个字符是否相等，循环次数为比较长度，循环结束返回true：</p>
+<ul>
+<li><p>循环中获取待比较的两个字符；</p>
+</li>
+<li><p>判断两个字符是否相等，相等结束本次循环开始下次循环，不相等进行下一步判断；</p>
+</li>
+<li><p>判断是否忽略大小写进行比较，否返回false，是将两个字符都转化成大写进行比较，相等结束本次循环，开始下一此循环，否将两个字符转化为小写进行比较，相等结束本次循环进行下一次循环，否返回false。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="字符串截取"><a href="#字符串截取" class="headerlink" title="字符串截取"></a>字符串截取</h4><ul>
+<li>返回值类型+方法签名</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">String <span class="title">substring</span><span class="params">(<span class="keyword">int</span> beginIndex)</span></span>;</span><br><span class="line"><span class="function">String <span class="title">substring</span><span class="params">(<span class="keyword">int</span> beginIndex, <span class="keyword">int</span> endIndex)</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>int beginIndex: 截取起始位置</p>
+</li>
+<li><p>int endIndex: 截取结束为止</p>
+</li>
+</ul>
+<h5 id="用法-4"><a href="#用法-4" class="headerlink" title="用法"></a>用法</h5><ul>
+<li>使用案例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String str = <span class="string">"I love ferry"</span>;</span><br><span class="line">    System.out.println(str.substring(<span class="number">2</span>));</span><br><span class="line">    System.out.println(str.substring(<span class="number">2</span>,<span class="number">6</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/String-substring.png" alt="运行结果"></p>
+<p>&emsp;&emsp;截取字符串的起始位置和结束为止的包含关系：[beginIndex,endIndex)。如果起始位置数值上等于字符串长度，那么截取的就是一个空字符串。</p>
+<h5 id="源码分析-3"><a href="#源码分析-3" class="headerlink" title="源码分析"></a>源码分析</h5><ul>
+<li>源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">substring</span><span class="params">(<span class="keyword">int</span> beginIndex)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (beginIndex &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> StringIndexOutOfBoundsException(beginIndex);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> subLen = value.length - beginIndex;</span><br><span class="line">    <span class="keyword">if</span> (subLen &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> StringIndexOutOfBoundsException(subLen);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (beginIndex == <span class="number">0</span>) ? <span class="keyword">this</span> : <span class="keyword">new</span> String(value, beginIndex, subLen);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自上而下：</p>
+<ol>
+<li><p>如果起始位置小于0，抛出下标越界异常，否则判断2；</p>
+</li>
+<li><p>如果截取的字符串长度小于0，抛出下标越界异常，否则判断3；</p>
+</li>
+<li><p>如果起始位置为0，返回调用方法的字符串，否则调用构造器<code>new String(char value[], int offset, int count)</code>生成字符串。</p>
+</li>
+</ol>
+<ul>
+<li>源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">substring</span><span class="params">(<span class="keyword">int</span> beginIndex, <span class="keyword">int</span> endIndex)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (beginIndex &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> StringIndexOutOfBoundsException(beginIndex);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (endIndex &gt; value.length) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> StringIndexOutOfBoundsException(endIndex);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> subLen = endIndex - beginIndex;</span><br><span class="line">    <span class="keyword">if</span> (subLen &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> StringIndexOutOfBoundsException(subLen);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ((beginIndex == <span class="number">0</span>) &amp;&amp; (endIndex == value.length)) ? <span class="keyword">this</span></span><br><span class="line">            : <span class="keyword">new</span> String(value, beginIndex, subLen);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自上而下：</p>
+<ol>
+<li><p>如果起始位置小于0或者结束位置大于字符串长度，抛出下标越界异常，否则判断2；</p>
+</li>
+<li><p>如果截取的字符串长度小于0，抛出下标越界异常，否则判断3；</p>
+</li>
+<li><p>如果起始位置为0，结束位置数值上等于字符串长度，则返回调用方法的字符串，否则调用构造器<code>new String(char value[], int offset, int count)</code>生成字符串。</p>
+</li>
+</ol>
+<h4 id="字符-字符串-替换"><a href="#字符-字符串-替换" class="headerlink" title="字符(字符串)替换"></a>字符(字符串)替换</h4><ul>
+<li>返回值类型+方法签名</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">String <span class="title">replace</span><span class="params">(<span class="keyword">char</span> oldChar, <span class="keyword">char</span> newChar)</span></span>;</span><br><span class="line"><span class="function">String <span class="title">replace</span><span class="params">(CharSequence target, CharSequence replacement)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>char oldChar: 待替换的字符</p>
+</li>
+<li><p>char newChar: 替换字符</p>
+</li>
+<li><p>CharSequence target: 待替换的字符序列</p>
+</li>
+<li><p>CharSequence replacement: 替换字符序列</p>
+</li>
+</ul>
+<h5 id="用法-5"><a href="#用法-5" class="headerlink" title="用法"></a>用法</h5><ul>
+<li>使用案例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">replaceTest</span><span class="params">()</span></span>&#123;</span><br><span class="line">    String str = <span class="string">"I love you"</span>;</span><br><span class="line">    System.out.println(str.replace(<span class="string">' '</span>, <span class="string">'-'</span>));</span><br><span class="line">    System.out.println(str.replace(<span class="string">"love"</span>, <span class="string">"miss"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/String-replace-char.png" alt="运行结果"></p>
+<p>&emsp;&emsp;字符串替换方法中,可以传递字符,字符串,该方法将所有值为oldChar/target的字符/字符串替换为newChar/replacement.</p>
+<h5 id="源码分析-4"><a href="#源码分析-4" class="headerlink" title="源码分析"></a>源码分析</h5><ul>
+<li>源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">replace</span><span class="params">(<span class="keyword">char</span> oldChar, <span class="keyword">char</span> newChar)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (oldChar != newChar) &#123;</span><br><span class="line">        <span class="keyword">int</span> len = value.length;</span><br><span class="line">        <span class="keyword">int</span> i = -<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">char</span>[] val = value; <span class="comment">/* avoid getfield opcode */</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (++i &lt; len) &#123;</span><br><span class="line">            <span class="keyword">if</span> (val[i] == oldChar) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (i &lt; len) &#123;</span><br><span class="line">            <span class="keyword">char</span> buf[] = <span class="keyword">new</span> <span class="keyword">char</span>[len];</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; i; j++) &#123;</span><br><span class="line">                buf[j] = val[j];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">while</span> (i &lt; len) &#123;</span><br><span class="line">                <span class="keyword">char</span> c = val[i];</span><br><span class="line">                buf[i] = (c == oldChar) ? newChar : c;</span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> String(buf, <span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自上而下：</p>
+<ol>
+<li><p>如果待替换字符和替换字符不相等返回调用方法的字符串,否则判断2;</p>
+</li>
+<li><p>对字符数组进行循环,如果待替换字符与字符串的字符数组中任意一个都不相等则返回调用方法的字符串,否则得到第一个相等的字符下标,判断3;</p>
+</li>
+<li><p>循环将第一个相等的字符前面的字符复制到新的字符数组中,判断4;</p>
+</li>
+<li><p>从第一个相等的字符位置开始循环将后面的字符数组复制到新的字符数组中若待复制字符等于oldChar则替换成newChar,使用构造器返回替换完成的字符串.</p>
+</li>
+</ol>
+<p>&emsp;&emsp;实际上整个流程就是如果字符串中没有oldChar,那么返回本字符串,如果有,就先复制第一个字符等于oldChar之前的字符数组,然后剩下的字符数组在循环中替换字符,然后通过构造器将字符数组转换成字符串返回.</p>
+<ul>
+<li>源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">replace</span><span class="params">(CharSequence target, CharSequence replacement)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Pattern.compile(target.toString(), Pattern.LITERAL).matcher(</span><br><span class="line">            <span class="keyword">this</span>).replaceAll(Matcher.quoteReplacement(replacement.toString()));</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;权衡利弊之后,不能解析了…时间紧张…</p>
+<h4 id="字符串移除前后空格"><a href="#字符串移除前后空格" class="headerlink" title="字符串移除前后空格"></a>字符串移除前后空格</h4><ul>
+<li>返回值类型+方法签名</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">String <span class="title">trim</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<h5 id="用法-6"><a href="#用法-6" class="headerlink" title="用法"></a>用法</h5><ul>
+<li>使用案例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">trimTest</span><span class="params">()</span></span>&#123;</span><br><span class="line">    String str = <span class="string">" I love ferry "</span>;</span><br><span class="line">    System.out.println(<span class="string">"before length:"</span>+str.length());</span><br><span class="line">    System.out.println(str.trim());</span><br><span class="line">    System.out.println(<span class="string">"after length:"</span>+str.trim().length());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/String/String-trim.png" alt="运行结果"></p>
+<p>&emsp;&emsp;<code>trim()</code>方法可以将字符串的前导空格、尾随空格和行终止符移除。</p>
+<h5 id="源码分析-5"><a href="#源码分析-5" class="headerlink" title="源码分析"></a>源码分析</h5><ul>
+<li>源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">trim</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> len = value.length;</span><br><span class="line">    <span class="keyword">int</span> st = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">char</span>[] val = value;    <span class="comment">/* avoid getfield opcode */</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> ((st &lt; len) &amp;&amp; (val[st] &lt;= <span class="string">' '</span>)) &#123;</span><br><span class="line">        st++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> ((st &lt; len) &amp;&amp; (val[len - <span class="number">1</span>] &lt;= <span class="string">' '</span>)) &#123;</span><br><span class="line">        len--;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ((st &gt; <span class="number">0</span>) || (len &lt; value.length)) ? substring(st, len) : <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自上而下：</p>
+<ol>
+<li><p>循环判断字符串的前面的字符是不是空格,是<code>st</code>加一;</p>
+</li>
+<li><p>循环判断字符串的后面的字符是不是空格,是<code>len</code>减一;</p>
+</li>
+<li><p>如果字符串没有前导空格或尾随空格或者行终止符则返回调用方法的字符串,否则返回截取后的字符串;</p>
+</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/java字符串创建/" rel="tag"><i class="fa fa-tag"></i> java字符串创建</a>
+              <a href="/tags/java字符串常用方法/" rel="tag"><i class="fa fa-tag"></i> java字符串常用方法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/spring-javaconfig.html" rel="prev" title="使用javaconfig配置spring项目">
+      <i class="fa fa-chevron-left"></i> 使用javaconfig配置spring项目
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/redis.html" rel="next" title="redis">
+      redis <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#字符串创建"><span class="nav-number">1.</span> <span class="nav-text">字符串创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符串常用方法"><span class="nav-number">2.</span> <span class="nav-text">字符串常用方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#字符串分割方法"><span class="nav-number">2.1.</span> <span class="nav-text">字符串分割方法</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用法"><span class="nav-number">2.1.1.</span> <span class="nav-text">用法</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字符串比较是否相等"><span class="nav-number">2.2.</span> <span class="nav-text">字符串比较是否相等</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用法-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#源码分析"><span class="nav-number">2.2.2.</span> <span class="nav-text">源码分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字符串忽略大小写比较是否相等"><span class="nav-number">2.3.</span> <span class="nav-text">字符串忽略大小写比较是否相等</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用法-2"><span class="nav-number">2.3.1.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#源码分析-1"><span class="nav-number">2.3.2.</span> <span class="nav-text">源码分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字符串比较某个区域内是否相等"><span class="nav-number">2.4.</span> <span class="nav-text">字符串比较某个区域内是否相等</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用法-3"><span class="nav-number">2.4.1.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#源码分析-2"><span class="nav-number">2.4.2.</span> <span class="nav-text">源码分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字符串截取"><span class="nav-number">2.5.</span> <span class="nav-text">字符串截取</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用法-4"><span class="nav-number">2.5.1.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#源码分析-3"><span class="nav-number">2.5.2.</span> <span class="nav-text">源码分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字符-字符串-替换"><span class="nav-number">2.6.</span> <span class="nav-text">字符(字符串)替换</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用法-5"><span class="nav-number">2.6.1.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#源码分析-4"><span class="nav-number">2.6.2.</span> <span class="nav-text">源码分析</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字符串移除前后空格"><span class="nav-number">2.7.</span> <span class="nav-text">字符串移除前后空格</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用法-6"><span class="nav-number">2.7.1.</span> <span class="nav-text">用法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#源码分析-5"><span class="nav-number">2.7.2.</span> <span class="nav-text">源码分析</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ferry"
+      src="/images/ferry-215x215.gif">
+  <p class="site-author-name" itemprop="name">ferry</p>
+  <div class="site-description" itemprop="description">虽未满百岁已如歌归于其居</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/loveferry" title="GitHub → https://github.com/loveferry" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ferry_sy@163.com" title="E-Mail → mailto:ferry_sy@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ferry</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>

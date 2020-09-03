@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="zh-CH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/ferry-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/ferry-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/ferry-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;数组是相同类型的、用一个标识符名称封装到一起的一个对象序列或基本类型数据序列。">
+<meta name="keywords" content="java数组,Arrays类">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数组">
+<meta property="og:url" content="https://ferry.org.cn/array.html">
+<meta property="og:site_name" content="儿女意向来痴">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;数组是相同类型的、用一个标识符名称封装到一起的一个对象序列或基本类型数据序列。">
+<meta property="og:locale" content="zh-CH">
+<meta property="og:image" content="https://ferry.org.cn/array/array-init.png">
+<meta property="og:image" content="https://ferry.org.cn/array/array-copy-error.png">
+<meta property="og:image" content="https://ferry.org.cn/array/array-for.png">
+<meta property="og:image" content="https://ferry.org.cn/array/array-toString.png">
+<meta property="og:image" content="https://ferry.org.cn/array/array-equals.png">
+<meta property="og:image" content="https://ferry.org.cn/array/array-sort.png">
+<meta property="og:image" content="https://ferry.org.cn/array/array-binarySearch.png">
+<meta property="og:image" content="https://ferry.org.cn/array/array-more-tostring.png">
+<meta property="og:image" content="https://ferry.org.cn/array/array-more-tostring-2.png">
+<meta property="og:image" content="https://ferry.org.cn/array/array-class.png">
+<meta property="og:image" content="https://ferry.org.cn/array/array-extend.png">
+<meta property="og:updated_time" content="2020-07-04T01:02:10.793Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="数组">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;数组是相同类型的、用一个标识符名称封装到一起的一个对象序列或基本类型数据序列。">
+<meta name="twitter:image" content="https://ferry.org.cn/array/array-init.png">
+
+<link rel="canonical" href="https://ferry.org.cn/array.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CH'
+  };
+</script>
+
+  <title>数组 | 儿女意向来痴</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">儿女意向来痴</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">35</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/array.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ferry-215x215.gif">
+      <meta itemprop="name" content="ferry">
+      <meta itemprop="description" content="虽未满百岁已如歌归于其居">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="儿女意向来痴">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数组
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-17 18:35:29" itemprop="dateCreated datePublished" datetime="2018-12-17T18:35:29+08:00">2018-12-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-07-04 09:02:10" itemprop="dateModified" datetime="2020-07-04T09:02:10+08:00">2020-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&emsp;&emsp;数组是相同类型的、用一个标识符名称封装到一起的一个对象序列或基本类型数据序列。</p>
+<a id="more"></a>
+<h3 id="数组对象的定义"><a href="#数组对象的定义" class="headerlink" title="数组对象的定义"></a>数组对象的定义</h3><p>&emsp;&emsp;在java中,数组有两种声明方式</p>
+<ul>
+<li>声明数组</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>[] a; <span class="comment">// java推荐</span></span><br><span class="line"><span class="keyword">int</span> b[]; <span class="comment">// C语言形式,不推荐</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在java中,推荐使用第一种形式声明一个数组的引用.使用数据类型+中括号([])+空格+变量名来声明一种类型的数组形式.此时,java虚拟机会在栈空间开辟一块空间来存放我们声明的变量,也就是我们的引用的地址值.接下来,就需要初始化一个数组并使用我们声明的数组变量引用这个数组.</p>
+<ul>
+<li>初始化数组并引用</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">10</span>];</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在java中,按照优先级,会先执行赋值符号右边的表达式,<code>new int[10]</code>是初始化一个长度为10的整型数组,这步操作将在堆空间开辟一块相应大小的内存,其中,数组的每一个元素都赋予默认值,int型的默认值为0,其他类型的默认值可以自行创建对应的数组类型并初始化然后debug查看.第二步执行赋值操作,将初始化的数组的第一个元素的地址的值赋值给栈空间的数组变量,所以,栈空间中存放的是堆空间开辟的内存的对应元素的地址的值.</p>
+<p>&emsp;&emsp;初始化有三种方式,第一种方式如上,创建一个具有默认值的数组,使用这种方式要求必须在中括号中指定数组的大小.接下来介绍另外两种.</p>
+<ul>
+<li>数组初始化方式二</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">b = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这种方式在初始化的时候就赋值,数组的长度即为初始化时大括号中元素的个数.注意!指定数组长度和赋默认值不能同时进行,也就是说使用方式二不能指定数组长度.</p>
+<ul>
+<li>数组初始化方式三</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>[] c = &#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>&#125;;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这种方式是第二种方式的一种简写形式,数组的长度为初始化元素的个数.但是这种形式有一个问题,不能先声明再初始化,必须用一个表达式完成声明和初始化的工作.</p>
+<ul>
+<li>以上方式声明并初始化数组的debug效果</li>
+</ul>
+<p><img src="/array/array-init.png" alt="运行结果"></p>
+<p>&emsp;&emsp;当然,我们平时定义数组为了安全考虑声明和初始化是同时进行的,例如<code>int[] a = new int[10];</code>,防止在声明数组变量但未初始化的时候就使用该变量从而引发空指针异常.</p>
+<p>&emsp;&emsp;这里说几点:</p>
+<ol>
+<li><p><code>int[] a = new int[0];</code>和<code>int[] b = new int[]{};</code>和<code>int[] c = {};</code>都是声明一个长度为0的数组,也称之为空数组.注意:空数组不意味着它是null,空数组有点类似字符串的空字符串,在实际应用中,在方法中需要返回数组元素,但是经过操作并不能得到想要的数组元素,但是总不能返回null值吧,所以我们可以返回一个空数组.</p>
+</li>
+<li><p><code>new int[]{1,2,3};</code>是一个匿名数组,因为没有任何一个变量指向这个数组,它的性质和匿名对象一样,离开当前代码行,就没办法再使用这个匿名数组了,因为再也找不到它了.</p>
+</li>
+<li><p>数组是一个类,实例化一个数组就是创建了一个数组的对象!!!</p>
+</li>
+</ol>
+<h3 id="数组使用"><a href="#数组使用" class="headerlink" title="数组使用"></a>数组使用</h3><p>&emsp;&emsp;通过<code>变量名[下标]</code>获取数组中对应位置的元素,下标从0开始.</p>
+<p>&emsp;&emsp;使用数组时可以通过<code>a[4] = 10;</code>形式实现对数组中的元素的操作,当然,这样做是有很大的风险的,当下标不合法时会抛出数组下标越界异常.</p>
+<ul>
+<li>数组复制</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fdshfiue</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[] a = &#123;<span class="number">43</span>,<span class="number">4454</span>,<span class="number">23</span>,<span class="number">1225</span>,<span class="number">3</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span>[] b = a;</span><br><span class="line">    System.out.println(Arrays.toString(a));</span><br><span class="line">    System.out.println(Arrays.toString(b));</span><br><span class="line">    b[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">    System.out.println(Arrays.toString(a));</span><br><span class="line">    System.out.println(Arrays.toString(b));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/array/array-copy-error.png" alt="迎新结果"></p>
+<p>&emsp;&emsp;前面说过,数组是一个对象,所以将一个数组使用赋值符号直接赋值给另一个变量名,那么实际上也就是将该数组对象的地址值赋值给该变量,所以这两个变量引用的是同一个数组对象,无论哪个变量对数组对象中的元素进行了修改,本质上都是对同一个对象进行修改.所以如果我们想要对数组进行复制并再复制体上进行操作可以使用下面要说的复制方法.</p>
+<h4 id="数组长度"><a href="#数组长度" class="headerlink" title="数组长度"></a>数组长度</h4><ul>
+<li>获取数组的长度</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">bcsjh</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[] a = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span> length = a.length;</span><br><span class="line">    System.out.println(length);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>length</code>是数组类的成员变量,所以可以直接使用变量名.length的方式获取数组的长度.</p>
+<h4 id="数组的循环"><a href="#数组的循环" class="headerlink" title="数组的循环"></a>数组的循环</h4><p>&emsp;&emsp;当我们需要对数组中的每一个元素都进行统一操作的时候,就需要使用循环来完成了.</p>
+<p>&emsp;&emsp;数组的循环有两种形式,一种是使用普通的循环方式,另一种是使用增强for循环.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">bcsjh</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[] a = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span> length = a.length;</span><br><span class="line">    System.out.println(<span class="string">"数组的长度: "</span> + length);</span><br><span class="line">    <span class="comment">// 一般形式的循环</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; length; i++) &#123;</span><br><span class="line">        System.out.println(<span class="string">"数组中第 "</span> + i + <span class="string">" 个元素: "</span> + a[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 增强for循环</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> value: a)&#123;</span><br><span class="line">        ++value;</span><br><span class="line">        System.out.println(value);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/array/array-for.png" alt="运行结果"></p>
+<p>&emsp;&emsp;一般形式的循环有三种,<code>do{...}while(boolean)</code>, <code>while(boolean){...}</code> 和 <code>for(初始化;判断;操作){...}</code>,当我们需要在循环中使用数组的下标时那么我们用for循环肯定更加方便一些,而不需要使用下标则使用增强for循环更加简洁.另外两种循环在数组应用上稍显复杂,这里不推荐.</p>
+<h4 id="数组的输出"><a href="#数组的输出" class="headerlink" title="数组的输出"></a>数组的输出</h4><ul>
+<li>数组输出的几种形式</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dbscjdsn</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[] a = <span class="keyword">new</span> <span class="keyword">int</span>[]&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line">    System.out.println(a.toString());</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i : a) &#123;</span><br><span class="line">        System.out.println(i);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println(Arrays.toString(a));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/array/array-toString.png" alt="运行结果"></p>
+<p>&emsp;&emsp;数组是一个类,而数组类并没有重写Object类的toString()方法,所以会直接输出类的信息,而数组类是JVM创建的所以类名才会如此奇怪.我们也可以选择使用循环进行每一个数组元素的输出,或者使用Arrays类的toString()方法进行数组的输出.</p>
+<h4 id="数组的比较"><a href="#数组的比较" class="headerlink" title="数组的比较"></a>数组的比较</h4><ul>
+<li>数组比较的几种方式</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">User</span><span class="params">(String name)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fsjbdjvcb</span><span class="params">()</span></span>&#123;</span><br><span class="line">    User[] users = &#123;<span class="keyword">new</span> User(<span class="string">"ferry"</span>),<span class="keyword">new</span> User(<span class="string">"honey"</span>)&#125;;</span><br><span class="line">    User ferry = <span class="keyword">new</span> User(<span class="string">"ferry"</span>);</span><br><span class="line">    User honey = <span class="keyword">new</span> User(<span class="string">"honey"</span>);</span><br><span class="line">    User[] us = <span class="keyword">new</span> User[]&#123;ferry,honey&#125;;</span><br><span class="line">    System.out.println(users == us);</span><br><span class="line">    System.out.println(us.equals(users));</span><br><span class="line">    System.out.println(Arrays.equals(us, users));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/array/array-equals.png" alt="运行结果"></p>
+<p>&emsp;&emsp;使用<code>==</code>进行比较就是比较两个对象的地址的值,显而易见,两个不同的对象地址值自然不相同;使用<code>对象.equals(对象)</code>的方式进行比较,由于枚举类没有重写Object对象的equals()方法,所以直接调用的Object类的equals()方法,实际上也就是使用<code>==</code>比较两者的地址的值.使用Arrays类的equals方法进行比较将进行数组对象中每一个元素的值进行比较,所以这种比较方式才是我们正常发开时所需要的方式.</p>
+<p>&emsp;&emsp;到这里,已经使用了Arrays类的两个方法,toString()和equals()方法都非常的实用.那么,Arrays类中还有什么方法可以让我们更加高效的处理数组呢?</p>
+<h3 id="Arrays类"><a href="#Arrays类" class="headerlink" title="Arrays类"></a>Arrays类</h3><p>&emsp;&emsp;Arrays类是数组的操作类，定义在java.util包中，主要的功能可以实现数组元素的查找，数组内容的填充、排序等。该类中的绝大多数方法都是静态的.通过<code>Arrays.方法名</code>形式调用.</p>
+<h4 id="toString-方法"><a href="#toString-方法" class="headerlink" title="toString()方法"></a><code>toString()</code>方法</h4><ul>
+<li>返回数组的字符串描述,返回字符串:此方法被重载多次,支持多种数据类型</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(Arrays.toString(<span class="keyword">new</span> <span class="keyword">long</span>[]&#123;<span class="number">1L</span>,<span class="number">10L</span>&#125;));</span><br><span class="line"><span class="comment">// 运行结果: [1, 10]</span></span><br></pre></td></tr></table></figure>
+<h4 id="equals-方法"><a href="#equals-方法" class="headerlink" title="equals()方法"></a><code>equals()</code>方法</h4><ul>
+<li>比较两个数组对象是否相等,返回布尔值:此方法被重载多次,支持多种数据类型</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">System.out.println(Arrays.equals(<span class="keyword">new</span> String[]&#123;<span class="string">"ferry"</span>,<span class="string">"honey"</span>&#125;,<span class="keyword">new</span> String[]&#123;<span class="string">"ferry"</span>,<span class="string">"honey"</span>&#125;));</span><br><span class="line"><span class="comment">// 运行结果: true</span></span><br></pre></td></tr></table></figure>
+<h4 id="sort-方法和parallelSort-方法"><a href="#sort-方法和parallelSort-方法" class="headerlink" title="sort()方法和parallelSort()方法"></a><code>sort()</code>方法和<code>parallelSort()</code>方法</h4><ul>
+<li>数组排序,无返回值: 此方法被重载多次,支持多种数据类型</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">implements</span> <span class="title">Comparable</span>&lt;<span class="title">User</span>&gt;</span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">User</span><span class="params">(String name)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">compareTo</span><span class="params">(User user)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> StringUtils.compare(name,user.getName());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cbsj</span><span class="params">()</span></span>&#123;</span><br><span class="line">    User[] users = <span class="keyword">new</span> User[]&#123;<span class="keyword">new</span> User(<span class="string">"ferry"</span>),<span class="keyword">new</span> User(<span class="string">"joyce"</span>),<span class="keyword">new</span> User(<span class="string">"honey"</span>)&#125;;</span><br><span class="line">    Arrays.sort(users);</span><br><span class="line">    System.out.println(Arrays.toString(users));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/array/array-sort.png" alt="运行结果"></p>
+<p>&emsp;&emsp;如果使用java类数组进行排序,那么要求这个类必须实现了<code>Comparable</code>接口实现其方法<code>compareTo()</code>,如果没有实现这个方法那么运行时会抛出异常.</p>
+<p>&emsp;&emsp;sort()方法默认使用升序排序,即从小到大顺序,其中,可使用重载的方法<code>void sort(Object[] a, int fromIndex, int toIndex)</code>选择数组的一个区间进行排序.</p>
+<p>&emsp;&emsp;java8以后如果处理的数据量过大,建议使用parallelSort()方法,该方法实现功能和sort方法一样,但是实现方式不同,处理起大数据parallelSort()方法更为高效</p>
+<h4 id="fill-方法"><a href="#fill-方法" class="headerlink" title="fill()方法"></a><code>fill()</code>方法</h4><ul>
+<li>数组填充,无返回值: 此方法被重载多次,支持多种数据类型</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">asdia</span><span class="params">()</span></span>&#123;</span><br><span class="line">    User[] users  = <span class="keyword">new</span> User[<span class="number">3</span>];</span><br><span class="line">    User user = <span class="keyword">new</span> User(<span class="string">"ferry"</span>);</span><br><span class="line">    Arrays.fill(users,user);</span><br><span class="line">    System.out.println(Arrays.toString(users));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 运行结果: [ArrayTest.User(name=ferry), ArrayTest.User(name=ferry), ArrayTest.User(name=ferry)]</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;该方法将指定变量填充到数组的每个元素上.Arrays类重载了三参的方法,可以选择数组一个区间进行填充元素.</p>
+<h4 id="copyOf-方法"><a href="#copyOf-方法" class="headerlink" title="copyOf()方法"></a><code>copyOf()</code>方法</h4><ul>
+<li>复制数组，截取或用默认值填充(如有必要),以使副本具有指定的长度,返回复制后的数组: 此方法被重载多次,支持多种数据类型</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sajhbc</span><span class="params">()</span></span>&#123;</span><br><span class="line">    User[] users = &#123;<span class="keyword">new</span> User(<span class="string">"ferry"</span>),<span class="keyword">new</span> User(<span class="string">"joyce"</span>),<span class="keyword">new</span> User(<span class="string">"honey"</span>)&#125;;</span><br><span class="line">    User[] copyUsers = Arrays.copyOf(users,<span class="number">5</span>);</span><br><span class="line">    System.out.println(Arrays.toString(copyUsers));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 运行结果: [ArrayTest.User(name=ferry), ArrayTest.User(name=joyce), ArrayTest.User(name=honey), null, null]</span></span><br></pre></td></tr></table></figure>
+<h4 id="copyOfRange-方法"><a href="#copyOfRange-方法" class="headerlink" title="copyOfRange()方法"></a><code>copyOfRange()</code>方法</h4><ul>
+<li>将指定数组的指定范围复制到一个新数组,返回复制后的数组: 此方法被重载多次,支持多种数据类型</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sajhbc</span><span class="params">()</span></span>&#123;</span><br><span class="line">    User[] users = &#123;<span class="keyword">new</span> User(<span class="string">"ferry"</span>),<span class="keyword">new</span> User(<span class="string">"joyce"</span>),<span class="keyword">new</span> User(<span class="string">"honey"</span>)&#125;;</span><br><span class="line">    User[] copyUsers = Arrays.copyOfRange(users,<span class="number">1</span>,<span class="number">5</span>);</span><br><span class="line">    System.out.println(Arrays.toString(copyUsers));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 运行结果: [ArrayTest.User(name=joyce), ArrayTest.User(name=honey), null, null]</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>&lt;T&gt; T[] copyOfRange(T[] original, int from, int to)</code>,如果from小于0会抛出数组下标越界异常,如果to大于数组长度,则使用默认值进行新数组的填充,需要注意,to是不包含的.</p>
+<h4 id="binarySearch-方法"><a href="#binarySearch-方法" class="headerlink" title="binarySearch()方法"></a><code>binarySearch()</code>方法</h4><ul>
+<li>使用二分搜索法来搜索指定的数组,如果key在数组中，则返回搜索值的索引；否则返回-1或“-”（插入点）: 此方法被重载多次,支持多种数据类型</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cskbc</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[] is = &#123;<span class="number">2</span>,<span class="number">6</span>,<span class="number">2</span>,<span class="number">6</span>,<span class="number">5</span>,<span class="number">21</span>,<span class="number">76</span>,<span class="number">4</span>&#125;;</span><br><span class="line">    Arrays.sort(is);</span><br><span class="line">    System.out.println(Arrays.toString(is));</span><br><span class="line">    System.out.println(Arrays.binarySearch(is, -<span class="number">4</span>));</span><br><span class="line">    System.out.println(Arrays.binarySearch(is, <span class="number">4</span>));</span><br><span class="line">    System.out.println(Arrays.binarySearch(is, <span class="number">8</span>));</span><br><span class="line">    System.out.println(Arrays.binarySearch(is, <span class="number">100</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/array/array-binarySearch.png" alt="运行结果"></p>
+<p>&emsp;&emsp;使用<code>binarySearch()</code>方法的数组应该是已经排好序的数组.此方法有重载形式可以在数组指定范围进行所搜.</p>
+<blockquote>
+<p>当待搜索的值在数组中时返回搜索值出现的第一个的下标,<br>当待搜索的值不在数组中且值小于数组中最小的元素的值时返回-1,<br>当待搜索的值在不在数组中且值大于数组元素最小的值小于数组元素最大的值时返回<strong>按顺序待插入的下标-1 的相反数</strong>;<br>当待搜索的值在不在数组中且值大于数组元素最大的值时返回数组长度+1;</p>
+</blockquote>
+<h3 id="多维数组"><a href="#多维数组" class="headerlink" title="多维数组"></a>多维数组</h3><p>&emsp;&emsp;多维数组是数组的数组。其实java只有一维数组，但是由于数组可以存放任意类型的数据，当然也就可以存放数组了，这个时候，就可以模拟多维数组了。</p>
+<ul>
+<li>定义多维数组</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dsabcjh</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[][] a = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">4</span>][<span class="number">4</span>];</span><br><span class="line">    <span class="keyword">int</span> b[][] = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">4</span>][];</span><br><span class="line">    <span class="keyword">int</span>[][][] c = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">5</span>][<span class="number">9</span>][<span class="number">5</span>];</span><br><span class="line">    <span class="keyword">int</span>[][][] d = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">5</span>][<span class="number">9</span>][];</span><br><span class="line">    <span class="keyword">int</span> e[][][] = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">3</span>][][];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;多维数组的定义和一维数组的定义类似,我们推荐奖[]放在数据类型前面变量名后面的这种形式.在初始化的时候在指定后面纬度长度的前提是必须前面纬度的长度指定了,例如二维数组,不能指定二维长度而不指定一维长度.将数组举个例子.普通的数据类型就是一个点,一维数组就是一条线,二维数组就是一个以X轴和Y轴组成的面,三维数组就是以X轴,Y轴和Z轴组成的空间,至于更高维度,四维我们是不是可以想象成一个空间贯穿着一条时间轴构成空间随着时间的流逝产生的演变,五维就是一个空间比如地球随着时间流逝,发生在这片空间的历史…咳咳,扯远了…</p>
+<ul>
+<li>多维数组方法调用</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dbajsbkc</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[][] a = &#123;&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">7</span>&#125;,&#123;<span class="number">3</span>,<span class="number">6</span>,<span class="number">3</span>,<span class="number">1</span>,<span class="number">7</span>,<span class="number">9</span>,<span class="number">3</span>,<span class="number">43</span>&#125;&#125;;</span><br><span class="line">    System.out.println(Arrays.toString(a));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/array/array-more-tostring.png" alt="运行结果"></p>
+<p>&emsp;&emsp;显然,Arrays类对于数组的支持只是基于一维的,所以多维数组想要实现像一维数组那样的操作就需要使用循环了.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dbajsbkcsd</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[][] a = &#123;&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">7</span>&#125;,&#123;<span class="number">3</span>,<span class="number">6</span>,<span class="number">3</span>,<span class="number">1</span>,<span class="number">7</span>,<span class="number">9</span>,<span class="number">3</span>,<span class="number">43</span>&#125;&#125;;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span>[] ints : a) &#123;</span><br><span class="line">        System.out.println(Arrays.toString(ints));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/array/array-more-tostring-2.png" alt="运行结果"></p>
+<p>&emsp;&emsp;所以,Arrays类方法的支持想要对多维数组操作就需要使用循环降维.</p>
+<h3 id="数组类探索"><a href="#数组类探索" class="headerlink" title="数组类探索"></a>数组类探索</h3><p>&emsp;&emsp;数组是一个类,数组类是通过数据类型和纬度来确定具体是哪一个类的,不同的数据类型和纬度的数组所属的类是不一样的.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sfjk</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>[] arr = &#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>&#125;;</span><br><span class="line">    <span class="keyword">double</span>[][] arr1 = <span class="keyword">new</span> <span class="keyword">double</span>[<span class="number">3</span>][<span class="number">4</span>];</span><br><span class="line">    String[][][] arr2 = <span class="keyword">new</span> String[<span class="number">7</span>][<span class="number">5</span>][<span class="number">6</span>];</span><br><span class="line">    System.out.println(arr.toString());</span><br><span class="line">    System.out.println(arr1.toString());</span><br><span class="line">    System.out.println(arr2.toString());</span><br><span class="line">    System.out.println(arr.getClass().getSuperclass().getName());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Object类toString实现</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> getClass().getName() + <span class="string">"@"</span> + Integer.toHexString(hashCode());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/array/array-class.png" alt="运行结果"></p>
+<p>&emsp;&emsp;从结果可以推断出以下几点.</p>
+<blockquote>
+<p>数组类是Object类的直接子类;<br>不同纬度的不同数据类型的数组对象属于不同的数组类;<br>数组类应该是有JVM生成的.</p>
+</blockquote>
+<p>&emsp;&emsp;第一点好推断,此处不说,第二点:数组对象调用Object类的toString()方法拼接的是对象所属类的类名加上处理过后的哈希值,而上述例子使用了不同纬度的不同数据类型的数组对象打印出来的类名并不一致.再稍加分析推断,可以看到,’[‘的数量代表着数组的纬度,后面的’I,’D’等代表着数据类型.而这样的奇怪的非法的类名正常情况下是不存在的,能做到这一点的只有JVM了,所以得到第三点,数组类是由JVM在运行时生成的.</p>
+<h4 id="协变的数组"><a href="#协变的数组" class="headerlink" title="协变的数组"></a>协变的数组</h4><p>&emsp;&emsp;数组的协变性是指：父类的数组引用可以指向子类的数组对象.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> id;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Sub</span> <span class="keyword">extends</span> <span class="title">Base</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Oth</span> <span class="keyword">extends</span> <span class="title">Base</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String hobby;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ssss</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Base[] arr = <span class="keyword">new</span> Sub[<span class="number">5</span>];</span><br><span class="line">    arr[<span class="number">0</span>] = <span class="keyword">new</span> Oth();</span><br><span class="line">    System.out.println(arr[<span class="number">0</span>].toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;Sub类Base类的子类,所以,Base类的数组引用可以指向Sub类的数组对象,但是,当你将引用中的某个元素指向该父类的其它子类时,编译器并不会报错,但是运行时会报错<code>java.lang.ArrayStoreException</code>,其实这一点就没有泛型好,泛型可以严格的检测类型是否一致,而且现在泛型的通配符的使用也实现了协变的功能.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sssss</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Base[] arr = <span class="keyword">new</span> Sub[<span class="number">5</span>];</span><br><span class="line">    System.out.println(arr.getClass());</span><br><span class="line">    System.out.println(arr.getClass().getSuperclass());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/array/array-extend.png" alt="运行结果"></p>
+<p>&emsp;&emsp;说明虽然引用是父类数组的引用,但是实际的类型还是子类对象的数组类.第二行输出更是说明所有的数组类的直接父类是Object类.</p>
+<p>&emsp;&emsp;在本文的最后,友情提示一下,数组是不支持泛型的,究其原因,是因为数组在创建的时候就要知道它的数据类型,并且在对数组元素进行操作的时候都会检查类型,而泛型是用擦除实现的,在运行时泛型的类型会被擦除.你看,一个要求我必须知道元素类型,一个会把类型干掉,这不是打架了么,所以这两者是不能共存滴!</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/java数组/" rel="tag"><i class="fa fa-tag"></i> java数组</a>
+              <a href="/tags/Arrays类/" rel="tag"><i class="fa fa-tag"></i> Arrays类</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/annotation.html" rel="prev" title="注解">
+      <i class="fa fa-chevron-left"></i> 注解
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/collections.html" rel="next" title="java集合">
+      java集合 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#数组对象的定义"><span class="nav-number">1.</span> <span class="nav-text">数组对象的定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数组使用"><span class="nav-number">2.</span> <span class="nav-text">数组使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#数组长度"><span class="nav-number">2.1.</span> <span class="nav-text">数组长度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数组的循环"><span class="nav-number">2.2.</span> <span class="nav-text">数组的循环</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数组的输出"><span class="nav-number">2.3.</span> <span class="nav-text">数组的输出</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数组的比较"><span class="nav-number">2.4.</span> <span class="nav-text">数组的比较</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Arrays类"><span class="nav-number">3.</span> <span class="nav-text">Arrays类</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#toString-方法"><span class="nav-number">3.1.</span> <span class="nav-text">toString()方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#equals-方法"><span class="nav-number">3.2.</span> <span class="nav-text">equals()方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sort-方法和parallelSort-方法"><span class="nav-number">3.3.</span> <span class="nav-text">sort()方法和parallelSort()方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fill-方法"><span class="nav-number">3.4.</span> <span class="nav-text">fill()方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#copyOf-方法"><span class="nav-number">3.5.</span> <span class="nav-text">copyOf()方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#copyOfRange-方法"><span class="nav-number">3.6.</span> <span class="nav-text">copyOfRange()方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#binarySearch-方法"><span class="nav-number">3.7.</span> <span class="nav-text">binarySearch()方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多维数组"><span class="nav-number">4.</span> <span class="nav-text">多维数组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数组类探索"><span class="nav-number">5.</span> <span class="nav-text">数组类探索</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#协变的数组"><span class="nav-number">5.1.</span> <span class="nav-text">协变的数组</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ferry"
+      src="/images/ferry-215x215.gif">
+  <p class="site-author-name" itemprop="name">ferry</p>
+  <div class="site-description" itemprop="description">虽未满百岁已如歌归于其居</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/loveferry" title="GitHub → https://github.com/loveferry" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ferry_sy@163.com" title="E-Mail → mailto:ferry_sy@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ferry</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>

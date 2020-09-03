@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/ferry-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/ferry-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/ferry-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;oracle数据库sql调优学习记录笔记。">
+<meta name="keywords" content="oracle,sql">
+<meta property="og:type" content="article">
+<meta property="og:title" content="oracle sql 调优">
+<meta property="og:url" content="https://ferry.org.cn/oracle-sql-optimize.html">
+<meta property="og:site_name" content="儿女意向来痴">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;oracle数据库sql调优学习记录笔记。">
+<meta property="og:locale" content="zh-CH">
+<meta property="og:updated_time" content="2020-07-04T01:02:10.865Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="oracle sql 调优">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;oracle数据库sql调优学习记录笔记。">
+
+<link rel="canonical" href="https://ferry.org.cn/oracle-sql-optimize.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CH'
+  };
+</script>
+
+  <title>oracle sql 调优 | 儿女意向来痴</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">儿女意向来痴</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">35</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/oracle-sql-optimize.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ferry-215x215.gif">
+      <meta itemprop="name" content="ferry">
+      <meta itemprop="description" content="虽未满百岁已如歌归于其居">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="儿女意向来痴">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          oracle sql 调优
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-08 12:39:22" itemprop="dateCreated datePublished" datetime="2020-06-08T12:39:22+08:00">2020-06-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-07-04 09:02:10" itemprop="dateModified" datetime="2020-07-04T09:02:10+08:00">2020-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oracle/" itemprop="url" rel="index"><span itemprop="name">oracle</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&emsp;&emsp;oracle数据库sql调优学习记录笔记。</p>
+<a id="more"></a>
+<h1 id="核心思想"><a href="#核心思想" class="headerlink" title="核心思想"></a>核心思想</h1><h2 id="只有大表才会产生性能"><a href="#只有大表才会产生性能" class="headerlink" title="只有大表才会产生性能"></a>只有大表才会产生性能</h2><h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><h2 id="基数"><a href="#基数" class="headerlink" title="基数"></a>基数</h2><p>&emsp;&emsp;某个列唯一键的数量叫做基数。主键列的基数等于行数。性别列的基数等于2。</p>
+<p>&emsp;&emsp;基数的高低影响列的数据分布。</p>
+<p>&emsp;&emsp;当查询结果返回表中5%以内的数据时，应该走索引；当查询结果返回表中超过5%的数据时，应该走全表扫描。</p>
+<ul>
+<li><strong>查询性别列的基数</strong></li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(<span class="keyword">distinct</span> t.sex) <span class="keyword">from</span> <span class="keyword">user</span> t</span><br></pre></td></tr></table></figure>
+<h2 id="选择性"><a href="#选择性" class="headerlink" title="选择性"></a>选择性</h2><p>&emsp;&emsp;基数/表的总行数*100%。</p>
+<p>&emsp;&emsp;什么样的列必须创建索引？当一个列出现在 where 条件中，该列没有创建索引并且选择性大于20%，那么该列就必须创建索引。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(<span class="keyword">distinct</span> t.sex) / <span class="keyword">count</span>(*) <span class="keyword">from</span> <span class="keyword">user</span> t</span><br></pre></td></tr></table></figure>
+<h2 id="直方图"><a href="#直方图" class="headerlink" title="直方图"></a>直方图</h2><p>&emsp;&emsp;当某个列的基数很低，该列的数据分布就会不均衡。数据分布不均衡，就会导致在查询该列时要么走索引，要么走全表扫描，这时候很容易走错执行计划。</p>
+<p>&emsp;&emsp;<strong>如果没有对基数低的列收集直方图统计信息，基于成本的优化器（CBO）会认为该列的数据分布是均衡的。</strong></p>
+<p>&emsp;&emsp;<strong>直方图是用来帮助CBO在对基数很低、数据分布不均衡的列进行Rows估算的时候，可以得到更精确的Rows。</strong></p>
+<p>&emsp;&emsp;什么样的列应该收集直方图？该列出现在where条件中，列的选择性小于1%并且该列没有收集过直方图。</p>
+<h2 id="回表"><a href="#回表" class="headerlink" title="回表"></a>回表</h2><p>&emsp;&emsp;当对一个列创建索引之后，索引会包含该列的键值以及键值对应行所在的rowid。</p>
+<p>&emsp;&emsp;<strong>通过索引中记录的rowid访问表中的数据就叫回表。回表一般是单块读（一个rowid对应一个数据块），回表次数太多会严重影响SQL性能。如果回表次数太多，就不应该走索引，应该直接走全表扫描。</strong></p>
+<p>&emsp;&emsp;<code>arraysize</code>参数：表示Oracle服务器每次传输多少行数据到客户端。假设<code>arraysize=15</code>，如果一个数据块有150行数据，那么每次传输15行，需要读取这个数据块10次才能读完，此时逻辑读被放大了。为了消除arraysize对逻辑读的影响，可以将参数调大。</p>
+<h1 id="全自动优化脚本"><a href="#全自动优化脚本" class="headerlink" title="全自动优化脚本"></a>全自动优化脚本</h1><h2 id="抓住必须创建索引的列"><a href="#抓住必须创建索引的列" class="headerlink" title="抓住必须创建索引的列"></a>抓住必须创建索引的列</h2><ul>
+<li>刷行数据库监控信息</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">begin</span></span><br><span class="line">  dbms_stats.flush_database_monitoring_info;</span><br><span class="line"><span class="keyword">end</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查询指定用户指定表出现在where条件中的列信息</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> r.name <span class="keyword">as</span> owner,</span><br><span class="line">       o.name <span class="keyword">as</span> table_name,</span><br><span class="line">       c.name <span class="keyword">as</span> column_name,</span><br><span class="line">       u.equality_preds,     <span class="comment">-- 等值过滤</span></span><br><span class="line">       u.equijoin_preds,     <span class="comment">-- 等值join，ex: where a.id=b.id</span></span><br><span class="line">       u.nonequijoin_preds,  <span class="comment">-- 不等于join</span></span><br><span class="line">       u.range_preds,        <span class="comment">-- 返回过滤次数</span></span><br><span class="line">       u.like_preds,         <span class="comment">-- like过滤</span></span><br><span class="line">       u.null_preds,         <span class="comment">-- null过滤</span></span><br><span class="line">       u.timestamp</span><br><span class="line"><span class="keyword">from</span> sys.col_usage$ u,</span><br><span class="line">     sys.obj$ o,</span><br><span class="line">     sys.col$ c,</span><br><span class="line">     sys.user$ r</span><br><span class="line"><span class="keyword">where</span> u.obj<span class="comment"># = o.obj#</span></span><br><span class="line">  <span class="keyword">and</span> u.obj<span class="comment"># = c.obj#</span></span><br><span class="line">  <span class="keyword">and</span> u.intcol<span class="comment"># = c.col#</span></span><br><span class="line">  <span class="keyword">and</span> r.name = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> o.name = <span class="string">'CON_CONTRACT'</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>查询指定用户指定表的索引信息</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> c.table_owner, c.table_name, c.column_name, c.index_name</span><br><span class="line"><span class="keyword">from</span> dba_ind_columns c</span><br><span class="line"><span class="keyword">where</span> c.table_owner = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> c.table_name = <span class="string">'CON_CONTRACT'</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>指定用户指定表的选择性大于20%的列</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> a.owner, a.table_name, a.column_name, <span class="keyword">round</span>(a.num_distinct / b.num_rows * <span class="number">100</span>, <span class="number">2</span>) selectivity</span><br><span class="line"><span class="keyword">from</span> dba_tab_col_statistics a,</span><br><span class="line">     dba_tables b</span><br><span class="line"><span class="keyword">where</span> a.owner = b.owner</span><br><span class="line">  <span class="keyword">and</span> a.table_name = b.table_name</span><br><span class="line">  <span class="keyword">and</span> a.owner = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> a.table_name = <span class="string">'CON_CONTRACT'</span></span><br><span class="line">  <span class="keyword">and</span> a.num_distinct / b.num_rows &gt;= <span class="number">0.2</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>最终的脚本</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> t1.owner, t1.table_name, t1.column_name, t1.num_rows, t1.Cardinality, t1.selectivity, <span class="string">'Need index'</span> <span class="keyword">as</span> <span class="keyword">notice</span></span><br><span class="line"><span class="keyword">from</span> (<span class="keyword">select</span> b.owner,</span><br><span class="line">             a.table_name,</span><br><span class="line">             a.column_name,</span><br><span class="line">             b.num_rows,</span><br><span class="line">             a.num_distinct                              Cardinality,</span><br><span class="line">             <span class="keyword">round</span>(a.num_distinct / b.num_rows * <span class="number">100</span>, <span class="number">2</span>) selectivity</span><br><span class="line">      <span class="keyword">from</span> dba_tab_col_statistics a,</span><br><span class="line">           dba_tables b</span><br><span class="line">      <span class="keyword">where</span> a.owner = b.owner</span><br><span class="line">        <span class="keyword">and</span> a.table_name = b.table_name</span><br><span class="line">        <span class="keyword">and</span> a.owner = <span class="string">'RETAIL'</span></span><br><span class="line">        <span class="keyword">and</span> a.table_name = <span class="string">'CON_CONTRACT'</span>) t1</span><br><span class="line"><span class="keyword">where</span> t1.selectivity &gt;= <span class="number">20</span></span><br><span class="line">  <span class="keyword">and</span> <span class="keyword">not</span> <span class="keyword">exists</span>(<span class="keyword">select</span> <span class="number">1</span></span><br><span class="line">                 <span class="keyword">from</span> dba_ind_columns t2</span><br><span class="line">                 <span class="keyword">where</span> t2.table_owner = t1.owner</span><br><span class="line">                   <span class="keyword">and</span> t2.table_name = t1.table_name</span><br><span class="line">                   <span class="keyword">and</span> t2.column_name = t1.column_name)</span><br><span class="line">  <span class="keyword">and</span> <span class="keyword">exists</span>(<span class="keyword">select</span> <span class="number">1</span></span><br><span class="line">             <span class="keyword">from</span> sys.col_usage$ u,</span><br><span class="line">                  sys.obj$ o,</span><br><span class="line">                  sys.col$ c,</span><br><span class="line">                  sys.user$ r</span><br><span class="line">             <span class="keyword">where</span> o.obj<span class="comment"># = u.obj#</span></span><br><span class="line">               <span class="keyword">and</span> c.obj<span class="comment"># = u.obj#</span></span><br><span class="line">               <span class="keyword">and</span> c.col<span class="comment"># = u.intcol#</span></span><br><span class="line">               <span class="keyword">and</span> r.name = t1.owner</span><br><span class="line">               <span class="keyword">and</span> o.name = t1.table_name</span><br><span class="line">               <span class="keyword">and</span> c.name = t1.column_name);</span><br></pre></td></tr></table></figure>
+<h2 id="抓住必须创建直方图的列"><a href="#抓住必须创建直方图的列" class="headerlink" title="抓住必须创建直方图的列"></a>抓住必须创建直方图的列</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> a.owner,</span><br><span class="line">       a.table_name,</span><br><span class="line">       a.column_name,</span><br><span class="line">       b.num_rows,</span><br><span class="line">       a.num_distinct,</span><br><span class="line">       trunc(a.num_distinct / b.num_rows * <span class="number">100</span>, <span class="number">2</span>) selectivity,</span><br><span class="line">       <span class="string">'Need Gather Histogram'</span>                     <span class="keyword">notice</span></span><br><span class="line"><span class="keyword">from</span> dba_tab_col_statistics a,</span><br><span class="line">     dba_tables b</span><br><span class="line"><span class="keyword">where</span> a.owner = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> a.table_name = <span class="string">'CON_CONTRACT'</span></span><br><span class="line">  <span class="keyword">and</span> a.owner = b.owner</span><br><span class="line">  <span class="keyword">and</span> a.table_name = b.table_name</span><br><span class="line">  <span class="keyword">and</span> a.num_distinct / b.num_rows &lt; <span class="number">0.01</span></span><br><span class="line">  <span class="keyword">and</span> (a.owner, a.table_name, a.column_name) <span class="keyword">in</span></span><br><span class="line">      (<span class="keyword">select</span> r.name owner, o.name table_name, c.name column_name</span><br><span class="line">       <span class="keyword">from</span> sys.col_usage$ u,</span><br><span class="line">            sys.obj$ o,</span><br><span class="line">            sys.col$ c,</span><br><span class="line">            sys.user$ r</span><br><span class="line">       <span class="keyword">where</span> o.obj<span class="comment"># = u.obj#</span></span><br><span class="line">         <span class="keyword">and</span> c.obj<span class="comment"># = u.obj#</span></span><br><span class="line">         <span class="keyword">and</span> c.col<span class="comment"># = u.intcol#</span></span><br><span class="line">         <span class="keyword">and</span> r.name = a.owner</span><br><span class="line">         <span class="keyword">and</span> o.name = a.table_name)</span><br><span class="line">  <span class="keyword">and</span> a.histogram = <span class="string">'NONE'</span>;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/oracle/" rel="tag"><i class="fa fa-tag"></i> oracle</a>
+              <a href="/tags/sql/" rel="tag"><i class="fa fa-tag"></i> sql</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/regex-md.html" rel="prev" title="正则表达式">
+      <i class="fa fa-chevron-left"></i> 正则表达式
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/Spring-Security-Authentication-Configuration.html" rel="next" title="Spring Security（二） 认证配置类">
+      Spring Security（二） 认证配置类 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#核心思想"><span class="nav-number">1.</span> <span class="nav-text">核心思想</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#只有大表才会产生性能"><span class="nav-number">1.1.</span> <span class="nav-text">只有大表才会产生性能</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#基本概念"><span class="nav-number">2.</span> <span class="nav-text">基本概念</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基数"><span class="nav-number">2.1.</span> <span class="nav-text">基数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#选择性"><span class="nav-number">2.2.</span> <span class="nav-text">选择性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#直方图"><span class="nav-number">2.3.</span> <span class="nav-text">直方图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#回表"><span class="nav-number">2.4.</span> <span class="nav-text">回表</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#全自动优化脚本"><span class="nav-number">3.</span> <span class="nav-text">全自动优化脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#抓住必须创建索引的列"><span class="nav-number">3.1.</span> <span class="nav-text">抓住必须创建索引的列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#抓住必须创建直方图的列"><span class="nav-number">3.2.</span> <span class="nav-text">抓住必须创建直方图的列</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ferry"
+      src="/images/ferry-215x215.gif">
+  <p class="site-author-name" itemprop="name">ferry</p>
+  <div class="site-description" itemprop="description">虽未满百岁已如歌归于其居</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/loveferry" title="GitHub → https://github.com/loveferry" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ferry_sy@163.com" title="E-Mail → mailto:ferry_sy@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ferry</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>

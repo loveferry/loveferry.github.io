@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/ferry-180x180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/ferry-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/ferry-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="&amp;emsp;&amp;emsp;记录一下mysql中常用的语法吧，也算是通用的sql语法。">
+<meta name="keywords" content="mysql,limit,case,创建用户,分配权限,安装mysql5.7">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql">
+<meta property="og:url" content="https://ferry.org.cn/mysql.html">
+<meta property="og:site_name" content="儿女意向来痴">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;记录一下mysql中常用的语法吧，也算是通用的sql语法。">
+<meta property="og:locale" content="zh-CH">
+<meta property="og:image" content="https://ferry.org.cn/mysql/mysql-ls-result.png">
+<meta property="og:image" content="https://ferry.org.cn/mysql/mysql-install-service-status.png">
+<meta property="og:image" content="https://ferry.org.cn/mysql/mysql-init-password.png">
+<meta property="og:image" content="https://ferry.org.cn/mysql/mysql-install-select.png">
+<meta property="og:image" content="https://ferry.org.cn/mysql/mysql_install_io_show.png">
+<meta property="og:image" content="https://ferry.org.cn/mysql/mysql_os_ulimit.png">
+<meta property="og:image" content="https://ferry.org.cn/mysql/mysql_query_cache_variables.png">
+<meta property="og:updated_time" content="2020-07-04T01:02:10.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mysql">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;记录一下mysql中常用的语法吧，也算是通用的sql语法。">
+<meta name="twitter:image" content="https://ferry.org.cn/mysql/mysql-ls-result.png">
+
+<link rel="canonical" href="https://ferry.org.cn/mysql.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CH'
+  };
+</script>
+
+  <title>mysql | 儿女意向来痴</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">儿女意向来痴</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">35</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">7</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/mysql.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ferry-215x215.gif">
+      <meta itemprop="name" content="ferry">
+      <meta itemprop="description" content="虽未满百岁已如歌归于其居">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="儿女意向来痴">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          mysql
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-17 18:43:35" itemprop="dateCreated datePublished" datetime="2018-12-17T18:43:35+08:00">2018-12-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-07-04 09:02:10" itemprop="dateModified" datetime="2020-07-04T09:02:10+08:00">2020-07-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/数据库/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>&emsp;&emsp;记录一下mysql中常用的语法吧，也算是通用的sql语法。</p>
+<a id="more"></a>
+<h3 id="建库建表"><a href="#建库建表" class="headerlink" title="建库建表"></a>建库建表</h3><ul>
+<li>创建一个新的数据库</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span> DEMO <span class="keyword">DEFAULT</span> <span class="built_in">CHARACTER</span> <span class="keyword">SET</span> utf8 <span class="keyword">COLLATE</span> utf8_general_ci;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>建表语句</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="keyword">user</span> (</span><br><span class="line">  <span class="keyword">id</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> AUTO_INCREMENT <span class="keyword">COMMENT</span> <span class="string">"自增长，不为空"</span>,</span><br><span class="line">  <span class="built_in">number</span> <span class="built_in">varchar</span>(<span class="number">50</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">"编号"</span>,</span><br><span class="line">  <span class="keyword">name</span> <span class="built_in">varchar</span>(<span class="number">50</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">"可以超过255个字符，存储变长，节省存储空间"</span>,</span><br><span class="line">  age <span class="built_in">tinyint</span> <span class="keyword">COMMENT</span> <span class="string">"-128~127"</span>,</span><br><span class="line">  money <span class="built_in">float</span>(<span class="number">10</span>,<span class="number">1</span>) <span class="keyword">COMMENT</span> <span class="string">"单精度浮点型，m总个数，d小数位，容易造成精度丢失"</span>,</span><br><span class="line">  height <span class="keyword">double</span>(<span class="number">10</span>,<span class="number">1</span>) <span class="keyword">COMMENT</span> <span class="string">"双精度浮点型，m总个数，d小数位"</span>,</span><br><span class="line">  weight <span class="keyword">double</span> <span class="keyword">COMMENT</span> <span class="string">"可以不设置m,d"</span>,</span><br><span class="line">  phone <span class="built_in">decimal</span>(<span class="number">10</span>,<span class="number">1</span>) <span class="keyword">COMMENT</span> <span class="string">"高精度的数据类型，常用来存储交易相关的数据，DECIMAL(M,N).M代表总精度，N代表小数点右侧的位数。1 &lt; M &lt; 254, 0 &lt; N &lt; 60;存储空间变长"</span>,</span><br><span class="line">  born_date <span class="built_in">date</span> <span class="keyword">COMMENT</span> <span class="string">"精确到年月日"</span>,</span><br><span class="line">  register_date datetime <span class="keyword">COMMENT</span> <span class="string">"精确到年月日时分秒"</span>,</span><br><span class="line">  description <span class="built_in">text</span> <span class="keyword">COMMENT</span> <span class="string">"总大小为65535字节，约为64KB"</span>,</span><br><span class="line">  <span class="keyword">constraint</span> pk_user_id_and_number primary <span class="keyword">key</span> (<span class="keyword">id</span>,<span class="built_in">number</span>),</span><br><span class="line">  <span class="keyword">constraint</span> fk_user_height_and_weight <span class="keyword">foreign</span> <span class="keyword">key</span>(height,weight) <span class="keyword">references</span> other_table_name(major_key_one,major_key_two),</span><br><span class="line">  <span class="keyword">constraint</span> uk_user_name <span class="keyword">unique</span> <span class="keyword">key</span>(<span class="keyword">name</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=<span class="keyword">InnoDB</span> <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8 <span class="keyword">COMMENT</span> <span class="string">"表注释"</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>显示建表语句</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> <span class="keyword">create</span> <span class="keyword">table</span> <span class="keyword">user</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查询表结构</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">desc user;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改表名</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> <span class="keyword">user</span> <span class="keyword">rename</span> new_user;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>如果存在则删除表</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">drop</span> <span class="keyword">table</span> <span class="keyword">if</span> <span class="keyword">exists</span> <span class="keyword">user</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="常用关键字的用法"><a href="#常用关键字的用法" class="headerlink" title="常用关键字的用法"></a>常用关键字的用法</h3><h4 id="limit的用法"><a href="#limit的用法" class="headerlink" title="limit的用法"></a>limit的用法</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">user</span> <span class="keyword">limit</span> <span class="number">5</span>;</span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">user</span> <span class="keyword">limit</span> <span class="number">2</span>,<span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;当<code>limit</code>后面只有一个参数的时候，表示返回最大的记录行数。当<code>limit</code>后面有两个参数的时候，第一个参数表示偏移量，第二个参数表示返回记录行的最大的数目</p>
+<h4 id="distinct的用法"><a href="#distinct的用法" class="headerlink" title="distinct的用法"></a>distinct的用法</h4><ul>
+<li>查询id不同的记录有多少条</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(<span class="keyword">distinct</span> <span class="keyword">id</span>) <span class="keyword">from</span> <span class="keyword">user</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查询id和name同时不相同的记录</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">distinct</span> <span class="keyword">id</span>,<span class="keyword">name</span> <span class="keyword">from</span> <span class="keyword">user</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="case的用法"><a href="#case的用法" class="headerlink" title="case的用法"></a>case的用法</h4><ul>
+<li>第一种用法</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">id</span>, <span class="keyword">name</span>,</span><br><span class="line">	<span class="keyword">case</span> </span><br><span class="line">		<span class="keyword">when</span> sex = <span class="string">'male'</span> <span class="keyword">then</span> <span class="string">'男'</span></span><br><span class="line">		<span class="keyword">when</span> sex = <span class="string">'female'</span> <span class="keyword">then</span> <span class="string">'女'</span></span><br><span class="line">		<span class="keyword">else</span> <span class="string">'人妖'</span> </span><br><span class="line">	<span class="keyword">end</span> <span class="keyword">as</span> sex</span><br><span class="line"><span class="keyword">from</span> <span class="keyword">user</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这种用法还可以在<code>when</code>中使用<code>and</code>、<code>or</code>等关键字拼接多个条件对进行筛选</p>
+<ul>
+<li>第二种用法</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">id</span>, <span class="keyword">name</span>,</span><br><span class="line">	<span class="keyword">case</span> sex</span><br><span class="line">		<span class="keyword">when</span> <span class="string">'male'</span> <span class="keyword">then</span> <span class="string">'男'</span></span><br><span class="line">		<span class="keyword">when</span> <span class="string">'female'</span> <span class="keyword">then</span> <span class="string">'女'</span></span><br><span class="line">		<span class="keyword">else</span> <span class="string">'人妖'</span> </span><br><span class="line">	<span class="keyword">end</span> <span class="keyword">as</span> sex</span><br><span class="line"><span class="keyword">from</span> <span class="keyword">user</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;值得一提的是，<code>CASE</code>函数只返回第一个符合条件的结果，所以在使用的时候需要注意<code>WHEN</code>条件的返回。</p>
+<h3 id="用户操作"><a href="#用户操作" class="headerlink" title="用户操作"></a>用户操作</h3><h4 id="创建用户"><a href="#创建用户" class="headerlink" title="创建用户"></a>创建用户</h4><ul>
+<li>创建用户</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">USER</span> <span class="string">'username'</span>@<span class="string">'host'</span> <span class="keyword">IDENTIFIED</span> <span class="keyword">BY</span> <span class="string">'password'</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改密码</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">alter</span> <span class="keyword">user</span> <span class="string">'root'</span>@<span class="string">'localhost'</span> <span class="keyword">identified</span> <span class="keyword">by</span> <span class="string">'ferry'</span>;</span><br><span class="line"><span class="keyword">flush</span> <span class="keyword">privileges</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>host</code>是IP地址，可以指向某一个ip地址，也可以使用<code>%</code>来表示所有的ip地址都可以通过该用户名密码连接该数据库。密码可以为空，如果密码给空字符串，则登录该用户不需要密码（不推荐）。</p>
+<h4 id="授权"><a href="#授权" class="headerlink" title="授权"></a>授权</h4><p>&emsp;&emsp;为用户授权的语法：grant 权限 on 数据库.表名 to ‘用户名‘@’登录主机’ IDENTIFIED BY ‘密码’;</p>
+<ul>
+<li>赋予用户某个数据库全部权限并刷新系统权限</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">grant</span> <span class="keyword">all</span> <span class="keyword">privileges</span> <span class="keyword">on</span> demo.* <span class="keyword">to</span> <span class="string">'ferry'</span>@<span class="string">'%'</span> <span class="keyword">IDENTIFIED</span> <span class="keyword">BY</span> <span class="string">'ferry'</span>;</span><br><span class="line"><span class="keyword">flush</span> <span class="keyword">privileges</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>all privileges</code>是所有权限的意思，这条语句的意思是将<code>demo</code>数据库的所有表的所有权限赋予密码为<code>ferry</code>，用户名为<code>ferry</code>的用户，可以通过任意IP地址通过该用户连接数据库。</p>
+<ul>
+<li>赋予用户部分权限并刷新系统权限</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">grant</span> <span class="keyword">select</span>,<span class="keyword">delete</span>,<span class="keyword">update</span>,<span class="keyword">create</span>,<span class="keyword">drop</span> <span class="keyword">on</span> demo.user <span class="keyword">to</span> <span class="string">'ferry'</span>@<span class="string">'localhost'</span> <span class="keyword">IDENTIFIED</span> <span class="keyword">BY</span> <span class="string">'ferry'</span>;</span><br><span class="line"><span class="keyword">flush</span> <span class="keyword">privileges</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这条语句的意思是将<code>demo</code>数据库的<code>user</code>的crud权限赋予密码为<code>ferry</code>，用户名为<code>ferry</code>的用户，该用户只能在本地连接数据库。</p>
+<ul>
+<li>超级权限</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">grant</span> <span class="keyword">all</span> <span class="keyword">privileges</span> <span class="keyword">on</span> demo.* <span class="keyword">to</span> <span class="string">'ferry'</span>@<span class="string">'%'</span> <span class="keyword">IDENTIFIED</span> <span class="keyword">BY</span> <span class="string">'ferry'</span> <span class="keyword">WITH</span> <span class="keyword">GRANT</span> <span class="keyword">OPTION</span>;</span><br><span class="line"><span class="keyword">flush</span> <span class="keyword">privileges</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>ferry</code>用户可以赋权给其他用户。</p>
+<h4 id="删除用户"><a href="#删除用户" class="headerlink" title="删除用户"></a>删除用户</h4><ul>
+<li>删除用户及其权限</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">drop</span> <span class="keyword">user</span> <span class="string">'ferry'</span>@<span class="string">'%'</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="基于centOS安装mysql5-7"><a href="#基于centOS安装mysql5-7" class="headerlink" title="基于centOS安装mysql5.7"></a>基于centOS安装mysql5.7</h3><h4 id="yum安装"><a href="#yum安装" class="headerlink" title="yum安装"></a>yum安装</h4><ul>
+<li>更新yum</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum update</span><br></pre></td></tr></table></figure>
+<ul>
+<li>安装wget（已安装忽略）</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install wget</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看Linux发行版本（其实没必要，看一下自己的系统版本而已。。）</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/redhat-release</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取MySQL官方的Yum Repository</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget https://dev.mysql.com/get/mysql57-community-release-el7-7.noarch.rpm</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里要bb一句，下载链接是从mysql官网找到粘贴过来的，用点心，注意官网的yum repository分类下面找下载链接</p>
+<ul>
+<li>查看文件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls</span><br></pre></td></tr></table></figure>
+<p><img src="/mysql/mysql-ls-result.png" alt="查看结果"></p>
+<ul>
+<li>安装mysql的Yum Repository</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install mysql*</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;因为该目录下只有一个以mysql开口的文件名，所以在这里我直接使用<code>*</code>模糊查询。</p>
+<ul>
+<li>安装MySQL的服务器版本</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -y install mysql-community-server</span><br></pre></td></tr></table></figure>
+<ul>
+<li>启动mysql服务</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start mysqld.service</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看服务状态</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status mysqld.service</span><br></pre></td></tr></table></figure>
+<p><img src="/mysql/mysql-install-service-status.png" alt="查看状态"></p>
+<p>&emsp;&emsp;很显然，服务已经正常的启动了，接下来就是登陆mysql了，使用yum安装mysql并启动服务后，MySQL进程会自动在进程日志中打印root用户的初始密码。</p>
+<ul>
+<li>获取mysql初始密码</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep <span class="string">"password"</span> /var/<span class="built_in">log</span>/mysqld.log</span><br></pre></td></tr></table></figure>
+<p><img src="/mysql/mysql-init-password.png" alt="获取初始密码"></p>
+<ul>
+<li>登陆并修改密码</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">alter</span> <span class="keyword">user</span> <span class="string">'root'</span>@<span class="string">'localhost'</span> <span class="keyword">identified</span> <span class="keyword">by</span> <span class="string">'ferry'</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;直接这样运行，那么肯定报错了，当你使用日志中的密码登陆时会要求你修改密码，在你修改密码之前，你所能做的操作真的少得可怜。同时这个密码的强度默认是中等的，具体这个中等强度有那些要求我不太清楚，反正密码我没设置成功过。想设置简单一点的密码就是降低密码强度。还需要注意的是因为root用户的ip地址是<code>localhost</code>，所以只能指向localhost。</p>
+<ul>
+<li>降低密码强度并设置密码最低位数</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">global</span> validate_password_policy=<span class="number">0</span>;</span><br><span class="line"><span class="keyword">set</span> <span class="keyword">global</span> validate_password_length=<span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改密码并刷新权限</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">alter</span> <span class="keyword">user</span> <span class="string">'root'</span>@<span class="string">'localhost'</span> <span class="keyword">identified</span> <span class="keyword">by</span> <span class="string">'ferry'</span>;</span><br><span class="line"><span class="keyword">flush</span> <span class="keyword">privileges</span>;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如果报错，请使用：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span> <span class="keyword">password</span> <span class="keyword">for</span> ferry@localhost=<span class="keyword">password</span>(<span class="string">'ferry'</span>);</span><br></pre></td></tr></table></figure>
+<h4 id="二进制文件安装"><a href="#二进制文件安装" class="headerlink" title="二进制文件安装"></a>二进制文件安装</h4><h5 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h5><p>&emsp;&emsp;在<a href="www.mysql.com">mysql官网</a>点击<code>MySQL Community Server</code>-<code>Looking for previous GA versions?</code>选择指定的版本的数据库。如下选择的是GA版5.7.28的linux通用版64位的进行下载。</p>
+<p><img src="/mysql/mysql-install-select.png" alt="选择二进制文件"></p>
+<p>&emsp;&emsp;下文安装选择mysql8.0进行安装。</p>
+<ul>
+<li>MD5校验，确保软件包可用</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">md5sum mysql-8.0.18-linux-glibc2.12-x86_64.tar.xz</span><br></pre></td></tr></table></figure>
+<ul>
+<li>SELinux和系统防火墙关闭</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop firewalld.service</span><br><span class="line">vi /etc/sysconfig/selinux</span><br><span class="line">SELINUX=disabled</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;修改SELinux需要重启系统生效。安全增强型 Linux（Security-Enhanced Linux）简称 SELinux，它是一个 Linux 内核模块，也是 Linux 的一个安全子系统。SELinux 主要作用就是最大限度地减小系统中服务进程可访问的资源（最小权限原则）。</p>
+<ul>
+<li>I/O调度系统使用deadline模式</li>
+</ul>
+<ol>
+<li><p>Linus Elevator: 在2.4 内核中它是第一种I/O调度器。它的主要作用是为每个设备维护一个查询请求，当内核收到一个新请求时，如果能合并就合并。如果不能合并，就会尝试排序。如果既不能合并，也没有合适的位置插入，就放到请求队列的最后。</p>
+</li>
+<li><p>Anticipatory: Anticipatory的中文含义是”预料的，预想的”，顾名思义有个I/O发生的时候，如果又有进程请求I/O操作，则将产生一个默认的6毫秒猜测时间，猜测下一个进程请求I/O是要干什么的。这个I/O调度器对读操作优化服务时间，在提供一个I/O的时候进行短时间等待，使进程能够提交到另外的I/O。Anticipatory算法从Linux 2.6.33版本后被删除了，因为使用CFQ通过配置也能达到Anticipatory的效果。</p>
+</li>
+<li><p>DeadLine: Deadline翻译成中文是截止时间调度器，是对Linus Elevator的一种改进，它避免有些请求太长时间不能被处理。另外可以区分对待读操作和写操作。DEADLINE额外分别为读I/O和写I/O提供了FIFO队列。</p>
+</li>
+<li><p>CFQ: CFQ全称Completely Fair Scheduler ，中文名称完全公平调度器，它是现在许多 Linux 发行版的默认调度器，CFQ是内核默认选择的I/O调度器。它将由进程提交的同步请求放到多个进程队列中，然后为每个队列分配时间片以访问磁盘。对于通用的服务器是最好的选择,CFQ均匀地分布对I/O带宽的访问。CFQ为每个进程和线程,单独创建一个队列来管理该进程所产生的请求,以此来保证每个进程都能被很好的分配到I/O带宽，I/O调度器每次执行一个进程的4次请求。该算法的特点是按照I/O请求的地址进行排序，而不是按照先来后到的顺序来进行响应。简单来说就是给所有同步进程分配时间片，然后才排队访问磁盘</p>
+</li>
+<li><p>NOOP: NOOP全称No Operation,中文名称电梯式调度器，该算法实现了最简单的FIFO队列，所有I/O请求大致按照先来后到的顺序进行操作。NOOP实现了一个简单的FIFO队列,它像电梯的工作主法一样对I/O请求进行组织。它是基于先入先出（FIFO）队列概念的 Linux 内核里最简单的I/O 调度器。此调度程序最适合于固态硬盘。</p>
+</li>
+</ol>
+<p>&emsp;&emsp;I/O调度器的选择: 目前主流Linux发行版本使用三种I/O调度器：DeadLine、CFQ、NOOP，通常来说Deadline适用于大多数环境,特别是写入较多的文件服务器，从原理上看，DeadLine是一种以提高机械硬盘吞吐量为思考出发点的调度算法，尽量保证在有I/O请求达到最终期限的时候进行调度，非常适合业务比较单一并且I/O压力比较重的业务，比如Web服务器，数据库应用等。CFQ 为所有进程分配等量的带宽,适用于有大量进程的多用户系统，CFQ是一种比较通用的调度算法，它是一种以进程为出发点考虑的调度算法，保证大家尽量公平,为所有进程分配等量的带宽,适合于桌面多任务及多媒体应用。NOOP 对于闪存设备和嵌入式系统是最好的选择。对于固态硬盘来说使用NOOP是最好的，DeadLine次之，而CFQ效率最低。</p>
+<ul>
+<li>查看当前系统支持的I/O调度器</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dmesg | grep -i scheduler</span><br></pre></td></tr></table></figure>
+<p><img src="/mysql/mysql_install_io_show.png" alt="显示"></p>
+<p>&emsp;&emsp;当前I/O调度器是<code>deadline</code>。</p>
+<ul>
+<li>查看某块硬盘的IO调度算法I/O调度器</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /sys/block/sda/queue/scheduler</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如果sda目录不存在，就找vda目录。</p>
+<ul>
+<li>swap分区的设置</li>
+</ul>
+<p>&emsp;&emsp;不建议设置，或者设置4G。</p>
+<ul>
+<li>文件系统的选择</li>
+</ul>
+<p>&emsp;&emsp;建议使用xfs文件系统，相比ext4，它更加方便管理，支持动态扩容，删除文件也很方便。</p>
+<ul>
+<li>操作系统的限制</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ulimit</span> -a</span><br></pre></td></tr></table></figure>
+<p><img src="/mysql/mysql_os_ulimit.png" alt="查看参数"></p>
+<p>&emsp;&emsp;open files如果设置不合理，那么当服务器连接过多或者表过多时就可能访问不了或者打不开表；max user processes参数的用途是，有时候我们可能会跑多实例，但是创建不了新的连接，报出”resource temporarily unavailable”的错误，表示没有足够的资源。</p>
+<ul>
+<li>修改系统限制，编辑<code>/etc/security/limits.conf</code>(重启系统)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">*   soft    nproc   65535</span><br><span class="line">*   hard    nproc   65535</span><br><span class="line">*   soft    nofile  65535</span><br><span class="line">*   hard    nofile  65535</span><br></pre></td></tr></table></figure>
+<ul>
+<li>关闭numa</li>
+</ul>
+<p>&emsp;&emsp;关闭numa功能，能够更好的分配内存，不需要采用swap的方式获取内存。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">numa --interleave=all /usr/<span class="built_in">local</span>/mysql/bin/mysqld_safe -defaults-file=/etc/my.cnf &amp;</span><br></pre></td></tr></table></figure>
+<h5 id="用户，目录设置"><a href="#用户，目录设置" class="headerlink" title="用户，目录设置"></a>用户，目录设置</h5><ul>
+<li>创建用户，用户组</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">groupadd mysql</span><br><span class="line">useradd -g mysql mysql -s /sbin/nologin</span><br></pre></td></tr></table></figure>
+<ul>
+<li>解压软件包</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -zxvf mysql-8.0.18-linux-glibc2.12-x86_64.tar.gz</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如果解压出错，但是之前md5校验没问题，那么大概率是我们的系统缺少什么依赖没有安装，按照shell提示的错误信息解决即可。</p>
+<ul>
+<li>软连接，方便日后升级</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ln -s mysql-8.0.18-linux-glibc2.12-x86_64 mysql</span><br></pre></td></tr></table></figure>
+<ul>
+<li>授权</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chown mysql:mysql -R mysql</span><br></pre></td></tr></table></figure>
+<ul>
+<li>数据目录</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /data/mysql</span><br><span class="line">chown mysql:mysql -R /data/mysql</span><br></pre></td></tr></table></figure>
+<ul>
+<li>配置mysql环境变量</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /etc/profile.d</span><br><span class="line">vi mysql.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> PATH=<span class="variable">$PATH</span>:/usr/<span class="built_in">local</span>/mysql/bin</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chown mysql:mysql mysql.sh</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">. /etc/profile.d/mysql.sh</span><br></pre></td></tr></table></figure>
+<ul>
+<li>配置文件<code>vi /etc/my.cnf</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h5 id="启动数据库"><a href="#启动数据库" class="headerlink" title="启动数据库"></a>启动数据库</h5><ul>
+<li>初始化数据库</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/mysql/bin</span><br><span class="line">./mysqld --defaults-file=/etc/my.cnf --basedir=/usr/<span class="built_in">local</span>/mysql --datadir=/data/mysql/ --user=mysql --initialize</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>defaults-file</code>指定mysql的配置文件,<code>basedir</code>指定mysql的安装目录,<code>datadir</code>指定mysql的数据目录,<code>user</code>指定用户,<code>initialize</code>会在数据目录下生成一个文件log-error,记录零时的数据库初始化密码，如果是<code>initialize-insecure</code>代表无密码进入。</p>
+<ul>
+<li>启动数据库</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/<span class="built_in">local</span>/mysql/bin/</span><br><span class="line">./mysqld_safe --defaults-file=/etc/my.cnf &amp;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>登陆</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -u root -p -P 3306 -h localhost</span><br></pre></td></tr></table></figure>
+<h3 id="修改mysql配置文件"><a href="#修改mysql配置文件" class="headerlink" title="修改mysql配置文件"></a>修改mysql配置文件</h3><ul>
+<li>查看mysql服务默认读取的的my.cnf文件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql --<span class="built_in">help</span>|grep <span class="string">'my.cnf'</span></span><br></pre></td></tr></table></figure>
+<h4 id="查询缓存"><a href="#查询缓存" class="headerlink" title="查询缓存"></a>查询缓存</h4><p>&emsp;&emsp;查询缓存只能缓存静态的数据，数据仓库之类可能考虑使用查询缓存，生产建议关闭。Mysql5.6之前查询缓存默认开启，之后默认关闭，8.0版本之后删除了查询缓存功能。</p>
+<ul>
+<li>查看查询缓存参数</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show variables like &quot;%query_cache%&quot;;</span><br></pre></td></tr></table></figure>
+<p><img src="/mysql/mysql_query_cache_variables.png" alt="查询结果"></p>
+<ul>
+<li>关闭查询缓存(vi /etc/my.cnf)重启服务</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[mysqld]</span><br><span class="line">query_cache_type=0</span><br><span class="line">query_cache_size=0</span><br></pre></td></tr></table></figure>
+<h4 id="设置时区"><a href="#设置时区" class="headerlink" title="设置时区"></a>设置时区</h4><p>&emsp;&emsp;mysql中默认使用的SYSTEM时区，即EST时区，EST时区要比北京时间（东八区）慢13个小时。我们一般使用北京时间也就是东八区。</p>
+<ul>
+<li>查询时区</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">show</span> <span class="keyword">variables</span> <span class="keyword">like</span> <span class="string">'%time_zone%'</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置时区(vi /etc/my.cnf)重启服务</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[mysqld]</span><br><span class="line">default-time_zone = <span class="string">'+8:00'</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;未完待续。。。。。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/mysql/" rel="tag"><i class="fa fa-tag"></i> mysql</a>
+              <a href="/tags/limit/" rel="tag"><i class="fa fa-tag"></i> limit</a>
+              <a href="/tags/case/" rel="tag"><i class="fa fa-tag"></i> case</a>
+              <a href="/tags/创建用户/" rel="tag"><i class="fa fa-tag"></i> 创建用户</a>
+              <a href="/tags/分配权限/" rel="tag"><i class="fa fa-tag"></i> 分配权限</a>
+              <a href="/tags/安装mysql5-7/" rel="tag"><i class="fa fa-tag"></i> 安装mysql5.7</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/linux-order.html" rel="prev" title="linux常用指令">
+      <i class="fa fa-chevron-left"></i> linux常用指令
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oracle.html" rel="next" title="oracle">
+      oracle <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#建库建表"><span class="nav-number">1.</span> <span class="nav-text">建库建表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常用关键字的用法"><span class="nav-number">2.</span> <span class="nav-text">常用关键字的用法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#limit的用法"><span class="nav-number">2.1.</span> <span class="nav-text">limit的用法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#distinct的用法"><span class="nav-number">2.2.</span> <span class="nav-text">distinct的用法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#case的用法"><span class="nav-number">2.3.</span> <span class="nav-text">case的用法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用户操作"><span class="nav-number">3.</span> <span class="nav-text">用户操作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建用户"><span class="nav-number">3.1.</span> <span class="nav-text">创建用户</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#授权"><span class="nav-number">3.2.</span> <span class="nav-text">授权</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除用户"><span class="nav-number">3.3.</span> <span class="nav-text">删除用户</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基于centOS安装mysql5-7"><span class="nav-number">4.</span> <span class="nav-text">基于centOS安装mysql5.7</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#yum安装"><span class="nav-number">4.1.</span> <span class="nav-text">yum安装</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二进制文件安装"><span class="nav-number">4.2.</span> <span class="nav-text">二进制文件安装</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#环境准备"><span class="nav-number">4.2.1.</span> <span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#用户，目录设置"><span class="nav-number">4.2.2.</span> <span class="nav-text">用户，目录设置</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#启动数据库"><span class="nav-number">4.2.3.</span> <span class="nav-text">启动数据库</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改mysql配置文件"><span class="nav-number">5.</span> <span class="nav-text">修改mysql配置文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#查询缓存"><span class="nav-number">5.1.</span> <span class="nav-text">查询缓存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置时区"><span class="nav-number">5.2.</span> <span class="nav-text">设置时区</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ferry"
+      src="/images/ferry-215x215.gif">
+  <p class="site-author-name" itemprop="name">ferry</p>
+  <div class="site-description" itemprop="description">虽未满百岁已如歌归于其居</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/loveferry" title="GitHub → https://github.com/loveferry" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ferry_sy@163.com" title="E-Mail → mailto:ferry_sy@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ferry</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script>
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>
