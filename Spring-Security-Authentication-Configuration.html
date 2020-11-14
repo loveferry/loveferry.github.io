@@ -29,7 +29,7 @@
 <meta property="og:description" content="&amp;emsp;&amp;emsp;继上一篇 Spring Security（一） 体系结构之认证 后，这里研究一下Spring Security一个重要配置–认证配置。AuthenticationConfiguration是Spring提供的认证配置的配置类，该配置类的主要作用是用于生成一个全局的AuthenticationManagerBuilder注入到Spring容器中。使用者注入该配置类然后获取Au">
 <meta property="og:locale" content="zh-CH">
 <meta property="og:image" content="https://ferry.org.cn/Spring-Security-Authentication-Configuration/AuthenticationManagerBuilder-extends.png">
-<meta property="og:updated_time" content="2020-07-20T12:03:27.749Z">
+<meta property="og:updated_time" content="2020-09-04T07:51:22.691Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Spring Security（二） 认证配置类">
 <meta name="twitter:description" content="&amp;emsp;&amp;emsp;继上一篇 Spring Security（一） 体系结构之认证 后，这里研究一下Spring Security一个重要配置–认证配置。AuthenticationConfiguration是Spring提供的认证配置的配置类，该配置类的主要作用是用于生成一个全局的AuthenticationManagerBuilder注入到Spring容器中。使用者注入该配置类然后获取Au">
@@ -137,7 +137,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">19</span></a>
 
   </li>
   </ul>
@@ -198,7 +198,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-07-20 20:03:27" itemprop="dateModified" datetime="2020-07-20T20:03:27+08:00">2020-07-20</time>
+                <time title="修改时间：2020-09-04 15:51:22" itemprop="dateModified" datetime="2020-09-04T15:51:22+08:00">2020-09-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -246,13 +246,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> List&lt;GlobalAuthenticationConfigurerAdapter&gt; globalAuthConfigurers = Collections.emptyList();</span><br><span class="line"></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> GlobalAuthenticationConfigurerAdapter <span class="title">enableGlobalAuthenticationAutowiredConfigurer</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">        ApplicationContext context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> EnableGlobalAuthenticationAutowiredConfigurer(context);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> InitializeUserDetailsBeanManagerConfigurer <span class="title">initializeUserDetailsBeanManagerConfigurer</span><span class="params">(ApplicationContext context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> InitializeUserDetailsBeanManagerConfigurer(context);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> InitializeAuthenticationProviderBeanManagerConfigurer <span class="title">initializeAuthenticationProviderBeanManagerConfigurer</span><span class="params">(ApplicationContext context)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> InitializeAuthenticationProviderBeanManagerConfigurer(context);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Autowired</span>(required = <span class="keyword">false</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setGlobalAuthenticationConfigurers</span><span class="params">(List&lt;GlobalAuthenticationConfigurerAdapter&gt; configurers)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    Collections.sort(configurers, AnnotationAwareOrderComparator.INSTANCE);</span><br><span class="line">    <span class="keyword">this</span>.globalAuthConfigurers = configurers;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>&emsp;&emsp;这里面涉及三个子类：</p>
 <blockquote>
-<p><code>EnableGlobalAuthenticationAutowiredConfigurer</code>：看源码就是在init方法中获取使用了<code>EnableGlobalAuthentication</code>注解的bean，然后通过debug日志打印，再就没有其他操作了。</p>
-</blockquote>
-<blockquote>
-<p><code>InitializeUserDetailsBeanManagerConfigurer</code>：初始化一个认证数据服务配置对象应用到全局的 AuthenticationManagerBuilder 中，其主要作用就是初始化一个认证实现添加到Spring上下文的 AuthenticationManagerBuilder bean中，其类型为<code>DaoAuthenticationProvider</code>，获取Spring上下文中的<code>UserDetailsService</code>，<code>PasswordEncoder</code>和<code>UserDetailsPasswordService</code>，将其放入认证对象中。默认的表单登陆认证就是在这里配置的。这里加载的<code>UserDetailsService</code>bean是在<code>UserDetailsServiceAutoConfiguration</code>配置类中初始化的，初始化了一个基于内存的数据服务对象，Spring Security的默认的UUID密码就是在这里设置进去的，是从<code>SecurityProperties.User</code>类中获取。</p>
-</blockquote>
-<blockquote>
-<p><code>InitializeAuthenticationProviderBeanManagerConfigurer</code>：初始化一个认证管理配置对象，从Spring上下文中获取 AuthenticationProvider 并加载到 AuthenticationManagerBuilder 中。</p>
+<p><code>EnableGlobalAuthenticationAutowiredConfigurer</code>：看源码就是在init方法中获取使用了<code>EnableGlobalAuthentication</code>注解的bean，然后通过debug日志打印，再就没有其他操作了。<br><code>InitializeUserDetailsBeanManagerConfigurer</code>：初始化一个认证数据服务配置对象应用到全局的 AuthenticationManagerBuilder 中，其主要作用就是初始化一个认证实现添加到Spring上下文的 AuthenticationManagerBuilder bean中，其类型为<code>DaoAuthenticationProvider</code>，获取Spring上下文中的<code>UserDetailsService</code>，<code>PasswordEncoder</code>和<code>UserDetailsPasswordService</code>，将其放入认证对象中。默认的表单登陆认证就是在这里配置的。这里加载的<code>UserDetailsService</code>bean是在<code>UserDetailsServiceAutoConfiguration</code>配置类中初始化的，初始化了一个基于内存的数据服务对象，Spring Security的默认的UUID密码就是在这里设置进去的，是从<code>SecurityProperties.User</code>类中获取。<br><code>InitializeAuthenticationProviderBeanManagerConfigurer</code>：初始化一个认证管理配置对象，从Spring上下文中获取 AuthenticationProvider 并加载到 AuthenticationManagerBuilder 中。</p>
 </blockquote>
 <p>&emsp;&emsp;说到这里，认证的全局配置基本说完了，这里总结一下，在<code>AuthenticationConfiguration</code>中，初始化了三个认证配置对象加载到Spring上下文中并且注入到自身对象中，其次初始化了<code>AuthenticationManagerBuilder</code>并且将之前的三个配置类应用到此对象中，然后将对象加载到Spring上下文中，这是一个全局的构造器，用来生成一个全局的认证配置器。此外，该类还提供了一个获取全局认证器的方法。</p>
 
@@ -357,7 +351,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-count">19</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

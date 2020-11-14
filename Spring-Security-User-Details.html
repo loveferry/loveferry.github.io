@@ -20,19 +20,22 @@
     var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="虽未满百岁已如歌归于其居">
-<meta name="keywords" content="ferry的个人博客">
-<meta property="og:type" content="website">
-<meta property="og:title" content="儿女意向来痴">
-<meta property="og:url" content="https://ferry.org.cn/tags/javaconfig/index.html">
+  <meta name="description" content="&amp;emsp;&amp;emsp;继上一篇 Spring Security（二） 认证配置类 后，这里展开说明一下其中点到的一个接口UserDetailsService，这个接口的作用在于加载用户数据。这里加载的用户数据就是我们合法的用户信息，前端登录传递的用户信息必须是这里加载的用户信息中的一员才可以通过校验。我们可以通过实现这个接口来完成自定义加载用户信息的实现。">
+<meta name="keywords" content="Spring,Java,Spring Security">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Security（三） 用户信息配置">
+<meta property="og:url" content="https://ferry.org.cn/Spring-Security-User-Details.html">
 <meta property="og:site_name" content="儿女意向来痴">
-<meta property="og:description" content="虽未满百岁已如歌归于其居">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;继上一篇 Spring Security（二） 认证配置类 后，这里展开说明一下其中点到的一个接口UserDetailsService，这个接口的作用在于加载用户数据。这里加载的用户数据就是我们合法的用户信息，前端登录传递的用户信息必须是这里加载的用户信息中的一员才可以通过校验。我们可以通过实现这个接口来完成自定义加载用户信息的实现。">
 <meta property="og:locale" content="zh-CH">
+<meta property="og:image" content="https://ferry.org.cn/Spring-Security-User-Details/UserDetailsService.png">
+<meta property="og:updated_time" content="2020-09-04T07:51:22.691Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="儿女意向来痴">
-<meta name="twitter:description" content="虽未满百岁已如歌归于其居">
+<meta name="twitter:title" content="Spring Security（三） 用户信息配置">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;继上一篇 Spring Security（二） 认证配置类 后，这里展开说明一下其中点到的一个接口UserDetailsService，这个接口的作用在于加载用户数据。这里加载的用户数据就是我们合法的用户信息，前端登录传递的用户信息必须是这里加载的用户信息中的一员才可以通过校验。我们可以通过实现这个接口来完成自定义加载用户信息的实现。">
+<meta name="twitter:image" content="https://ferry.org.cn/Spring-Security-User-Details/UserDetailsService.png">
 
-<link rel="canonical" href="https://ferry.org.cn/tags/javaconfig/">
+<link rel="canonical" href="https://ferry.org.cn/Spring-Security-User-Details.html">
 
 
 <script id="page-configurations">
@@ -40,12 +43,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'zh-CH'
   };
 </script>
 
-  <title>标签: javaconfig | 儿女意向来痴</title>
+  <title>Spring Security（三） 用户信息配置 | 儿女意向来痴</title>
   
 
 
@@ -158,51 +161,110 @@
         <div class="content-wrap">
           
 
-          <div class="content tag">
+          <div class="content post posts-expand">
             
 
+    
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <h2 class="collection-header">javaconfig
-          <small>标签</small>
-        </h2>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/Spring-Security-User-Details.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ferry-215x215.gif">
+      <meta itemprop="name" content="ferry">
+      <meta itemprop="description" content="虽未满百岁已如歌归于其居">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="儿女意向来痴">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spring Security（三） 用户信息配置
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-07-21 12:08:25" itemprop="dateCreated datePublished" datetime="2020-07-21T12:08:25+08:00">2020-07-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-04 15:51:22" itemprop="dateModified" datetime="2020-09-04T15:51:22+08:00">2020-09-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring-Security/" itemprop="url" rel="index"><span itemprop="name">Spring Security</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <span class="collection-header">2018</span>
+        <p>&emsp;&emsp;继上一篇 <a href="Spring-Security-Authentication-Configuration.html">Spring Security（二） 认证配置类</a> 后，这里展开说明一下其中点到的一个接口<code>UserDetailsService</code>，这个接口的作用在于加载用户数据。这里加载的用户数据就是我们合法的用户信息，前端登录传递的用户信息必须是这里加载的用户信息中的一员才可以通过校验。我们可以通过实现这个接口来完成自定义加载用户信息的实现。</p>
+<a id="more"></a>
+<h1 id="UserDetailsService"><a href="#UserDetailsService" class="headerlink" title="UserDetailsService"></a>UserDetailsService</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.core.userdetails;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserDetailsService</span> </span>&#123;</span><br><span class="line">    <span class="function">UserDetails <span class="title">loadUserByUsername</span><span class="params">(String username)</span> <span class="keyword">throws</span> UsernameNotFoundException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;加载用户信息的核心接口。它作为用户DAO在整个框架中使用，在<code>DaoAuthenticationProvider</code>中就是使用的此接口获取用户数据。这个接口只有一个访问器方法，简化了新的数据访问策略的支持。</p>
+<p>&emsp;&emsp;关注一下这个访问器方法，他是基于用户名加载用户数据的，当找不到用户时应当抛出<code>UsernameNotFoundException</code>异常，在我们项目开发中，可能不同的实现类实现方式不同，例如有的区分大小写，有的不区分大小写，在这种情况下我们返回的用户信息和前端传过来的就不一致了，此时我们应当在认证通过后将有凭证的用户信息存储在<code>SecurityContext</code>中。</p>
+<h1 id="用户信息组织结构"><a href="#用户信息组织结构" class="headerlink" title="用户信息组织结构"></a>用户信息组织结构</h1><p><img src="/Spring-Security-User-Details/UserDetailsService.png" alt="组织结构图"></p>
+<ul>
+<li><code>UserDetailsManager</code>：对用户信息接口进行扩展，使之可以对用户信息进行更新；</li>
+<li><code>JdbcDaoImpl</code>：封装了默认的查询语句，用于从指定的表获取用户信息；</li>
+<li><code>CachingUserDetailsService</code>：用户数据缓存实现，将加载的数据缓存起来，在使用时先从缓存中获取，若为空再从委托的UserDetailsService接口加载用户并缓存。其中的缓存接口<code>UserCache</code>既可以使用其实现类<code>EhCacheBasedUserCache</code>也可以使用<code>SpringCacheBasedUserCache</code>传入一个<code>Cache</code>从而使用Spring的缓存。</li>
+<li><code>UserDetailsServiceDelegator</code>：是一个内部类，他的作用是获取全局或者局部的<code>AuthenticationManagerBuilder</code>的默认UserDetailsService对象，从而委托给其完成加载数据的操作。</li>
+</ul>
+<p>&emsp;&emsp;总结一下，UserDetailsService接口是用来获取系统的用户信息认证客户端提供的认证信息，在实际项目使用中，更多的是选择将用户信息持久化到数据库中，但是我们用户信息的表结构未必像JdbcUserDetailsManager中的表结构那样标准，所以我们可以实现UserDetailsManager自定义用户数据更新。此外，如果用户基数过大，查询用户信息的逻辑复杂，那么避免服务器负荷过高，可以将加载的用户信息缓存起来，我们可以借鉴CachingUserDetailsService，将实际工作委托给UserDetailsService，在加载用户信息前后添加判断逻辑，若缓存中存在则返回缓存中的用户信息，若不存在则加载并缓存，缓存的实现也是可以定制化开发的，自定义缓存类实现UserCache接口既可。</p>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2018-12-17T18:46:57+08:00"
-              content="2018-12-17">
-          12-17
-        </time>
-      </div>
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/Spring/" rel="tag"><i class="fa fa-tag"></i> Spring</a>
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+              <a href="/tags/Spring-Security/" rel="tag"><i class="fa fa-tag"></i> Spring Security</a>
+          </div>
 
-      <div class="post-title">
-          <a class="post-title-link" href="/spring-javaconfig.html" itemprop="url">
-            <span itemprop="name">使用javaconfig配置spring项目</span>
-          </a>
-      </div>
+        
 
-    </header>
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Spring-Security-Architecture-Authentication.html" rel="prev" title="Spring Security（一） 体系结构">
+      <i class="fa fa-chevron-left"></i> Spring Security（一） 体系结构
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
   </article>
-
-    </div>
-  </div>
   
   
-  
-
   
 
 
@@ -255,6 +317,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#UserDetailsService"><span class="nav-number">1.</span> <span class="nav-text">UserDetailsService</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#用户信息组织结构"><span class="nav-number">2.</span> <span class="nav-text">用户信息组织结构</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
