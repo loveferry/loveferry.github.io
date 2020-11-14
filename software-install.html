@@ -40,7 +40,8 @@
 <meta property="og:image" content="https://ferry.org.cn/software-install/jenkins_task.png">
 <meta property="og:image" content="https://ferry.org.cn/software-install/jenkins_general.png">
 <meta property="og:image" content="https://ferry.org.cn/software-install/jenkins_build.png">
-<meta property="og:updated_time" content="2020-07-04T01:02:11.082Z">
+<meta property="og:image" content="https://ferry.org.cn/software-install/docker-install-error.png">
+<meta property="og:updated_time" content="2020-11-14T14:32:36.161Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="常用软件安装">
 <meta name="twitter:description" content="&amp;emsp;&amp;emsp;记录一下常用的软件的安装以及环境变量的配置，省的以后百度浪费时间。">
@@ -138,17 +139,17 @@
   </li>
         <li class="menu-item menu-item-tags">
 
-    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">35</span></a>
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">36</span></a>
 
   </li>
         <li class="menu-item menu-item-categories">
 
-    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">7</span></a>
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">8</span></a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">19</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">20</span></a>
 
   </li>
   </ul>
@@ -209,7 +210,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-07-04 09:02:11" itemprop="dateModified" datetime="2020-07-04T09:02:11+08:00">2020-07-04</time>
+                <time title="修改时间：2020-11-14 22:32:36" itemprop="dateModified" datetime="2020-11-14T22:32:36+08:00">2020-11-14</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -595,7 +596,7 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x /lib/systemd/system/nginx.service</span><br></pre></td></tr></table></figure>
 <ul>
-<li>刷行配置</li>
+<li>刷新配置</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl daemon-reload</span><br></pre></td></tr></table></figure>
 <ul>
@@ -606,7 +607,30 @@
 <li>查看服务</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status nginx.service</span><br></pre></td></tr></table></figure>
-
+<h3 id="docker安装"><a href="#docker安装" class="headerlink" title="docker安装"></a>docker安装</h3><h4 id="windows-mac"><a href="#windows-mac" class="headerlink" title="windows/mac"></a>windows/mac</h4><p>&emsp;&emsp;这两种的形式没什么好说的，从<a href="https://www.docker.com/get-started" target="_blank" rel="noopener">官网</a> 下载然后安装就完事了。</p>
+<h4 id="centos"><a href="#centos" class="headerlink" title="centos"></a>centos</h4><p>&emsp;&emsp;使用yum安装docker，首先设置docker仓库，然后安装docker社区版的引擎。</p>
+<ul>
+<li>安装需要的软件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y yum-utils device-mapper-persistent-data lvm2</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置仓库源</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里使用的是阿里云的源，速度比官方的快，给出其他参考的源：<code>官方：https://download.docker.com/linux/centos/docker-ce.repo</code> , <code>清华大学：https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/docker-ce.repo</code> 。</p>
+<ul>
+<li>安装社区版引擎</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y docker-ce docker-ce-cli containerd.io</span><br></pre></td></tr></table></figure>
+<p><img src="/software-install/docker-install-error.png" alt="error"></p>
+<p>&emsp;&emsp;这一步如果如上图报错，说明<code>containerd.io</code>版本过低，我们手动下载安装高版本的就好了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://download.docker.com/linux/centos/7/x86_64/edge/Packages/containerd.io-1.3.7-3.1.el7.x86_64.rpm</span><br><span class="line">yum install -y containerd.io-1.3.7-3.1.el7.x86_64.rpm</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;安装好了之后继续上述的安装docker的操作。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y docker-ce docker-ce-cli containerd.io</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;启动docker服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;查看docker信息以验证安装是否成功</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker info</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -690,7 +714,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#JDK的安装"><span class="nav-number">1.</span> <span class="nav-text">JDK的安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux系统安装JDK"><span class="nav-number">1.1.</span> <span class="nav-text">linux系统安装JDK</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用yum安装-openjdk"><span class="nav-number">1.1.1.</span> <span class="nav-text">使用yum安装 openjdk</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-rpm-安装-oracle-jdk"><span class="nav-number">1.1.2.</span> <span class="nav-text">使用 rpm 安装 oracle jdk</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#maven安装"><span class="nav-number">2.</span> <span class="nav-text">maven安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux安装maven"><span class="nav-number">2.1.</span> <span class="nav-text">linux安装maven</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tomcat安装"><span class="nav-number">3.</span> <span class="nav-text">tomcat安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux安装tomcat"><span class="nav-number">3.1.</span> <span class="nav-text">linux安装tomcat</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#git安装"><span class="nav-number">4.</span> <span class="nav-text">git安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux安装git"><span class="nav-number">4.1.</span> <span class="nav-text">linux安装git</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis安装"><span class="nav-number">5.</span> <span class="nav-text">redis安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#windows安装redis"><span class="nav-number">5.1.</span> <span class="nav-text">windows安装redis</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#linux安装redis"><span class="nav-number">5.2.</span> <span class="nav-text">linux安装redis</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#方法一"><span class="nav-number">5.2.1.</span> <span class="nav-text">方法一</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#方法二"><span class="nav-number">5.2.2.</span> <span class="nav-text">方法二</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#安装"><span class="nav-number">5.2.2.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#配置开机自启服务"><span class="nav-number">5.2.2.2.</span> <span class="nav-text">配置开机自启服务</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#linux安装jenkins"><span class="nav-number">6.</span> <span class="nav-text">linux安装jenkins</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#yum-安装-jenkins"><span class="nav-number">6.1.</span> <span class="nav-text">yum 安装 jenkins</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#下载war包运行"><span class="nav-number">6.2.</span> <span class="nav-text">下载war包运行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置"><span class="nav-number">6.3.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建spring-boot项目的任务"><span class="nav-number">6.4.</span> <span class="nav-text">创建spring boot项目的任务</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sysbench安装"><span class="nav-number">7.</span> <span class="nav-text">sysbench安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#nginx安装"><span class="nav-number">8.</span> <span class="nav-text">nginx安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#centos源代码编译安装nginx"><span class="nav-number">8.1.</span> <span class="nav-text">centos源代码编译安装nginx</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#基本安装"><span class="nav-number">8.1.1.</span> <span class="nav-text">基本安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#将nginx配置成服务-基于centos7"><span class="nav-number">8.1.2.</span> <span class="nav-text">将nginx配置成服务(基于centos7)</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#JDK的安装"><span class="nav-number">1.</span> <span class="nav-text">JDK的安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux系统安装JDK"><span class="nav-number">1.1.</span> <span class="nav-text">linux系统安装JDK</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用yum安装-openjdk"><span class="nav-number">1.1.1.</span> <span class="nav-text">使用yum安装 openjdk</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-rpm-安装-oracle-jdk"><span class="nav-number">1.1.2.</span> <span class="nav-text">使用 rpm 安装 oracle jdk</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#maven安装"><span class="nav-number">2.</span> <span class="nav-text">maven安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux安装maven"><span class="nav-number">2.1.</span> <span class="nav-text">linux安装maven</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tomcat安装"><span class="nav-number">3.</span> <span class="nav-text">tomcat安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux安装tomcat"><span class="nav-number">3.1.</span> <span class="nav-text">linux安装tomcat</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#git安装"><span class="nav-number">4.</span> <span class="nav-text">git安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#linux安装git"><span class="nav-number">4.1.</span> <span class="nav-text">linux安装git</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis安装"><span class="nav-number">5.</span> <span class="nav-text">redis安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#windows安装redis"><span class="nav-number">5.1.</span> <span class="nav-text">windows安装redis</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#linux安装redis"><span class="nav-number">5.2.</span> <span class="nav-text">linux安装redis</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#方法一"><span class="nav-number">5.2.1.</span> <span class="nav-text">方法一</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#方法二"><span class="nav-number">5.2.2.</span> <span class="nav-text">方法二</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#安装"><span class="nav-number">5.2.2.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#配置开机自启服务"><span class="nav-number">5.2.2.2.</span> <span class="nav-text">配置开机自启服务</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#linux安装jenkins"><span class="nav-number">6.</span> <span class="nav-text">linux安装jenkins</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#yum-安装-jenkins"><span class="nav-number">6.1.</span> <span class="nav-text">yum 安装 jenkins</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#下载war包运行"><span class="nav-number">6.2.</span> <span class="nav-text">下载war包运行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置"><span class="nav-number">6.3.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建spring-boot项目的任务"><span class="nav-number">6.4.</span> <span class="nav-text">创建spring boot项目的任务</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sysbench安装"><span class="nav-number">7.</span> <span class="nav-text">sysbench安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#nginx安装"><span class="nav-number">8.</span> <span class="nav-text">nginx安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#centos源代码编译安装nginx"><span class="nav-number">8.1.</span> <span class="nav-text">centos源代码编译安装nginx</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#基本安装"><span class="nav-number">8.1.1.</span> <span class="nav-text">基本安装</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#将nginx配置成服务-基于centos7"><span class="nav-number">8.1.2.</span> <span class="nav-text">将nginx配置成服务(基于centos7)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#docker安装"><span class="nav-number">9.</span> <span class="nav-text">docker安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#windows-mac"><span class="nav-number">9.1.</span> <span class="nav-text">windows/mac</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#centos"><span class="nav-number">9.2.</span> <span class="nav-text">centos</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -706,20 +730,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-count">20</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-count">36</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

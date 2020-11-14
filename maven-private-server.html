@@ -20,19 +20,20 @@
     var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="虽未满百岁已如歌归于其居">
-<meta name="keywords" content="ferry的个人博客">
-<meta property="og:type" content="website">
-<meta property="og:title" content="儿女意向来痴">
-<meta property="og:url" content="https://ferry.org.cn/tags/oracle/index.html">
+  <meta name="description" content="&amp;emsp;&amp;emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。">
+<meta name="keywords" content="maven">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建maven私服">
+<meta property="og:url" content="https://ferry.org.cn/maven-private-server.html">
 <meta property="og:site_name" content="儿女意向来痴">
-<meta property="og:description" content="虽未满百岁已如歌归于其居">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。">
 <meta property="og:locale" content="zh-CH">
+<meta property="og:updated_time" content="2020-11-14T13:32:02.461Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="儿女意向来痴">
-<meta name="twitter:description" content="虽未满百岁已如歌归于其居">
+<meta name="twitter:title" content="搭建maven私服">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。">
 
-<link rel="canonical" href="https://ferry.org.cn/tags/oracle/">
+<link rel="canonical" href="https://ferry.org.cn/maven-private-server.html">
 
 
 <script id="page-configurations">
@@ -40,12 +41,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'zh-CH'
   };
 </script>
 
-  <title>标签: oracle | 儿女意向来痴</title>
+  <title>搭建maven私服 | 儿女意向来痴</title>
   
 
 
@@ -158,51 +159,93 @@
         <div class="content-wrap">
           
 
-          <div class="content tag">
+          <div class="content post posts-expand">
             
 
+    
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <h2 class="collection-header">oracle
-          <small>标签</small>
-        </h2>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/maven-private-server.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/ferry-215x215.gif">
+      <meta itemprop="name" content="ferry">
+      <meta itemprop="description" content="虽未满百岁已如歌归于其居">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="儿女意向来痴">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          搭建maven私服
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-11-14 10:55:01 / 修改时间：21:32:02" itemprop="dateCreated datePublished" datetime="2020-11-14T10:55:01+08:00">2020-11-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/开发工具/" itemprop="url" rel="index"><span itemprop="name">开发工具</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <span class="collection-header">2020</span>
+        <p>&emsp;&emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。</p>
+<a id="more"></a>
+<h3 id="Nexus"><a href="#Nexus" class="headerlink" title="Nexus"></a>Nexus</h3><p>&emsp;&emsp;目前市面上有三种maven仓库管理器可以搭建私服，分别是<a href="http://archiva.apache.org" target="_blank" rel="noopener">apache的archiva</a>、<a href="https://www.jfrogchina.com" target="_blank" rel="noopener">artifactory</a>、<a href="https://www.sonatype.com" target="_blank" rel="noopener">Sonatype的Nexus</a>。目前使用较多的是Nexus，它简化了本地内部仓库的维护和外部仓库的访问；Nexus在代理远程仓库的同时维护本地仓库，以降低中央仓库的负荷,节省外网带宽和时间；Nexus是一套“开箱即用”的系统不需要数据库，它使用文件系统加Lucene来组织数据；Nexus使用ExtJS来开发界面，利用Restlet来提供完整的REST APIs；Nexus支持WebDAV与LDAP安全身份认证;Nexus还提供了强大的仓库管理功能，构件搜索功能，它基于REST，友好的UI是一个extjs的REST客户端，它占用较少的内存，基于简单文件系统而非数据库。</p>
+<h4 id="安装Nexus"><a href="#安装Nexus" class="headerlink" title="安装Nexus"></a>安装Nexus</h4><p>&emsp;&emsp;这里选择下载Nexus的docker镜像安装，我们可以在<code>docker hub</code>上选择<a href="https://hub.docker.com/r/sonatype/nexus3" target="_blank" rel="noopener">Nexus的官方镜像</a> 。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-06-08T12:39:22+08:00"
-              content="2020-06-08">
-          06-08
-        </time>
-      </div>
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/maven/" rel="tag"><i class="fa fa-tag"></i> maven</a>
+          </div>
 
-      <div class="post-title">
-          <a class="post-title-link" href="/oracle-sql-optimize.html" itemprop="url">
-            <span itemprop="name">oracle sql 调优</span>
-          </a>
-      </div>
+        
 
-    </header>
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/Spring-Security-User-Details.html" rel="prev" title="Spring Security（三） 用户信息配置">
+      <i class="fa fa-chevron-left"></i> Spring Security（三） 用户信息配置
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
   </article>
-
-    </div>
-  </div>
   
   
-  
-
   
 
 
@@ -255,6 +298,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Nexus"><span class="nav-number">1.</span> <span class="nav-text">Nexus</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安装Nexus"><span class="nav-number">1.1.</span> <span class="nav-text">安装Nexus</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
