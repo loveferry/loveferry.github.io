@@ -1,6 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Spring Security（一） 体系结构</title>
+    <url>/Spring-Security-Architecture-Authentication.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;<code>Spring Security</code>是Spring的安全框架，它能够帮助我们完成用户的认证和访问控制，具体的来说呢就是帮助我们判断当前请求是否需要认证，如果需要认证那么提供的认证信息是否合法有效，提供的认证信息是否具有足够的权限访问当前请求需要的资源。 </p>
+<a id="more"></a>
+<h1 id="认证（Authentication）"><a href="#认证（Authentication）" class="headerlink" title="认证（Authentication）"></a>认证（Authentication）</h1><p>&emsp;&emsp;<strong>认证主要完成对提供的用户信息进行识别，判断其是否合法有效。</strong> 在Spring Security中，为认证设计的接口是<code>AuthenticationManager</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AuthenticationManager</span> </span>&#123;</span><br><span class="line">	<span class="function">Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span></span></span><br><span class="line"><span class="function">			<span class="keyword">throws</span> AuthenticationException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这个接口只有一个方法，所有的的用户认证都得调用这个接口去完成信息认证，参数<code>authentication</code>其类型也是一个接口，这个接口是对认证信息的封装，Spring Security通过调用该接口的方法获取用户信息完成认证并且后期对用户信息鉴权也需要从此接口获取信息。在调用认证方法后，如果认证顺利，那么就会返回一个认证信息，此认证信息因为已经完成认证，此时调用<code>isAuthenticated()</code>方法应该返回<code>true</code>。注意，返回的这个认证信息一般情况下是创建了一个新的对象，而不是修改参数对象并返回，所以这是一个访问器方法。在实际开发中，我们可以自定义<code>Authentication</code>接口的实现类，在其中封装更多的项目需要的参数，比如说我们用户信息需要携带一个邮箱地址，电话号码等，Spring Security本身提供了一些其实现类供我们使用，例如<code>UsernamePasswordAuthenticationToken</code>用于用户名密码认证的场景，<code>AnonymousAuthenticationToken</code>用于匿名认证的场景。</p>
+<p>&emsp;&emsp;如果认证的过程并不顺利，比如说用户不存在，密码错误，用户失效等常见情况，此时应当抛出认证异常<code>AuthenticationException</code>。认证异常是一个抽象类。其有诸多的子类，在不同的情况下应当抛出不同子类异常，例如当账户失效时应当抛出的<code>AccountExpiredException</code>，当认证的用户名密码错误时应当抛出的<code>BadCredentialsException</code>和用户信息被锁定时应当抛出的<code>DisabledException</code>等。当抛出AuthenticationException异常时，服务应当响应给客户端401状态码，告诉客户端认证失败了，此时客户端应当自行处理最终将其渲染并呈现给用户。</p>
+<p>&emsp;&emsp;AuthenticationManager的一个重要实现就是<code>ProviderManager</code>，一般情况下都是通过ProviderManager完成认证，接下来看看这个类能做些什么吧。</p>
+<p>&emsp;&emsp;通过阅读源码上的注释可以了解到，它是将认证信息Authentication依次尝试AuthenticationProviders列表，如果响应结果不为空表示当前提供者有权决定认证请求，并且不再尝试其他提供者。如果后续提供者成功验证了请求，则将忽略较早的验证异常，并将使用成功的验证。如果没有后续提供者提供非空响应或new AuthenticationException，AuthenticationException则将使用最后收到的提供者。如果没有提供者返回非null的响应，或者表明它甚至可以处理an Authentication，ProviderManager则将抛出 ProviderNotFoundException。还可以设置一个parent的AuthenticationManager，如果没有配置的认证程序可以执行身份验证，也可以尝试使用此方法。但是通常不应该使用此功能。</p>
+<p>&emsp;&emsp;完整的看一下这个类。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Collections;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.Log;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.LogFactory;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.InitializingBean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.MessageSource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.MessageSourceAware;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.support.MessageSourceAccessor;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.CredentialsContainer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.SpringSecurityMessageSource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.util.Assert;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProviderManager</span> <span class="keyword">implements</span> <span class="title">AuthenticationManager</span>, <span class="title">MessageSourceAware</span>,</span></span><br><span class="line"><span class="class">		<span class="title">InitializingBean</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 日志对象</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Log logger = LogFactory.getLog(ProviderManager<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证事件发布器，认证成功或者失败的通知机制</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationEventPublisher eventPublisher = <span class="keyword">new</span> NullEventPublisher();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证提供者列表，实际完成认证工作的列表</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;AuthenticationProvider&gt; providers = Collections.emptyList();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 消息国际化的实现类，这里不做扩展</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">protected</span> MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 父级认证管理器，相当于一个默认的认证程序，如果上面的认证提供者列表中没有一个完成认证工作，那么就会尝试使用这个认证管理器进行认证</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationManager parent;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证成功后是否擦除凭证信息</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> eraseCredentialsAfterAuthentication = <span class="keyword">true</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProviderManager</span><span class="params">(List&lt;AuthenticationProvider&gt; providers)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(providers, <span class="keyword">null</span>); </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 初始化对象的时候必须提供一个认证提供者的列表，父级的认证管理器可以为空</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProviderManager</span><span class="params">(List&lt;AuthenticationProvider&gt; providers,</span></span></span><br><span class="line"><span class="function"><span class="params">            AuthenticationManager parent)</span> </span>&#123;</span><br><span class="line">        Assert.notNull(providers, <span class="string">"providers list cannot be null"</span>);</span><br><span class="line">        <span class="keyword">this</span>.providers = providers;</span><br><span class="line">        <span class="keyword">this</span>.parent = parent;</span><br><span class="line">        checkState();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 属性设置完成后校验，父级认证管理器和认证提供者列表二者至少有一个不能为空，因为若都为空则无法通过此对象完成认证工作 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterPropertiesSet</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        checkState();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">checkState</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (parent == <span class="keyword">null</span> &amp;&amp; providers.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                    <span class="string">"A parent AuthenticationManager or a list of AuthenticationProviders is required"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证过程</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> AuthenticationException </span>&#123;</span><br><span class="line">        Class&lt;? extends Authentication&gt; toTest = authentication.getClass();</span><br><span class="line">        AuthenticationException lastException = <span class="keyword">null</span>;</span><br><span class="line">        Authentication result = <span class="keyword">null</span>;</span><br><span class="line">        Authentication parentResult = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">boolean</span> debug = logger.isDebugEnabled();</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (AuthenticationProvider provider : getProviders()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!provider.supports(toTest)) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (debug) &#123;</span><br><span class="line">                logger.debug(<span class="string">"Authentication attempt using "</span> + provider.getClass().getName());</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = provider.authenticate(authentication);</span><br><span class="line">                <span class="keyword">if</span> (result != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    copyDetails(authentication, result);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (AccountStatusException e) &#123;</span><br><span class="line">                prepareException(e, authentication);</span><br><span class="line">                <span class="comment">// SEC-546: Avoid polling additional providers if auth failure is due to</span></span><br><span class="line">                <span class="comment">// invalid account status</span></span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (InternalAuthenticationServiceException e) &#123;</span><br><span class="line">                prepareException(e, authentication);</span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (AuthenticationException e) &#123;</span><br><span class="line">                lastException = e;</span><br><span class="line">            &#125;</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="keyword">if</span> (result == <span class="keyword">null</span> &amp;&amp; parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// Allow the parent to try.</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = parentResult = parent.authenticate(authentication);</span><br><span class="line">            &#125;<span class="keyword">catch</span> (ProviderNotFoundException e) &#123;</span><br><span class="line">                <span class="comment">// ignore as we will throw below if no other exception occurred prior to</span></span><br><span class="line">                <span class="comment">// calling parent and the parent</span></span><br><span class="line">                <span class="comment">// may throw ProviderNotFound even though a provider in the child already</span></span><br><span class="line">                <span class="comment">// handled the request</span></span><br><span class="line">            &#125;<span class="keyword">catch</span> (AuthenticationException e) &#123;</span><br><span class="line">                lastException = e;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (result != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (eraseCredentialsAfterAuthentication</span><br><span class="line">                    &amp;&amp; (result <span class="keyword">instanceof</span> CredentialsContainer)) &#123;</span><br><span class="line">                <span class="comment">// Authentication is complete. Remove credentials and other secret data</span></span><br><span class="line">                <span class="comment">// from authentication</span></span><br><span class="line">                ((CredentialsContainer) result).eraseCredentials();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// If the parent AuthenticationManager was attempted and successful than it will publish an AuthenticationSuccessEvent</span></span><br><span class="line">            <span class="comment">// This check prevents a duplicate AuthenticationSuccessEvent if the parent AuthenticationManager already published it</span></span><br><span class="line">            <span class="keyword">if</span> (parentResult == <span class="keyword">null</span>) &#123;</span><br><span class="line">                eventPublisher.publishAuthenticationSuccess(result);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Parent was null, or didn't authenticate (or throw an exception).</span></span><br><span class="line">        <span class="keyword">if</span> (lastException == <span class="keyword">null</span>) &#123;</span><br><span class="line">            lastException = <span class="keyword">new</span> ProviderNotFoundException(messages.getMessage(</span><br><span class="line">                <span class="string">"ProviderManager.providerNotFound"</span>,</span><br><span class="line">                <span class="keyword">new</span> Object[] &#123; toTest.getName() &#125;,</span><br><span class="line">                <span class="string">"No AuthenticationProvider found for &#123;0&#125;"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        prepareException(lastException, authentication);</span><br><span class="line">        <span class="keyword">throw</span> lastException;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 将异常通过认证事件发布器发布出去 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"deprecation"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">prepareException</span><span class="params">(AuthenticationException ex, Authentication auth)</span> </span>&#123;</span><br><span class="line">        eventPublisher.publishAuthenticationFailure(ex, auth);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 将需要认证的认证信息赋值到新的认证信息中</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">copyDetails</span><span class="params">(Authentication source, Authentication dest)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> ((dest <span class="keyword">instanceof</span> AbstractAuthenticationToken) &amp;&amp; (dest.getDetails() == <span class="keyword">null</span>)) &#123;</span><br><span class="line">            AbstractAuthenticationToken token = (AbstractAuthenticationToken) dest;</span><br><span class="line">            </span><br><span class="line">            token.setDetails(source.getDetails());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 获取认证提供者</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> List&lt;AuthenticationProvider&gt; <span class="title">getProviders</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> providers;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置消息国际化 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessageSource</span><span class="params">(MessageSource messageSource)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.messages = <span class="keyword">new</span> MessageSourceAccessor(messageSource);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置认证事件发布器</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAuthenticationEventPublisher</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            AuthenticationEventPublisher eventPublisher)</span> </span>&#123;</span><br><span class="line">        Assert.notNull(eventPublisher, <span class="string">"AuthenticationEventPublisher cannot be null"</span>);</span><br><span class="line">        <span class="keyword">this</span>.eventPublisher = eventPublisher;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置是否在认证成功后将凭证信息擦除</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEraseCredentialsAfterAuthentication</span><span class="params">(<span class="keyword">boolean</span> eraseSecretData)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.eraseCredentialsAfterAuthentication = eraseSecretData;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 是否在认证成功后擦除凭证信息</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isEraseCredentialsAfterAuthentication</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> eraseCredentialsAfterAuthentication;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 空的认证事件发布器</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">NullEventPublisher</span> <span class="keyword">implements</span> <span class="title">AuthenticationEventPublisher</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publishAuthenticationFailure</span><span class="params">(AuthenticationException exception,</span></span></span><br><span class="line"><span class="function"><span class="params">                Authentication authentication)</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publishAuthenticationSuccess</span><span class="params">(Authentication authentication)</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;以上代码因个人有强迫症，所以对排版有所改动，但是代码还是那个代码。这个类呢有一个重要属性<code>private List&lt;AuthenticationProvider&gt; providers</code>，它是<code>AuthenticationProvider</code>的集合，下面来了解一个这个认证提供者的组成成分。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AuthenticationProvider</span> </span>&#123;</span><br><span class="line">    <span class="function">Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span> <span class="keyword">throws</span> AuthenticationException</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">supports</span><span class="params">(Class&lt;?&gt; authentication)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;首先这是一个接口，这就意味着我们可以基于此自定义其实现类完成认证操作，该接口提供两个方法，一个是认证方法，要求其调用者需要提供待认证的信息且其实现者实现认证的具体逻辑，认证失败应当返回null或者抛出AuthenticationException，认证成功应当返回调用<code>isAuthenticated()</code>为true的认证对象。另一个方法是测试当前的这个认证支持者是否支持解析该类型的认证对象。显然，<strong>这个接口的作用就是用来提供一个认证器</strong>。</p>
+<p>&emsp;&emsp;上面了解了AuthenticationProvider，再结合authenticate方法看就很明了了，就是一个个的认证器去尝试认证，直到认证成功或者抛出异常为止。说的更细一点就是认证器依次尝试认证，首先判断当前认证器是否支持认证该Authentication。不支持就让下一个认证器尝试认证，支持就调用认证器的认证方法开始认证，具体的认证实现(AuthenticationProvider.authenticate())可以返回空，返回空的时候继续向后尝试使用其他的认证器进行认证，如果所有的认证器都返回的空，那么就是使用父级的认证管理器尝试认证，这是最后的手段，如果再次失败，就会抛出<code>ProviderNotFoundException</code>。如果有认证器认证返回结果不为空，那么就可以认为认证成功了，不再尝试其他的认证器。如果认证过程中抛出了<code>InternalAuthenticationServiceException</code>或者<code>AccountStatusException</code>就会将此异常直接抛出，如果是别的AuthenticationException，那么就会先记录下来，然后让别的认证器尝试认证，如果最后认证器都认证失败了并且父级的认证管理器也认证失败了，那么就会抛出最后记录的那个认证异常。如果认证成功了，会判断是否是父级认证管理器完成的认证，如果是，那么这个认证管理器可能已经发布过认证成功的事件了，这里就不发布了，如果是认证器列表中的某个认证器完成的认证，那么先发布一下认证成功事件，再返回一个崭新的认证信息。</p>
+]]></content>
+      <categories>
+        <category>Spring Security</category>
+      </categories>
+      <tags>
+        <tag>Spring</tag>
+        <tag>Java</tag>
+        <tag>Spring Security</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Spring Security（二） 认证配置类</title>
     <url>/Spring-Security-Authentication-Configuration.html</url>
     <content><![CDATA[<p>&emsp;&emsp;继上一篇 <a href="Spring-Security-Architecture-Authentication.html">Spring Security（一） 体系结构之认证</a> 后，这里研究一下Spring Security一个重要配置–认证配置。<code>AuthenticationConfiguration</code>是Spring提供的认证配置的配置类，该配置类的主要作用是用于生成一个全局的<code>AuthenticationManagerBuilder</code>注入到Spring容器中。使用者注入该配置类然后获取AuthenticationManagerBuilder再生成<code>AuthenticationManager</code>。</p>
@@ -57,33 +84,6 @@
 <li><code>UserDetailsServiceDelegator</code>：是一个内部类，他的作用是获取全局或者局部的<code>AuthenticationManagerBuilder</code>的默认UserDetailsService对象，从而委托给其完成加载数据的操作。</li>
 </ul>
 <p>&emsp;&emsp;总结一下，UserDetailsService接口是用来获取系统的用户信息认证客户端提供的认证信息，在实际项目使用中，更多的是选择将用户信息持久化到数据库中，但是我们用户信息的表结构未必像JdbcUserDetailsManager中的表结构那样标准，所以我们可以实现UserDetailsManager自定义用户数据更新。此外，如果用户基数过大，查询用户信息的逻辑复杂，那么避免服务器负荷过高，可以将加载的用户信息缓存起来，我们可以借鉴CachingUserDetailsService，将实际工作委托给UserDetailsService，在加载用户信息前后添加判断逻辑，若缓存中存在则返回缓存中的用户信息，若不存在则加载并缓存，缓存的实现也是可以定制化开发的，自定义缓存类实现UserCache接口既可。</p>
-]]></content>
-      <categories>
-        <category>Spring Security</category>
-      </categories>
-      <tags>
-        <tag>Spring</tag>
-        <tag>Java</tag>
-        <tag>Spring Security</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Spring Security（一） 体系结构</title>
-    <url>/Spring-Security-Architecture-Authentication.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;<code>Spring Security</code>是Spring的安全框架，它能够帮助我们完成用户的认证和访问控制，具体的来说呢就是帮助我们判断当前请求是否需要认证，如果需要认证那么提供的认证信息是否合法有效，提供的认证信息是否具有足够的权限访问当前请求需要的资源。 </p>
-<a id="more"></a>
-<h1 id="认证（Authentication）"><a href="#认证（Authentication）" class="headerlink" title="认证（Authentication）"></a>认证（Authentication）</h1><p>&emsp;&emsp;<strong>认证主要完成对提供的用户信息进行识别，判断其是否合法有效。</strong> 在Spring Security中，为认证设计的接口是<code>AuthenticationManager</code>。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AuthenticationManager</span> </span>&#123;</span><br><span class="line">	<span class="function">Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span></span></span><br><span class="line"><span class="function">			<span class="keyword">throws</span> AuthenticationException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;这个接口只有一个方法，所有的的用户认证都得调用这个接口去完成信息认证，参数<code>authentication</code>其类型也是一个接口，这个接口是对认证信息的封装，Spring Security通过调用该接口的方法获取用户信息完成认证并且后期对用户信息鉴权也需要从此接口获取信息。在调用认证方法后，如果认证顺利，那么就会返回一个认证信息，此认证信息因为已经完成认证，此时调用<code>isAuthenticated()</code>方法应该返回<code>true</code>。注意，返回的这个认证信息一般情况下是创建了一个新的对象，而不是修改参数对象并返回，所以这是一个访问器方法。在实际开发中，我们可以自定义<code>Authentication</code>接口的实现类，在其中封装更多的项目需要的参数，比如说我们用户信息需要携带一个邮箱地址，电话号码等，Spring Security本身提供了一些其实现类供我们使用，例如<code>UsernamePasswordAuthenticationToken</code>用于用户名密码认证的场景，<code>AnonymousAuthenticationToken</code>用于匿名认证的场景。</p>
-<p>&emsp;&emsp;如果认证的过程并不顺利，比如说用户不存在，密码错误，用户失效等常见情况，此时应当抛出认证异常<code>AuthenticationException</code>。认证异常是一个抽象类。其有诸多的子类，在不同的情况下应当抛出不同子类异常，例如当账户失效时应当抛出的<code>AccountExpiredException</code>，当认证的用户名密码错误时应当抛出的<code>BadCredentialsException</code>和用户信息被锁定时应当抛出的<code>DisabledException</code>等。当抛出AuthenticationException异常时，服务应当响应给客户端401状态码，告诉客户端认证失败了，此时客户端应当自行处理最终将其渲染并呈现给用户。</p>
-<p>&emsp;&emsp;AuthenticationManager的一个重要实现就是<code>ProviderManager</code>，一般情况下都是通过ProviderManager完成认证，接下来看看这个类能做些什么吧。</p>
-<p>&emsp;&emsp;通过阅读源码上的注释可以了解到，它是将认证信息Authentication依次尝试AuthenticationProviders列表，如果响应结果不为空表示当前提供者有权决定认证请求，并且不再尝试其他提供者。如果后续提供者成功验证了请求，则将忽略较早的验证异常，并将使用成功的验证。如果没有后续提供者提供非空响应或new AuthenticationException，AuthenticationException则将使用最后收到的提供者。如果没有提供者返回非null的响应，或者表明它甚至可以处理an Authentication，ProviderManager则将抛出 ProviderNotFoundException。还可以设置一个parent的AuthenticationManager，如果没有配置的认证程序可以执行身份验证，也可以尝试使用此方法。但是通常不应该使用此功能。</p>
-<p>&emsp;&emsp;完整的看一下这个类。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Collections;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.Log;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.LogFactory;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.InitializingBean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.MessageSource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.MessageSourceAware;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.support.MessageSourceAccessor;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.CredentialsContainer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.SpringSecurityMessageSource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.util.Assert;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProviderManager</span> <span class="keyword">implements</span> <span class="title">AuthenticationManager</span>, <span class="title">MessageSourceAware</span>,</span></span><br><span class="line"><span class="class">		<span class="title">InitializingBean</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 日志对象</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Log logger = LogFactory.getLog(ProviderManager<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证事件发布器，认证成功或者失败的通知机制</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationEventPublisher eventPublisher = <span class="keyword">new</span> NullEventPublisher();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证提供者列表，实际完成认证工作的列表</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;AuthenticationProvider&gt; providers = Collections.emptyList();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 消息国际化的实现类，这里不做扩展</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">protected</span> MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 父级认证管理器，相当于一个默认的认证程序，如果上面的认证提供者列表中没有一个完成认证工作，那么就会尝试使用这个认证管理器进行认证</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationManager parent;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证成功后是否擦除凭证信息</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> eraseCredentialsAfterAuthentication = <span class="keyword">true</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProviderManager</span><span class="params">(List&lt;AuthenticationProvider&gt; providers)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(providers, <span class="keyword">null</span>); </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 初始化对象的时候必须提供一个认证提供者的列表，父级的认证管理器可以为空</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProviderManager</span><span class="params">(List&lt;AuthenticationProvider&gt; providers,</span></span></span><br><span class="line"><span class="function"><span class="params">            AuthenticationManager parent)</span> </span>&#123;</span><br><span class="line">        Assert.notNull(providers, <span class="string">"providers list cannot be null"</span>);</span><br><span class="line">        <span class="keyword">this</span>.providers = providers;</span><br><span class="line">        <span class="keyword">this</span>.parent = parent;</span><br><span class="line">        checkState();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 属性设置完成后校验，父级认证管理器和认证提供者列表二者至少有一个不能为空，因为若都为空则无法通过此对象完成认证工作 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterPropertiesSet</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        checkState();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">checkState</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (parent == <span class="keyword">null</span> &amp;&amp; providers.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                    <span class="string">"A parent AuthenticationManager or a list of AuthenticationProviders is required"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证过程</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> AuthenticationException </span>&#123;</span><br><span class="line">        Class&lt;? extends Authentication&gt; toTest = authentication.getClass();</span><br><span class="line">        AuthenticationException lastException = <span class="keyword">null</span>;</span><br><span class="line">        Authentication result = <span class="keyword">null</span>;</span><br><span class="line">        Authentication parentResult = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">boolean</span> debug = logger.isDebugEnabled();</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (AuthenticationProvider provider : getProviders()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!provider.supports(toTest)) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (debug) &#123;</span><br><span class="line">                logger.debug(<span class="string">"Authentication attempt using "</span> + provider.getClass().getName());</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = provider.authenticate(authentication);</span><br><span class="line">                <span class="keyword">if</span> (result != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    copyDetails(authentication, result);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (AccountStatusException e) &#123;</span><br><span class="line">                prepareException(e, authentication);</span><br><span class="line">                <span class="comment">// SEC-546: Avoid polling additional providers if auth failure is due to</span></span><br><span class="line">                <span class="comment">// invalid account status</span></span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (InternalAuthenticationServiceException e) &#123;</span><br><span class="line">                prepareException(e, authentication);</span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (AuthenticationException e) &#123;</span><br><span class="line">                lastException = e;</span><br><span class="line">            &#125;</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="keyword">if</span> (result == <span class="keyword">null</span> &amp;&amp; parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// Allow the parent to try.</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = parentResult = parent.authenticate(authentication);</span><br><span class="line">            &#125;<span class="keyword">catch</span> (ProviderNotFoundException e) &#123;</span><br><span class="line">                <span class="comment">// ignore as we will throw below if no other exception occurred prior to</span></span><br><span class="line">                <span class="comment">// calling parent and the parent</span></span><br><span class="line">                <span class="comment">// may throw ProviderNotFound even though a provider in the child already</span></span><br><span class="line">                <span class="comment">// handled the request</span></span><br><span class="line">            &#125;<span class="keyword">catch</span> (AuthenticationException e) &#123;</span><br><span class="line">                lastException = e;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (result != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (eraseCredentialsAfterAuthentication</span><br><span class="line">                    &amp;&amp; (result <span class="keyword">instanceof</span> CredentialsContainer)) &#123;</span><br><span class="line">                <span class="comment">// Authentication is complete. Remove credentials and other secret data</span></span><br><span class="line">                <span class="comment">// from authentication</span></span><br><span class="line">                ((CredentialsContainer) result).eraseCredentials();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// If the parent AuthenticationManager was attempted and successful than it will publish an AuthenticationSuccessEvent</span></span><br><span class="line">            <span class="comment">// This check prevents a duplicate AuthenticationSuccessEvent if the parent AuthenticationManager already published it</span></span><br><span class="line">            <span class="keyword">if</span> (parentResult == <span class="keyword">null</span>) &#123;</span><br><span class="line">                eventPublisher.publishAuthenticationSuccess(result);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Parent was null, or didn't authenticate (or throw an exception).</span></span><br><span class="line">        <span class="keyword">if</span> (lastException == <span class="keyword">null</span>) &#123;</span><br><span class="line">            lastException = <span class="keyword">new</span> ProviderNotFoundException(messages.getMessage(</span><br><span class="line">                <span class="string">"ProviderManager.providerNotFound"</span>,</span><br><span class="line">                <span class="keyword">new</span> Object[] &#123; toTest.getName() &#125;,</span><br><span class="line">                <span class="string">"No AuthenticationProvider found for &#123;0&#125;"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        prepareException(lastException, authentication);</span><br><span class="line">        <span class="keyword">throw</span> lastException;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 将异常通过认证事件发布器发布出去 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"deprecation"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">prepareException</span><span class="params">(AuthenticationException ex, Authentication auth)</span> </span>&#123;</span><br><span class="line">        eventPublisher.publishAuthenticationFailure(ex, auth);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 将需要认证的认证信息赋值到新的认证信息中</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">copyDetails</span><span class="params">(Authentication source, Authentication dest)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> ((dest <span class="keyword">instanceof</span> AbstractAuthenticationToken) &amp;&amp; (dest.getDetails() == <span class="keyword">null</span>)) &#123;</span><br><span class="line">            AbstractAuthenticationToken token = (AbstractAuthenticationToken) dest;</span><br><span class="line">            </span><br><span class="line">            token.setDetails(source.getDetails());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 获取认证提供者</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> List&lt;AuthenticationProvider&gt; <span class="title">getProviders</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> providers;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置消息国际化 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessageSource</span><span class="params">(MessageSource messageSource)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.messages = <span class="keyword">new</span> MessageSourceAccessor(messageSource);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置认证事件发布器</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAuthenticationEventPublisher</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            AuthenticationEventPublisher eventPublisher)</span> </span>&#123;</span><br><span class="line">        Assert.notNull(eventPublisher, <span class="string">"AuthenticationEventPublisher cannot be null"</span>);</span><br><span class="line">        <span class="keyword">this</span>.eventPublisher = eventPublisher;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置是否在认证成功后将凭证信息擦除</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEraseCredentialsAfterAuthentication</span><span class="params">(<span class="keyword">boolean</span> eraseSecretData)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.eraseCredentialsAfterAuthentication = eraseSecretData;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 是否在认证成功后擦除凭证信息</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isEraseCredentialsAfterAuthentication</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> eraseCredentialsAfterAuthentication;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 空的认证事件发布器</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">NullEventPublisher</span> <span class="keyword">implements</span> <span class="title">AuthenticationEventPublisher</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publishAuthenticationFailure</span><span class="params">(AuthenticationException exception,</span></span></span><br><span class="line"><span class="function"><span class="params">                Authentication authentication)</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publishAuthenticationSuccess</span><span class="params">(Authentication authentication)</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;以上代码因个人有强迫症，所以对排版有所改动，但是代码还是那个代码。这个类呢有一个重要属性<code>private List&lt;AuthenticationProvider&gt; providers</code>，它是<code>AuthenticationProvider</code>的集合，下面来了解一个这个认证提供者的组成成分。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AuthenticationProvider</span> </span>&#123;</span><br><span class="line">    <span class="function">Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span> <span class="keyword">throws</span> AuthenticationException</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">supports</span><span class="params">(Class&lt;?&gt; authentication)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;首先这是一个接口，这就意味着我们可以基于此自定义其实现类完成认证操作，该接口提供两个方法，一个是认证方法，要求其调用者需要提供待认证的信息且其实现者实现认证的具体逻辑，认证失败应当返回null或者抛出AuthenticationException，认证成功应当返回调用<code>isAuthenticated()</code>为true的认证对象。另一个方法是测试当前的这个认证支持者是否支持解析该类型的认证对象。显然，<strong>这个接口的作用就是用来提供一个认证器</strong>。</p>
-<p>&emsp;&emsp;上面了解了AuthenticationProvider，再结合authenticate方法看就很明了了，就是一个个的认证器去尝试认证，直到认证成功或者抛出异常为止。说的更细一点就是认证器依次尝试认证，首先判断当前认证器是否支持认证该Authentication。不支持就让下一个认证器尝试认证，支持就调用认证器的认证方法开始认证，具体的认证实现(AuthenticationProvider.authenticate())可以返回空，返回空的时候继续向后尝试使用其他的认证器进行认证，如果所有的认证器都返回的空，那么就是使用父级的认证管理器尝试认证，这是最后的手段，如果再次失败，就会抛出<code>ProviderNotFoundException</code>。如果有认证器认证返回结果不为空，那么就可以认为认证成功了，不再尝试其他的认证器。如果认证过程中抛出了<code>InternalAuthenticationServiceException</code>或者<code>AccountStatusException</code>就会将此异常直接抛出，如果是别的AuthenticationException，那么就会先记录下来，然后让别的认证器尝试认证，如果最后认证器都认证失败了并且父级的认证管理器也认证失败了，那么就会抛出最后记录的那个认证异常。如果认证成功了，会判断是否是父级认证管理器完成的认证，如果是，那么这个认证管理器可能已经发布过认证成功的事件了，这里就不发布了，如果是认证器列表中的某个认证器完成的认证，那么先发布一下认证成功事件，再返回一个崭新的认证信息。</p>
 ]]></content>
       <categories>
         <category>Spring Security</category>
@@ -506,40 +506,6 @@
       </tags>
   </entry>
   <entry>
-    <title>java集合</title>
-    <url>/collections.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;java集合的学习记录…</p>
-<a id="more"></a>
-<h3 id="ArrayList"><a href="#ArrayList" class="headerlink" title="ArrayList"></a>ArrayList</h3><p>&emsp;&emsp;ArrayList集合是List接口的可变长数组的实现。他的底层是用数组实现的。</p>
-<h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
-<li><p>集合中允许null值存在；</p>
-</li>
-<li><p>集合容量可变，自增长，约1.5倍；</p>
-</li>
-<li><p>非线程安全。</p>
-</li>
-</ul>
-<h4 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h4><ul>
-<li>属性列表</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_CAPACITY = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">transient</span> Object[] elementData;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> size;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;这里面有一个很重要的属性<code>elementData</code>,该集合对象的所有的值都是存储在这个数组对象中的,只是将存值和取值的实现进行了一定的封装.可以看到,这个属性是反序列化的,这说明ArrayList这个类一定实现了<code>java.io.Serializable</code>接口.</p>
-<ul>
-<li>构造器源码</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (initialCapacity &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.elementData = <span class="keyword">new</span> Object[initialCapacity];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (initialCapacity == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Illegal Capacity: "</span>+</span><br><span class="line">                                           initialCapacity);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(Collection&lt;? extends E&gt; c)</span> </span>&#123;</span><br><span class="line">    elementData = c.toArray();</span><br><span class="line">    <span class="keyword">if</span> ((size = elementData.length) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// c.toArray might (incorrectly) not return Object[] (see 6260652)</span></span><br><span class="line">        <span class="keyword">if</span> (elementData.getClass() != Object[]<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">            <span class="title">elementData</span> </span>= Arrays.copyOf(elementData, size, Object[]<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// replace with empty array.</span></span><br><span class="line">        <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;当使用空构造器时，会将类的静态常量所引用的空数组的地址值赋给<code>elementData</code>属性,此时,该对象被初始化为一个空集合.当使用传递一个int型参数的构造器时,若传参不合法抛出异常,传参为0初始化为一个空集合,传参大于0,则将<code>elementData</code>数组初始化,长度为传递的参数大小.第三种形式就是传递一个集合,将这个集合初始化.</p>
-<h4 id="数据存储"><a href="#数据存储" class="headerlink" title="数据存储"></a>数据存储</h4><p>&emsp;&emsp;ArrayList添加元素有<code>set</code>和<code>add</code>方法</p>
-]]></content>
-      <categories>
-        <category>java</category>
-      </categories>
-      <tags>
-        <tag>ArrayList</tag>
-        <tag>HashMap</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>数组</title>
     <url>/array.html</url>
     <content><![CDATA[<p>&emsp;&emsp;数组是相同类型的、用一个标识符名称封装到一起的一个对象序列或基本类型数据序列。</p>
@@ -691,6 +657,40 @@
       </tags>
   </entry>
   <entry>
+    <title>java集合</title>
+    <url>/collections.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;java集合的学习记录…</p>
+<a id="more"></a>
+<h3 id="ArrayList"><a href="#ArrayList" class="headerlink" title="ArrayList"></a>ArrayList</h3><p>&emsp;&emsp;ArrayList集合是List接口的可变长数组的实现。他的底层是用数组实现的。</p>
+<h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
+<li><p>集合中允许null值存在；</p>
+</li>
+<li><p>集合容量可变，自增长，约1.5倍；</p>
+</li>
+<li><p>非线程安全。</p>
+</li>
+</ul>
+<h4 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h4><ul>
+<li>属性列表</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_CAPACITY = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">transient</span> Object[] elementData;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> size;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里面有一个很重要的属性<code>elementData</code>,该集合对象的所有的值都是存储在这个数组对象中的,只是将存值和取值的实现进行了一定的封装.可以看到,这个属性是反序列化的,这说明ArrayList这个类一定实现了<code>java.io.Serializable</code>接口.</p>
+<ul>
+<li>构造器源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (initialCapacity &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.elementData = <span class="keyword">new</span> Object[initialCapacity];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (initialCapacity == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Illegal Capacity: "</span>+</span><br><span class="line">                                           initialCapacity);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(Collection&lt;? extends E&gt; c)</span> </span>&#123;</span><br><span class="line">    elementData = c.toArray();</span><br><span class="line">    <span class="keyword">if</span> ((size = elementData.length) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// c.toArray might (incorrectly) not return Object[] (see 6260652)</span></span><br><span class="line">        <span class="keyword">if</span> (elementData.getClass() != Object[]<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">            <span class="title">elementData</span> </span>= Arrays.copyOf(elementData, size, Object[]<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// replace with empty array.</span></span><br><span class="line">        <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;当使用空构造器时，会将类的静态常量所引用的空数组的地址值赋给<code>elementData</code>属性,此时,该对象被初始化为一个空集合.当使用传递一个int型参数的构造器时,若传参不合法抛出异常,传参为0初始化为一个空集合,传参大于0,则将<code>elementData</code>数组初始化,长度为传递的参数大小.第三种形式就是传递一个集合,将这个集合初始化.</p>
+<h4 id="数据存储"><a href="#数据存储" class="headerlink" title="数据存储"></a>数据存储</h4><p>&emsp;&emsp;ArrayList添加元素有<code>set</code>和<code>add</code>方法</p>
+]]></content>
+      <categories>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>ArrayList</tag>
+        <tag>HashMap</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>枚举类</title>
     <url>/enum.html</url>
     <content><![CDATA[<p>&emsp;&emsp;枚举类型（Enumerated Type） 很早就出现在编程语言中，它被用来将一组类似的值包含到一种类型当中。而这种枚举类型的名称则会被定义成独一无二的类型描述符，在这一点上和常量的定义相似。不过相比较常量类型，枚举类型可以为申明的变量提供更大的取值范围。</p>
@@ -766,226 +766,6 @@
       </categories>
       <tags>
         <tag>枚举类型</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>lambda</title>
-    <url>/lambda.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;<code>lambda表达式</code>是一个可传递的代码块。</p>
-<a id="more"></a>
-<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><ul>
-<li>基本语法：参数，箭头（-&gt;）以及一个表达式或者代码块。</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; <span class="keyword">return</span> msg.length()&gt;str.length()</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span>(msg.length()&gt;str.length() &gt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(msg.length()&gt;str.length() == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;<em>如果代码块在有些分支有返回值，有些分支没有返回值是不合法的。返回值的类型无需指定，lambda表达式的返回值类型总是有上下文推导而出。lambda表达式可以捕获外围作用域中变量的值，但是所捕获的变量必须实际上是最终变量</em></p>
-<ul>
-<li>无参表达式：提供空括号</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">() -&gt; System.out.println(<span class="string">"no arguments lambda"</span>)</span><br></pre></td></tr></table></figure>
-<ul>
-<li>忽略参数类型：若参数类型可推导，可忽略参数类型。若只有一个参数且参数类型可推导，可省略括号。</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(msg, str) -&gt; <span class="keyword">return</span> msg.length() &gt; str.length()</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">msg -&gt; System.out.println(msg)</span><br></pre></td></tr></table></figure>
-<h3 id="函数式接口"><a href="#函数式接口" class="headerlink" title="函数式接口"></a>函数式接口</h3><ul>
-<li><p>定义：只有一个抽象方法的接口。自己设计接口时，如果接口只有一个抽象方法，那么可以使用注解<code>@FunctionalInterface</code>标记这个接口。这样，当你向这个接口再次添加一个抽象方法时，编译器会产生一个错误。另外javadoc页会指出此接口为函数式接口。</p>
-</li>
-<li><p>demo：返回指定字符串10倍的长度</p>
-</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 函数式接口</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">LengthInterface</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 匿名内部类方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">innerClass</span><span class="params">()</span></span>&#123;</span><br><span class="line">    System.out.println(<span class="keyword">new</span> LengthInterface() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> msg.length()*<span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* lambda表达式方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lambda</span><span class="params">()</span></span>&#123;</span><br><span class="line">    LengthInterface lengthInterface = msg -&gt; msg.length()*<span class="number">10</span>;</span><br><span class="line">    System.out.println(lengthInterface.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/lambda/lambda_functionalInterface.png" alt="初始化git项目方式2"></p>
-<p>&emsp;&emsp;定义一个函数式接口，这个接口只有一个抽象方法，这个抽象方法的用途是希望获取到指定的字符串进过渲染后的长度。在lambda表达式出现之前，我们想要实现这样的功能，最好的做法是通过匿名内部类来实现，但是在这里，我们可以让函数式接口的引用指向一个lambda表达式，通过lambda表达式定义渲染长度规则，然后在通过引用调用函数式接口的抽象方法。很显然，虽然内部类和lambda都可以实现功能，但是不管是从代码的简洁度，可读性还是从性能对比上（内部类的类加载，解析，初始化等高于lambda表达式的性能开销）lambda表达式都是我们的首选方案。</p>
-<ul>
-<li>常用函数式接口</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>函数式接口</th>
-<th>参数类型</th>
-<th>返回类型</th>
-<th>抽象方法</th>
-<th>描述</th>
-<th>其他方法</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Runnable</td>
-<td>无</td>
-<td>void</td>
-<td>run</td>
-<td>作为无参数或返回值的动作运行</td>
-<td></td>
-</tr>
-<tr>
-<td>Supplier<t></t></td>
-<td>无</td>
-<td>T</td>
-<td>get</td>
-<td>提供一个T类型的值</td>
-<td></td>
-</tr>
-<tr>
-<td>Consumer<t></t></td>
-<td>T</td>
-<td>void</td>
-<td>accept</td>
-<td>处理一个T类铟的值</td>
-<td>andThen</td>
-</tr>
-<tr>
-<td>BiConsumer&lt;T,U&gt;</td>
-<td>T,U</td>
-<td>void</td>
-<td>accept</td>
-<td>处理T和U类型的值</td>
-<td>andThen</td>
-</tr>
-<tr>
-<td>Function&lt;T,R&gt;</td>
-<td>T</td>
-<td>R</td>
-<td>apply</td>
-<td>有一个T类型参数的函数</td>
-<td>compose, andThen, identity</td>
-</tr>
-<tr>
-<td>BiFunction&lt;T,U,R&gt;</td>
-<td>T,U</td>
-<td>R</td>
-<td>apply</td>
-<td>有T和U类型参数的函数</td>
-<td>andThen</td>
-</tr>
-<tr>
-<td>UnaryOperator<t></t></td>
-<td>T</td>
-<td>T</td>
-<td>apply</td>
-<td>类型T上的一元操作符</td>
-<td>compose, andThen, identity</td>
-</tr>
-<tr>
-<td>BinaryOperator<t></t></td>
-<td>T,T</td>
-<td>T</td>
-<td>apply</td>
-<td>类型T上的二元操作符</td>
-<td>andThen, maxBy, minBy</td>
-</tr>
-<tr>
-<td>Predicate<t></t></td>
-<td>T</td>
-<td>boolean</td>
-<td>test</td>
-<td>布尔值函数</td>
-<td>and, or, negate, isEqual</td>
-</tr>
-<tr>
-<td>BiPredicate&lt;T,U&gt;</td>
-<td>T,U</td>
-<td>boolean</td>
-<td>test</td>
-<td>有两个参数的布尔值函数</td>
-<td>and, or, negate</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>基本类型的函数式接口</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>函数式接口</th>
-<th>参数类型</th>
-<th>返回类型</th>
-<th>抽象方法 </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>BooleanSupplier</td>
-<td>none</td>
-<td>boolean</td>
-<td>getAsBoolean</td>
-</tr>
-<tr>
-<td>PSupplier</td>
-<td>none</td>
-<td>p</td>
-<td>getAsP</td>
-</tr>
-<tr>
-<td>PConsumer</td>
-<td>p</td>
-<td>void</td>
-<td>accept</td>
-</tr>
-<tr>
-<td>ObjPConsumer&lt; T&gt;</td>
-<td>T,p</td>
-<td>void</td>
-<td>accept</td>
-</tr>
-<tr>
-<td>PFunction<t></t></td>
-<td>p</td>
-<td>T</td>
-<td>apply</td>
-</tr>
-<tr>
-<td>PToQFunction</td>
-<td>p</td>
-<td>q</td>
-<td>applyAsQ</td>
-</tr>
-<tr>
-<td>ToPFunction<t></t></td>
-<td>T</td>
-<td>p</td>
-<td>applyAsP</td>
-</tr>
-<tr>
-<td>ToPBiFunction&lt;T,U&gt;</td>
-<td>T,U</td>
-<td>p</td>
-<td>applyAsP</td>
-</tr>
-<tr>
-<td>PUnaryOperator</td>
-<td>p</td>
-<td>p</td>
-<td>testAsP</td>
-</tr>
-<tr>
-<td>PBinaryOperator</td>
-<td>p,p</td>
-<td>p</td>
-<td>testAsP</td>
-</tr>
-<tr>
-<td>PPredicate</td>
-<td>p</td>
-<td>boolean</td>
-<td>test</td>
-</tr>
-</tbody>
-</table>
-<p><em>注：p,q为int, long, double;P, Q为Integer, Long, Double</em></p>
-<h3 id="方法引用"><a href="#方法引用" class="headerlink" title="方法引用"></a>方法引用</h3><p>&emsp;&emsp;将现有的方法传递给函数式接口，等价于lambda表达式</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String::length  &lt;==&gt; msg -&gt; msg.length()</span><br><span class="line">(String msg) -&gt; System.out.println(msg)  &lt;==&gt; System.out::println</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;语法：用操作符<code>::</code>分割对象名或类名与方法名，有三种用法，第一：对象::非静态方法名；第二：类名::静态方法名；第三：类名::非静态方法名。前两种方式，方法引用等价于提供方法参数的lambda表达式。第三种情况，第一个参数将成为方法的目标，例如，(msg, str) -&gt; msg.equals(str) 等同于 String::equals。</p>
-<h3 id="构造器引用"><a href="#构造器引用" class="headerlink" title="构造器引用"></a>构造器引用</h3><p>&emsp;&emsp;和方法引用很类似，只不过方法名为new，具体方式为：类名::new，例如：String::new，具体使用类的哪一个构造器取决于上下文。数组的构造器引用：String[]::new，它有一个参数，即数组的长度，等价于length -&gt; new String[length]。</p>
-]]></content>
-      <categories>
-        <category>java</category>
-      </categories>
-      <tags>
-        <tag>lambda</tag>
       </tags>
   </entry>
   <entry>
@@ -1335,18 +1115,223 @@
       </tags>
   </entry>
   <entry>
-    <title>搭建maven私服</title>
-    <url>/maven-private-server.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。</p>
+    <title>lambda</title>
+    <url>/lambda.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;<code>lambda表达式</code>是一个可传递的代码块。</p>
 <a id="more"></a>
-<h3 id="Nexus"><a href="#Nexus" class="headerlink" title="Nexus"></a>Nexus</h3><p>&emsp;&emsp;目前市面上有三种maven仓库管理器可以搭建私服，分别是<a href="http://archiva.apache.org" target="_blank" rel="noopener">apache的archiva</a>、<a href="https://www.jfrogchina.com" target="_blank" rel="noopener">artifactory</a>、<a href="https://www.sonatype.com" target="_blank" rel="noopener">Sonatype的Nexus</a>。目前使用较多的是Nexus，它简化了本地内部仓库的维护和外部仓库的访问；Nexus在代理远程仓库的同时维护本地仓库，以降低中央仓库的负荷,节省外网带宽和时间；Nexus是一套“开箱即用”的系统不需要数据库，它使用文件系统加Lucene来组织数据；Nexus使用ExtJS来开发界面，利用Restlet来提供完整的REST APIs；Nexus支持WebDAV与LDAP安全身份认证;Nexus还提供了强大的仓库管理功能，构件搜索功能，它基于REST，友好的UI是一个extjs的REST客户端，它占用较少的内存，基于简单文件系统而非数据库。</p>
-<h4 id="安装Nexus"><a href="#安装Nexus" class="headerlink" title="安装Nexus"></a>安装Nexus</h4><p>&emsp;&emsp;这里选择下载Nexus的docker镜像安装，我们可以在<code>docker hub</code>上选择<a href="https://hub.docker.com/r/sonatype/nexus3" target="_blank" rel="noopener">Nexus的官方镜像</a> 。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
+<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><ul>
+<li>基本语法：参数，箭头（-&gt;）以及一个表达式或者代码块。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; <span class="keyword">return</span> msg.length()&gt;str.length()</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span>(msg.length()&gt;str.length() &gt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(msg.length()&gt;str.length() == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<em>如果代码块在有些分支有返回值，有些分支没有返回值是不合法的。返回值的类型无需指定，lambda表达式的返回值类型总是有上下文推导而出。lambda表达式可以捕获外围作用域中变量的值，但是所捕获的变量必须实际上是最终变量</em></p>
+<ul>
+<li>无参表达式：提供空括号</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">() -&gt; System.out.println(<span class="string">"no arguments lambda"</span>)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>忽略参数类型：若参数类型可推导，可忽略参数类型。若只有一个参数且参数类型可推导，可省略括号。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(msg, str) -&gt; <span class="keyword">return</span> msg.length() &gt; str.length()</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">msg -&gt; System.out.println(msg)</span><br></pre></td></tr></table></figure>
+<h3 id="函数式接口"><a href="#函数式接口" class="headerlink" title="函数式接口"></a>函数式接口</h3><ul>
+<li><p>定义：只有一个抽象方法的接口。自己设计接口时，如果接口只有一个抽象方法，那么可以使用注解<code>@FunctionalInterface</code>标记这个接口。这样，当你向这个接口再次添加一个抽象方法时，编译器会产生一个错误。另外javadoc页会指出此接口为函数式接口。</p>
+</li>
+<li><p>demo：返回指定字符串10倍的长度</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 函数式接口</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">LengthInterface</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 匿名内部类方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">innerClass</span><span class="params">()</span></span>&#123;</span><br><span class="line">    System.out.println(<span class="keyword">new</span> LengthInterface() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> msg.length()*<span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* lambda表达式方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lambda</span><span class="params">()</span></span>&#123;</span><br><span class="line">    LengthInterface lengthInterface = msg -&gt; msg.length()*<span class="number">10</span>;</span><br><span class="line">    System.out.println(lengthInterface.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/lambda/lambda_functionalInterface.png" alt="初始化git项目方式2"></p>
+<p>&emsp;&emsp;定义一个函数式接口，这个接口只有一个抽象方法，这个抽象方法的用途是希望获取到指定的字符串进过渲染后的长度。在lambda表达式出现之前，我们想要实现这样的功能，最好的做法是通过匿名内部类来实现，但是在这里，我们可以让函数式接口的引用指向一个lambda表达式，通过lambda表达式定义渲染长度规则，然后在通过引用调用函数式接口的抽象方法。很显然，虽然内部类和lambda都可以实现功能，但是不管是从代码的简洁度，可读性还是从性能对比上（内部类的类加载，解析，初始化等高于lambda表达式的性能开销）lambda表达式都是我们的首选方案。</p>
+<ul>
+<li>常用函数式接口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>函数式接口</th>
+<th>参数类型</th>
+<th>返回类型</th>
+<th>抽象方法</th>
+<th>描述</th>
+<th>其他方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Runnable</td>
+<td>无</td>
+<td>void</td>
+<td>run</td>
+<td>作为无参数或返回值的动作运行</td>
+<td></td>
+</tr>
+<tr>
+<td>Supplier<t></t></td>
+<td>无</td>
+<td>T</td>
+<td>get</td>
+<td>提供一个T类型的值</td>
+<td></td>
+</tr>
+<tr>
+<td>Consumer<t></t></td>
+<td>T</td>
+<td>void</td>
+<td>accept</td>
+<td>处理一个T类铟的值</td>
+<td>andThen</td>
+</tr>
+<tr>
+<td>BiConsumer&lt;T,U&gt;</td>
+<td>T,U</td>
+<td>void</td>
+<td>accept</td>
+<td>处理T和U类型的值</td>
+<td>andThen</td>
+</tr>
+<tr>
+<td>Function&lt;T,R&gt;</td>
+<td>T</td>
+<td>R</td>
+<td>apply</td>
+<td>有一个T类型参数的函数</td>
+<td>compose, andThen, identity</td>
+</tr>
+<tr>
+<td>BiFunction&lt;T,U,R&gt;</td>
+<td>T,U</td>
+<td>R</td>
+<td>apply</td>
+<td>有T和U类型参数的函数</td>
+<td>andThen</td>
+</tr>
+<tr>
+<td>UnaryOperator<t></t></td>
+<td>T</td>
+<td>T</td>
+<td>apply</td>
+<td>类型T上的一元操作符</td>
+<td>compose, andThen, identity</td>
+</tr>
+<tr>
+<td>BinaryOperator<t></t></td>
+<td>T,T</td>
+<td>T</td>
+<td>apply</td>
+<td>类型T上的二元操作符</td>
+<td>andThen, maxBy, minBy</td>
+</tr>
+<tr>
+<td>Predicate<t></t></td>
+<td>T</td>
+<td>boolean</td>
+<td>test</td>
+<td>布尔值函数</td>
+<td>and, or, negate, isEqual</td>
+</tr>
+<tr>
+<td>BiPredicate&lt;T,U&gt;</td>
+<td>T,U</td>
+<td>boolean</td>
+<td>test</td>
+<td>有两个参数的布尔值函数</td>
+<td>and, or, negate</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>基本类型的函数式接口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>函数式接口</th>
+<th>参数类型</th>
+<th>返回类型</th>
+<th>抽象方法 </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BooleanSupplier</td>
+<td>none</td>
+<td>boolean</td>
+<td>getAsBoolean</td>
+</tr>
+<tr>
+<td>PSupplier</td>
+<td>none</td>
+<td>p</td>
+<td>getAsP</td>
+</tr>
+<tr>
+<td>PConsumer</td>
+<td>p</td>
+<td>void</td>
+<td>accept</td>
+</tr>
+<tr>
+<td>ObjPConsumer&lt; T&gt;</td>
+<td>T,p</td>
+<td>void</td>
+<td>accept</td>
+</tr>
+<tr>
+<td>PFunction<t></t></td>
+<td>p</td>
+<td>T</td>
+<td>apply</td>
+</tr>
+<tr>
+<td>PToQFunction</td>
+<td>p</td>
+<td>q</td>
+<td>applyAsQ</td>
+</tr>
+<tr>
+<td>ToPFunction<t></t></td>
+<td>T</td>
+<td>p</td>
+<td>applyAsP</td>
+</tr>
+<tr>
+<td>ToPBiFunction&lt;T,U&gt;</td>
+<td>T,U</td>
+<td>p</td>
+<td>applyAsP</td>
+</tr>
+<tr>
+<td>PUnaryOperator</td>
+<td>p</td>
+<td>p</td>
+<td>testAsP</td>
+</tr>
+<tr>
+<td>PBinaryOperator</td>
+<td>p,p</td>
+<td>p</td>
+<td>testAsP</td>
+</tr>
+<tr>
+<td>PPredicate</td>
+<td>p</td>
+<td>boolean</td>
+<td>test</td>
+</tr>
+</tbody>
+</table>
+<p><em>注：p,q为int, long, double;P, Q为Integer, Long, Double</em></p>
+<h3 id="方法引用"><a href="#方法引用" class="headerlink" title="方法引用"></a>方法引用</h3><p>&emsp;&emsp;将现有的方法传递给函数式接口，等价于lambda表达式</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String::length  &lt;==&gt; msg -&gt; msg.length()</span><br><span class="line">(String msg) -&gt; System.out.println(msg)  &lt;==&gt; System.out::println</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;语法：用操作符<code>::</code>分割对象名或类名与方法名，有三种用法，第一：对象::非静态方法名；第二：类名::静态方法名；第三：类名::非静态方法名。前两种方式，方法引用等价于提供方法参数的lambda表达式。第三种情况，第一个参数将成为方法的目标，例如，(msg, str) -&gt; msg.equals(str) 等同于 String::equals。</p>
+<h3 id="构造器引用"><a href="#构造器引用" class="headerlink" title="构造器引用"></a>构造器引用</h3><p>&emsp;&emsp;和方法引用很类似，只不过方法名为new，具体方式为：类名::new，例如：String::new，具体使用类的哪一个构造器取决于上下文。数组的构造器引用：String[]::new，它有一个参数，即数组的长度，等价于length -&gt; new String[length]。</p>
+]]></content>
       <categories>
-        <category>开发工具</category>
+        <category>java</category>
       </categories>
       <tags>
-        <tag>maven</tag>
+        <tag>lambda</tag>
       </tags>
   </entry>
   <entry>
@@ -1789,6 +1774,88 @@
       </tags>
   </entry>
   <entry>
+    <title>搭建maven私服</title>
+    <url>/maven-private-server.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。</p>
+<a id="more"></a>
+<h3 id="Nexus3"><a href="#Nexus3" class="headerlink" title="Nexus3"></a>Nexus3</h3><p>&emsp;&emsp;目前市面上有三种maven仓库管理器可以搭建私服，分别是<a href="http://archiva.apache.org" target="_blank" rel="noopener">apache的archiva</a>、<a href="https://www.jfrogchina.com" target="_blank" rel="noopener">artifactory</a>、<a href="https://www.sonatype.com" target="_blank" rel="noopener">Sonatype的Nexus</a>。目前使用较多的是Nexus，它简化了本地内部仓库的维护和外部仓库的访问；Nexus在代理远程仓库的同时维护本地仓库，以降低中央仓库的负荷,节省外网带宽和时间；Nexus是一套“开箱即用”的系统不需要数据库，它使用文件系统加Lucene来组织数据；Nexus使用ExtJS来开发界面，利用Restlet来提供完整的REST APIs；Nexus支持WebDAV与LDAP安全身份认证;Nexus还提供了强大的仓库管理功能，构件搜索功能，它基于REST，友好的UI是一个extjs的REST客户端，它占用较少的内存，基于简单文件系统而非数据库。</p>
+<p>&emsp;&emsp;这里选择下载Nexus的docker镜像安装，我们可以在<code>docker hub</code>上选择<a href="https://hub.docker.com/r/sonatype/nexus3" target="_blank" rel="noopener">Nexus的官方镜像</a> 。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull sonatype/nexus3</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;运行容器</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d -p 8081:8081 --name nexus sonatype/nexus3</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;测试</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl http://localhost:8081</span><br></pre></td></tr></table></figure>
+<h3 id="配置nexus"><a href="#配置nexus" class="headerlink" title="配置nexus"></a>配置nexus</h3><h4 id="初始化设置"><a href="#初始化设置" class="headerlink" title="初始化设置"></a>初始化设置</h4><p>&emsp;&emsp;登录</p>
+<p><img src="/maven-private-server/nexus-home.png" alt="登录"></p>
+<p>&emsp;&emsp;用户名是<code>admin</code>，可以通过<code>docker exec -it nexus /bin/bash</code>进入容器，然后查看<code>/nexus-data/admin.password</code>文件获取admin用户的初始密码。</p>
+<p>&emsp;&emsp;登录后会要求修改初始密码,然后需要设置匿名用户的访问权限，这里禁止匿名用户访问。</p>
+<p><img src="/maven-private-server/nexus-anonymous-permission.png" alt="匿名访问控制"></p>
+<h4 id="仓库配置"><a href="#仓库配置" class="headerlink" title="仓库配置"></a>仓库配置</h4><p>&emsp;&emsp;nexus上的maven仓库分三种类型：</p>
+<blockquote>
+<p>proxy：代理仓库，代理远程的中央仓库，当用户向该类型仓库请求时，先在本地寻找，未找到的情况下去代理的中央仓库下载并存入本地然后返回给用户<br>hosted：宿主仓库，部署自己的构建到该仓库中<br>group：仓库组，用来组合多个宿主仓库和代理仓库的，当项目引用多个仓库时，可以使用仓库组将多个仓库组合起来，项目直接使用仓库组即可。</p>
+</blockquote>
+<p>&emsp;&emsp;替换代理仓库地址，删除nexus自带的仓库。这里我们选择<a href="https://maven.aliyun.com/repository/public" target="_blank" rel="noopener">阿里云的中央仓库</a>,这里给出我使用的仓库地址 <code>https://maven.aliyun.com/repository/public</code> 。</p>
+<p>&emsp;&emsp;删除所有nexus自带的仓库，创建以下几个仓库：一个代理仓库，用来代理中央仓库；至少一个宿主仓库（每个项目创建一个对应的宿主仓库）；一个仓库组（可选，若A项目依赖于B项目，那么可以创建一个仓库组将代理仓库和B项目的仓库组合在一起，这样可以避免A项目使用多个仓库）。</p>
+<p>&emsp;&emsp;创建代理仓库</p>
+<p><img src="/maven-private-server/nexus-create-repository.png" alt="创建代理仓库"></p>
+<p><img src="/maven-private-server/nexus-create-proxy.png" alt="创建代理仓库"></p>
+<p><img src="/maven-private-server/nexus-create-proxy2.png" alt="创建代理仓库"></p>
+<p>&emsp;&emsp;创建宿主仓库</p>
+<p><img src="/maven-private-server/nexus-create-repository.png" alt="创建宿主仓库"></p>
+<p><img src="/maven-private-server/nexus-create-hosted.png" alt="创建宿主仓库"></p>
+<p><img src="/maven-private-server/nexus-create-hosted2.png" alt="创建宿主仓库"></p>
+<p>&emsp;&emsp;创建仓库组</p>
+<p><img src="/maven-private-server/nexus-create-repository.png" alt="创建仓库组"></p>
+<p><img src="/maven-private-server/nexus-create-group.png" alt="创建仓库组"></p>
+<p><img src="/maven-private-server/nexus-create-group2.png" alt="创建仓库组"></p>
+<h4 id="用户角色配置"><a href="#用户角色配置" class="headerlink" title="用户角色配置"></a>用户角色配置</h4><p>&emsp;&emsp;创建角色</p>
+<p><img src="/maven-private-server/nexus-create-role.png" alt="创建角色"></p>
+<p><img src="/maven-private-server/nexus-create-role2.png" alt="创建角色"></p>
+<p>&emsp;&emsp;创建用户</p>
+<p><img src="/maven-private-server/nexus-create-user.png" alt="创建用户"></p>
+<p><img src="/maven-private-server/nexus-create-user2.png" alt="创建用户"></p>
+<p>&emsp;&emsp;到这里私服就算是配置好了，下面就是说明一下如何使用私服。</p>
+<h3 id="使用私服"><a href="#使用私服" class="headerlink" title="使用私服"></a>使用私服</h3><h4 id="maven从私服获取依赖"><a href="#maven从私服获取依赖" class="headerlink" title="maven从私服获取依赖"></a>maven从私服获取依赖</h4><p>&emsp;&emsp;我们在上一步创建了角色和用户，并为角色分配了权限，为用户分配了角色，这里我们使用创建的用户来完成私服的使用。</p>
+<p>&emsp;&emsp;首先我们需要直到maven获取依赖的搜索顺序：</p>
+<blockquote>
+<p>本地仓库：本地仓库的地址在maven的配置文件中指定，默认是<code>~/.m2/repository/</code>;<br>远程仓库：项目的配置文件(pom.xml)中的 repositories 配置的优先级高于配置文件(settings.xml)中的 profiles 中配置的 repositories；<br>中央仓库：默认的一个远程仓库，其id为<code>central</code></p>
+</blockquote>
+<p>&emsp;&emsp;在配置中需要注意<strong>若远程仓库需要用户名密码，则需要配置settings.xml配置文件中的server，其id标签和repository的id标签需要保持一致</strong>。</p>
+<p>&emsp;&emsp;镜像仓库的理解：若A仓库的所有内容都可以在B仓库寻找到，那么B仓库就是A仓库的镜像。基于此，我们使用nexus创建一个代理仓库，可以使用这个代理仓库作为中央仓库的镜像，每个项目可以配置其自己的仓库。总结来说，每个项目可以从自己的仓库获取依赖文件，而镜像就是所有项目的最后一道防线，如果所需的依赖从镜像仓库中都不能获取，那么maven就会报错找不到依赖文件。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&lt;mirrors&gt;</span><br><span class="line">    &lt;mirror&gt;</span><br><span class="line">        &lt;id&gt;nexus-proxy-aliyun&lt;/id&gt;</span><br><span class="line">        &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;</span><br><span class="line">        &lt;name&gt;ferry私服代理仓库&lt;/name&gt;</span><br><span class="line">        &lt;url&gt;http://ferry.org.cn:8081/repository/proxy-aliyun/&lt;/url&gt;</span><br><span class="line">    &lt;/mirror&gt;</span><br><span class="line">&lt;/mirrors&gt;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;上面的就是镜像的配置，该配置是写在settings.xml配置文件中的，我们可以配置多个仓库的镜像，这里举例配置了中央仓库的镜像，如上配置，当访问central仓库的时候url会被替换成该镜像配置中的url，如果访问需要用户名密码校验，那么他会去servers标签下寻找与此镜像id相同的server来完成用户认证。<strong>注意：<code>mirrorOf</code>中不能写<code>*</code>,<code>*</code>表示对所有仓库镜像</strong>。</p>
+<p>&emsp;&emsp;基于上面的理解，我们可以为项目配置一个项目级的仓库，然后配置一个中央仓库的镜像仓库。</p>
+<h5 id="配置项目级仓库"><a href="#配置项目级仓库" class="headerlink" title="配置项目级仓库"></a>配置项目级仓库</h5><p>&emsp;&emsp;settings配置文件修改,在servers标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>group-ferry<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">username</span>&gt;</span>developer<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>***********<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;项目下的配置文件pom.xml修改,在repositories标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>group-ferry<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://ferry.org.cn:8081/repository/group-ferry/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;注意，两个id要一致，这是用户认证的关键。</p>
+<h5 id="配置镜像"><a href="#配置镜像" class="headerlink" title="配置镜像"></a>配置镜像</h5><p>&emsp;&emsp;settings配置文件修改,在servers标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>nexus-proxy-aliyun<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">username</span>&gt;</span>developer<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>***********<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;settings配置文件修改,在mirrors标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">mirror</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>nexus-proxy-aliyun<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">mirrorOf</span>&gt;</span>central<span class="tag">&lt;/<span class="name">mirrorOf</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>ferry私服代理仓库<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://ferry.org.cn:8081/repository/proxy-aliyun/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">mirror</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;同样的，两个id要一致，这是用户认证的关键。这里<code>mirrorOf</code>值为<code>central</code>，表示是<code>central</code>仓库的镜像。</p>
+<p>&emsp;&emsp;配置全局仓库的话就是先添加用户密码信息（settings.xml中添加一个server标签），然后在settings.xml的<code>profiles</code>中定义，这里不举例了。</p>
+<h4 id="构建服务到私服"><a href="#构建服务到私服" class="headerlink" title="构建服务到私服"></a>构建服务到私服</h4><p>&emsp;&emsp;实际开发中，我们需要将开发好的公共服务发布到私服供其他服务使用，这是我们需要进行一定的配置。</p>
+<p>&emsp;&emsp;这里回顾以下我们之前在nexus上创建的宿主仓库（如下图），我们可以选择版本为稳定发布板（releases）还是开发版（Snapshot）亦或者修复版本（Mixed），还有一个重要的选择，就是<code>Deployment policy</code>需要选择<code>Allow redeploy</code>,否则无法上传我们的构建。</p>
+<p><img src="/maven-private-server/nexus-create-hosted2.png" alt="创建宿主仓库"></p>
+<p>&emsp;&emsp;settings配置文件修改,在servers标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>ferry-release<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">username</span>&gt;</span>developer<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>***********<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;项目下的配置文件pom.xml修改,在distributionManagement标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>ferry-release<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://ferry.org.cn:8081/repository/ferry-releases/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;两个id要一致，这是用户认证的关键。</p>
+<p>&emsp;&emsp;发布构建的时候在项目根目录下执行<code>mvn clean deploy</code>即可。</p>
+<h3 id="浏览nexus仓库内容"><a href="#浏览nexus仓库内容" class="headerlink" title="浏览nexus仓库内容"></a>浏览nexus仓库内容</h3><p>&emsp;&emsp;nexus提供了友好的UI界面供我们访问仓库内容</p>
+<p><img src="/maven-private-server/nexus-browse.png" alt="browse"></p>
+]]></content>
+      <categories>
+        <category>开发工具</category>
+      </categories>
+      <tags>
+        <tag>maven</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>mysql</title>
     <url>/mysql.html</url>
     <content><![CDATA[<p>&emsp;&emsp;记录一下mysql中常用的语法吧，也算是通用的sql语法。</p>
@@ -2121,291 +2188,6 @@
       <tags>
         <tag>oracle</tag>
         <tag>sql</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>redis</title>
-    <url>/redis.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;redis学习之路。</p>
-<a id="more"></a>
-<h3 id="简单配置"><a href="#简单配置" class="headerlink" title="简单配置"></a>简单配置</h3><p>&emsp;&emsp;使用yum安装的redis，他的配置文件的路径为<code>/etc/redis.conf</code>，修改此配置文件以满足我们的要求。</p>
-<ul>
-<li>绑定IP</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">bind</span> 10.15.159.19 127.0.0.1</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;bind可以绑定多个IP地址，中间用空格分隔，也可以将bind注释掉。注意：<font color="#dd0000">你只能通过bind的IP来访问redis服务</font>。将bind注释掉则可以通过任意IP访问redis服务。</p>
-<ul>
-<li>端口号</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">port 6379</span><br></pre></td></tr></table></figure>
-<ul>
-<li>数据库数量</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">databases 16</span><br></pre></td></tr></table></figure>
-<ul>
-<li>连接密码(默认不需要)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">requirepass foobared</span><br></pre></td></tr></table></figure>
-<ul>
-<li>查看 redis 当前使用的配置文件目录</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">redis-cli info | grep config</span><br></pre></td></tr></table></figure>
-<h3 id="redis-数据结构"><a href="#redis-数据结构" class="headerlink" title="redis 数据结构"></a>redis 数据结构</h3><p>&emsp;&emsp;redis 一共有五种数据结构，分别为String、List、hash、Set、Zset。</p>
-<p>&emsp;&emsp;原子操作：在多进程（线程）访问共享资源时，能够确保所有其他的进程（线程）都不在同一时间内访问相同的资源。原子操作（atomic operation）是不需要synchronized，这是Java多线程编程的老生常谈了。所谓原子操作是指不会被线程调度机制打断的操作；这种操作一旦开始，就一直运行到结束，中间不会有任何 context switch （切换到另一个线程）。</p>
-<h4 id="字符串类型-String"><a href="#字符串类型-String" class="headerlink" title="字符串类型(String)"></a>字符串类型(String)</h4><p>&emsp;&emsp;空间分配原则：当len小于IMB（1024*1024）时增加字符串分配空间大小为原来的2倍，当len大于等于1M时每次分配 额外多分配1M的空间。取字符串的长度的时间复杂度为O(1)</p>
-<ul>
-<li>赋值(set key value)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">set</span> hello world</span><br></pre></td></tr></table></figure>
-<ul>
-<li>取值(get key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">get hello</span><br></pre></td></tr></table></figure>
-<ul>
-<li>自增(incr key)(原子操作)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">incr num</span><br></pre></td></tr></table></figure>
-<ul>
-<li>自减(decr key)(原子操作)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">decr num</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;自增/自减该key对应的value值都会相应的加/减1，若该key不存在，则先<code>set key 0</code>然后执行加/减1操作，最后将执行结果返回。如果该key的值不是数字则报错。</p>
-<ul>
-<li>自增N(incrby key increment)(原子操作)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">incrby count 5</span><br></pre></td></tr></table></figure>
-<ul>
-<li>自减N(decrby key increment)(原子操作)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">decrby count 5</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;自增N/自减N同自增/自减。</p>
-<ul>
-<li>增加浮点数(incrbyfloat key increment)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">incrbyfloat float1 3</span><br></pre></td></tr></table></figure>
-<ul>
-<li>向尾部追加(append key value)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">append hello !</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;向字符串尾部追加内容，返回追加后的字符串长度，若key不存在，则新增。</p>
-<ul>
-<li>字符串长度(strlen key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">strlen hello</span><br></pre></td></tr></table></figure>
-<ul>
-<li>同时设置多个key(mset key value [key value …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mset str1 hehe str2 xixi str3 haha</span><br></pre></td></tr></table></figure>
-<ul>
-<li>同时获取多个key的值(mget key [key …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mget str1 str2 str3</span><br></pre></td></tr></table></figure>
-<h4 id="列表-list"><a href="#列表-list" class="headerlink" title="列表(list)"></a>列表(list)</h4><p>&emsp;&emsp;列表类型存储了一个有序的字符串列表。常用的操作是向两端插入新的元素。时间复杂度为 O（1）。结构为一个链表。记录头和尾的地址。看到这里，Redis 数据类型的列表类型一个重大的作用呼之欲出，那就是队列。新来的请求插入到尾部，新处理过的从头部删除。列表类型就是一个下标从 0 开始的数组。由于是链表存储，那么越靠近头和尾的元素操作越快，越靠近中间则越慢.</p>
-<ul>
-<li>向头部插入(lpush key value [value …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lpush list apple banana pear</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;返回列表的长度。向头部插入，先向头部插入apple，再向头部插入banana，最后向头部插入pear，所以操作后列表的第一个元素应该是pear。</p>
-<ul>
-<li>向尾部插入(rpush key value [value])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rpush list orange grape</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;返回列表的长度。向尾部插入，orange，grape，所以操作后列表的最后一个元素应该是grape。</p>
-<ul>
-<li>列表元素个数(llen key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">llen list</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;返回列表的长度。若key不存在，返回0。</p>
-<ul>
-<li>获取列表的子列表(lrange key start end)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lrange list 0 -1</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;返回第 start 个到第 end 个元素的列表。包含 start 和 end。支持负数索引。-1 表示最后一个元素，-2 表示倒数第二个元素。</p>
-<ul>
-<li>获取指定索引值(lindex key index)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lindex list 0</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;若index为负数则从尾部向前索引，-1为最后一个元素的位置。</p>
-<ul>
-<li>从头部弹出(lpop key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lpop list</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;返回被弹出的元素。</p>
-<ul>
-<li>从尾部弹出(rpop key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rpop list</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;返回被弹出的元素。</p>
-<ul>
-<li>删除列表中指定值(lrem key count value)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lrem list 1 apple</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;返回删除的数量。count为0，删除所有列表中指定的值；count为正数，从前往后删除count个指定的元素(count大于实际的元素数量时删除所有)；count为负数时，从后往前删除count个指定的元素(count大于实际的元素数量时删除所有)。</p>
-<ul>
-<li>设置索引和值(lset key index value)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rpush fruit apple pear banana orange</span><br><span class="line">lset fruit 0 <span class="string">"greet apple"</span></span><br><span class="line">lrange fruit 0 -1</span><br></pre></td></tr></table></figure>
-<ul>
-<li>保留片段，删除其它(ltrim key start end)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ltrim fruit 0 -2</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;保留start到end之间的所有元素，含start和end。其他全部删除。舒服从末尾向前，-1表示最后一个元素的下标值。</p>
-<ul>
-<li>向列表插入元素(linsert key before|after pivot value)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">linsert fruit before pear apple</span><br><span class="line">linsert fruit after pear apple</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;从头部开始遍历，直到发现第一个pivot，根据before|after将value插入pivot之前还是之后。</p>
-<ul>
-<li>把一个列表的一个元素转到另一个列表(rpoplpush source destination)(原子操作)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rpoplpush fruit list</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;将source列表的最后一个元素弹出并使用lpush操作插入到destination列表中。</p>
-<h4 id="散列类型-hash"><a href="#散列类型-hash" class="headerlink" title="散列类型(hash)"></a>散列类型(hash)</h4><p>&emsp;&emsp;Redis 是以字典（关联数组）的形式存储的，一个 key 对应一个 value。在字符串类型中，value 只能是一个字符串。那么在散列类型中，value 对应的也是一个字典（关联数组）。那么就可以理解，Redis 的散列类型中，key 对应的 value 是一个二维数组。但是字段的值只可以是字符串。也就是说只能是二维数组，不能有更多的维度。</p>
-<ul>
-<li>赋值(hset key field value)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hset map name ferry</span><br></pre></td></tr></table></figure>
-<ul>
-<li>取值(hget key field)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hget map name</span><br></pre></td></tr></table></figure>
-<ul>
-<li>同一个key多个字段赋值(hmset key field value [field value …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hmset map birthday 1995-04-09 sex male</span><br></pre></td></tr></table></figure>
-<ul>
-<li>同一个KEY多个字段取值(hmget key field [field …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hmget map name birthday sex</span><br></pre></td></tr></table></figure>
-<ul>
-<li>获取KEY的所有字段和所有值(hgetall key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hgetall map</span><br></pre></td></tr></table></figure>
-<ul>
-<li>字段是否存在(hexists key field)(存在返回1，否则返回0)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexists map name</span><br><span class="line">hexists map age</span><br></pre></td></tr></table></figure>
-<ul>
-<li>当字段不存在时赋值(hsetnx key field value)(原子操作)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hsetnx map height 175</span><br><span class="line">hsetnx map name jack</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;若字段存在返回0，否则设置字段的值并返回1。等效于hexists+hset，但该操作是原子操作，线程安全的。</p>
-<ul>
-<li>自增N(hincrby key field increment)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hincrby map height 2</span><br></pre></td></tr></table></figure>
-<ul>
-<li>删除字段(hdel key field [field …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hdel map height</span><br></pre></td></tr></table></figure>
-<ul>
-<li>只获取字段名(hkeys key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hkeys map</span><br></pre></td></tr></table></figure>
-<ul>
-<li>只获取字段值(hvals key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hvals map</span><br></pre></td></tr></table></figure>
-<ul>
-<li>获取字段数量(hlen key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hlen map</span><br></pre></td></tr></table></figure>
-<h4 id="集合类型-set"><a href="#集合类型-set" class="headerlink" title="集合类型(set)"></a>集合类型(set)</h4><p>&emsp;&emsp;redis的集合和列表都可以存储多个字符串，它们之间的不同在于，列表可以存储多个相同的字符串，而集合则通过使用散列表（hashtable）来保证自已存储的每个字符串都是各不相同的(这些散列表只有键，但没有与键相关联的值)，redis中的集合是无序的。</p>
-<ul>
-<li>增加(sadd key member [member …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sadd s 1 a 2 b 3 c</span><br></pre></td></tr></table></figure>
-<ul>
-<li>删除(srem key member [member …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">srem s 1 2 3</span><br></pre></td></tr></table></figure>
-<ul>
-<li>获取集合所有元素(smembers key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">smembers s</span><br></pre></td></tr></table></figure>
-<ul>
-<li>判断指定集合中是否存在某个元素(sismember key member)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sismember s a</span><br></pre></td></tr></table></figure>
-<ul>
-<li>差集运算(sdiff key [key …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sadd b 1 2 3 a b c</span><br><span class="line">sdiff a b</span><br><span class="line">sdiff b a</span><br></pre></td></tr></table></figure>
-<ul>
-<li>交集运算(sinter key [key …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sinter s b</span><br></pre></td></tr></table></figure>
-<ul>
-<li>并集运算(sunion key [key …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sunion s b</span><br></pre></td></tr></table></figure>
-<ul>
-<li>差集/交集/并集运算结果存储在一个集合中(sdiffstore/sinterstore/sunionstore destination key [key …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sdiffstore bs b s</span><br><span class="line">sinterstore sbs b s</span><br><span class="line">sunionstore sb s b</span><br></pre></td></tr></table></figure>
-<ul>
-<li>随机获取元素(srandmember key [count])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">srandmember b -10</span><br></pre></td></tr></table></figure>
-<p>&amp;emsp&emsp;若count不存在，随机从集合中获取一个元素输出；若count等于0，输出空；若count大于0，输出不重复的count个元素（count大于实际数量时输出集合中所有元素）；若count小于0，输出可重复的count个元素。</p>
-<ul>
-<li>随机弹出一个元素(spop key [count])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">spop b 10</span><br></pre></td></tr></table></figure>
-<p>&amp;emsp&emsp;若count不存在，随机从集合中弹出一个元素并输出该元素；若count等于0，弹出0个元素并输出空；若count大于0，弹出不重复的count个元素（count大于实际数量时弹出集合中所有元素）并输出这些被弹出的元素；若count小于0，报错<code>(error) ERR index out of range</code>。</p>
-<h4 id="有序集合-zset"><a href="#有序集合-zset" class="headerlink" title="有序集合(zset)"></a>有序集合(zset)</h4><p>&emsp;&emsp;有序集合和散列一样，都用于存储键值对：有序集合的键被称为成员（member),每个成员都是各不相同的。有序集合的值则被称为分值（score），分值必须为浮点数。有序集合是redis里面唯一一个既可以根据成员访问元素(这一点和散列一样),又可以根据分值以及分值的排列顺序访问元素的结构。</p>
-<ul>
-<li>增加(zadd key [NX|XX] [CH] [INCR] score member [score member …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zadd z 1 a 2 b 3 c 4 d 5 e 6 f 7 g</span><br></pre></td></tr></table></figure>
-<ul>
-<li>获取分数(zscore key member)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zscore z e</span><br></pre></td></tr></table></figure>
-<ul>
-<li>获取排名在某个范围内的元素列表，闭区间(zrange key start stop [withscores])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zrange z 0 10 withscores</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;若withscores参数不存在，则按顺序输出范围内的元素，若withscores参数存在，则一行元素，一行分值按顺序输出范围内的元素-分值。若start/stop为-1，则取顺序是最后的元素-分值；为-2，则取顺序是倒数第二的元素-分值；以此类推。</p>
-<ul>
-<li>获取指定分数范围的元素列表，闭区间,limit参数分页(zrangebyscore key min max [withscores] [limit offset count])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zrangebyscore z 5 10 withscores <span class="built_in">limit</span> 1 2</span><br></pre></td></tr></table></figure>
-<ul>
-<li>增加元素分值(zincrby key increment member)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zincrby z 8 v</span><br></pre></td></tr></table></figure>
-<ul>
-<li>获取元素数量(zcard key)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zcard z</span><br></pre></td></tr></table></figure>
-<ul>
-<li>获取分值范围内的元素个数(zcount key min max)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zcount z 0 10</span><br></pre></td></tr></table></figure>
-<ul>
-<li>删除元素(zrem key member [member …])</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zrem z v z</span><br></pre></td></tr></table></figure>
-<ul>
-<li>删除指定排名范围内的元素(zremrangebyrank key start stop)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zremrangebyrank z 0 10</span><br></pre></td></tr></table></figure>
-<ul>
-<li>删除指定分值范围内的元素(zremrangebyscore key min max)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zremrangebyscore z 2 10</span><br></pre></td></tr></table></figure>
-<ul>
-<li>获取元素正序排名(zrank key member)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zrank z f</span><br></pre></td></tr></table></figure>
-<ul>
-<li>获取元素倒序排名(zrevrank key member)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zrevrank z a</span><br></pre></td></tr></table></figure>
-]]></content>
-      <tags>
-        <tag>redis</tag>
       </tags>
   </entry>
   <entry>
@@ -2768,6 +2550,291 @@
       </tags>
   </entry>
   <entry>
+    <title>redis</title>
+    <url>/redis.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;redis学习之路。</p>
+<a id="more"></a>
+<h3 id="简单配置"><a href="#简单配置" class="headerlink" title="简单配置"></a>简单配置</h3><p>&emsp;&emsp;使用yum安装的redis，他的配置文件的路径为<code>/etc/redis.conf</code>，修改此配置文件以满足我们的要求。</p>
+<ul>
+<li>绑定IP</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">bind</span> 10.15.159.19 127.0.0.1</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;bind可以绑定多个IP地址，中间用空格分隔，也可以将bind注释掉。注意：<font color="#dd0000">你只能通过bind的IP来访问redis服务</font>。将bind注释掉则可以通过任意IP访问redis服务。</p>
+<ul>
+<li>端口号</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">port 6379</span><br></pre></td></tr></table></figure>
+<ul>
+<li>数据库数量</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">databases 16</span><br></pre></td></tr></table></figure>
+<ul>
+<li>连接密码(默认不需要)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">requirepass foobared</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看 redis 当前使用的配置文件目录</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">redis-cli info | grep config</span><br></pre></td></tr></table></figure>
+<h3 id="redis-数据结构"><a href="#redis-数据结构" class="headerlink" title="redis 数据结构"></a>redis 数据结构</h3><p>&emsp;&emsp;redis 一共有五种数据结构，分别为String、List、hash、Set、Zset。</p>
+<p>&emsp;&emsp;原子操作：在多进程（线程）访问共享资源时，能够确保所有其他的进程（线程）都不在同一时间内访问相同的资源。原子操作（atomic operation）是不需要synchronized，这是Java多线程编程的老生常谈了。所谓原子操作是指不会被线程调度机制打断的操作；这种操作一旦开始，就一直运行到结束，中间不会有任何 context switch （切换到另一个线程）。</p>
+<h4 id="字符串类型-String"><a href="#字符串类型-String" class="headerlink" title="字符串类型(String)"></a>字符串类型(String)</h4><p>&emsp;&emsp;空间分配原则：当len小于IMB（1024*1024）时增加字符串分配空间大小为原来的2倍，当len大于等于1M时每次分配 额外多分配1M的空间。取字符串的长度的时间复杂度为O(1)</p>
+<ul>
+<li>赋值(set key value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">set</span> hello world</span><br></pre></td></tr></table></figure>
+<ul>
+<li>取值(get key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">get hello</span><br></pre></td></tr></table></figure>
+<ul>
+<li>自增(incr key)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">incr num</span><br></pre></td></tr></table></figure>
+<ul>
+<li>自减(decr key)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">decr num</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自增/自减该key对应的value值都会相应的加/减1，若该key不存在，则先<code>set key 0</code>然后执行加/减1操作，最后将执行结果返回。如果该key的值不是数字则报错。</p>
+<ul>
+<li>自增N(incrby key increment)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">incrby count 5</span><br></pre></td></tr></table></figure>
+<ul>
+<li>自减N(decrby key increment)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">decrby count 5</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;自增N/自减N同自增/自减。</p>
+<ul>
+<li>增加浮点数(incrbyfloat key increment)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">incrbyfloat float1 3</span><br></pre></td></tr></table></figure>
+<ul>
+<li>向尾部追加(append key value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">append hello !</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;向字符串尾部追加内容，返回追加后的字符串长度，若key不存在，则新增。</p>
+<ul>
+<li>字符串长度(strlen key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">strlen hello</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同时设置多个key(mset key value [key value …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mset str1 hehe str2 xixi str3 haha</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同时获取多个key的值(mget key [key …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mget str1 str2 str3</span><br></pre></td></tr></table></figure>
+<h4 id="列表-list"><a href="#列表-list" class="headerlink" title="列表(list)"></a>列表(list)</h4><p>&emsp;&emsp;列表类型存储了一个有序的字符串列表。常用的操作是向两端插入新的元素。时间复杂度为 O（1）。结构为一个链表。记录头和尾的地址。看到这里，Redis 数据类型的列表类型一个重大的作用呼之欲出，那就是队列。新来的请求插入到尾部，新处理过的从头部删除。列表类型就是一个下标从 0 开始的数组。由于是链表存储，那么越靠近头和尾的元素操作越快，越靠近中间则越慢.</p>
+<ul>
+<li>向头部插入(lpush key value [value …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lpush list apple banana pear</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回列表的长度。向头部插入，先向头部插入apple，再向头部插入banana，最后向头部插入pear，所以操作后列表的第一个元素应该是pear。</p>
+<ul>
+<li>向尾部插入(rpush key value [value])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rpush list orange grape</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回列表的长度。向尾部插入，orange，grape，所以操作后列表的最后一个元素应该是grape。</p>
+<ul>
+<li>列表元素个数(llen key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">llen list</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回列表的长度。若key不存在，返回0。</p>
+<ul>
+<li>获取列表的子列表(lrange key start end)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lrange list 0 -1</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回第 start 个到第 end 个元素的列表。包含 start 和 end。支持负数索引。-1 表示最后一个元素，-2 表示倒数第二个元素。</p>
+<ul>
+<li>获取指定索引值(lindex key index)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lindex list 0</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;若index为负数则从尾部向前索引，-1为最后一个元素的位置。</p>
+<ul>
+<li>从头部弹出(lpop key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lpop list</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回被弹出的元素。</p>
+<ul>
+<li>从尾部弹出(rpop key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rpop list</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回被弹出的元素。</p>
+<ul>
+<li>删除列表中指定值(lrem key count value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">lrem list 1 apple</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;返回删除的数量。count为0，删除所有列表中指定的值；count为正数，从前往后删除count个指定的元素(count大于实际的元素数量时删除所有)；count为负数时，从后往前删除count个指定的元素(count大于实际的元素数量时删除所有)。</p>
+<ul>
+<li>设置索引和值(lset key index value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rpush fruit apple pear banana orange</span><br><span class="line">lset fruit 0 <span class="string">"greet apple"</span></span><br><span class="line">lrange fruit 0 -1</span><br></pre></td></tr></table></figure>
+<ul>
+<li>保留片段，删除其它(ltrim key start end)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ltrim fruit 0 -2</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;保留start到end之间的所有元素，含start和end。其他全部删除。舒服从末尾向前，-1表示最后一个元素的下标值。</p>
+<ul>
+<li>向列表插入元素(linsert key before|after pivot value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">linsert fruit before pear apple</span><br><span class="line">linsert fruit after pear apple</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;从头部开始遍历，直到发现第一个pivot，根据before|after将value插入pivot之前还是之后。</p>
+<ul>
+<li>把一个列表的一个元素转到另一个列表(rpoplpush source destination)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">rpoplpush fruit list</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;将source列表的最后一个元素弹出并使用lpush操作插入到destination列表中。</p>
+<h4 id="散列类型-hash"><a href="#散列类型-hash" class="headerlink" title="散列类型(hash)"></a>散列类型(hash)</h4><p>&emsp;&emsp;Redis 是以字典（关联数组）的形式存储的，一个 key 对应一个 value。在字符串类型中，value 只能是一个字符串。那么在散列类型中，value 对应的也是一个字典（关联数组）。那么就可以理解，Redis 的散列类型中，key 对应的 value 是一个二维数组。但是字段的值只可以是字符串。也就是说只能是二维数组，不能有更多的维度。</p>
+<ul>
+<li>赋值(hset key field value)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hset map name ferry</span><br></pre></td></tr></table></figure>
+<ul>
+<li>取值(hget key field)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hget map name</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同一个key多个字段赋值(hmset key field value [field value …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hmset map birthday 1995-04-09 sex male</span><br></pre></td></tr></table></figure>
+<ul>
+<li>同一个KEY多个字段取值(hmget key field [field …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hmget map name birthday sex</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取KEY的所有字段和所有值(hgetall key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hgetall map</span><br></pre></td></tr></table></figure>
+<ul>
+<li>字段是否存在(hexists key field)(存在返回1，否则返回0)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexists map name</span><br><span class="line">hexists map age</span><br></pre></td></tr></table></figure>
+<ul>
+<li>当字段不存在时赋值(hsetnx key field value)(原子操作)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hsetnx map height 175</span><br><span class="line">hsetnx map name jack</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;若字段存在返回0，否则设置字段的值并返回1。等效于hexists+hset，但该操作是原子操作，线程安全的。</p>
+<ul>
+<li>自增N(hincrby key field increment)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hincrby map height 2</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除字段(hdel key field [field …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hdel map height</span><br></pre></td></tr></table></figure>
+<ul>
+<li>只获取字段名(hkeys key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hkeys map</span><br></pre></td></tr></table></figure>
+<ul>
+<li>只获取字段值(hvals key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hvals map</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取字段数量(hlen key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hlen map</span><br></pre></td></tr></table></figure>
+<h4 id="集合类型-set"><a href="#集合类型-set" class="headerlink" title="集合类型(set)"></a>集合类型(set)</h4><p>&emsp;&emsp;redis的集合和列表都可以存储多个字符串，它们之间的不同在于，列表可以存储多个相同的字符串，而集合则通过使用散列表（hashtable）来保证自已存储的每个字符串都是各不相同的(这些散列表只有键，但没有与键相关联的值)，redis中的集合是无序的。</p>
+<ul>
+<li>增加(sadd key member [member …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sadd s 1 a 2 b 3 c</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除(srem key member [member …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">srem s 1 2 3</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取集合所有元素(smembers key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">smembers s</span><br></pre></td></tr></table></figure>
+<ul>
+<li>判断指定集合中是否存在某个元素(sismember key member)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sismember s a</span><br></pre></td></tr></table></figure>
+<ul>
+<li>差集运算(sdiff key [key …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sadd b 1 2 3 a b c</span><br><span class="line">sdiff a b</span><br><span class="line">sdiff b a</span><br></pre></td></tr></table></figure>
+<ul>
+<li>交集运算(sinter key [key …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sinter s b</span><br></pre></td></tr></table></figure>
+<ul>
+<li>并集运算(sunion key [key …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sunion s b</span><br></pre></td></tr></table></figure>
+<ul>
+<li>差集/交集/并集运算结果存储在一个集合中(sdiffstore/sinterstore/sunionstore destination key [key …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sdiffstore bs b s</span><br><span class="line">sinterstore sbs b s</span><br><span class="line">sunionstore sb s b</span><br></pre></td></tr></table></figure>
+<ul>
+<li>随机获取元素(srandmember key [count])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">srandmember b -10</span><br></pre></td></tr></table></figure>
+<p>&amp;emsp&emsp;若count不存在，随机从集合中获取一个元素输出；若count等于0，输出空；若count大于0，输出不重复的count个元素（count大于实际数量时输出集合中所有元素）；若count小于0，输出可重复的count个元素。</p>
+<ul>
+<li>随机弹出一个元素(spop key [count])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">spop b 10</span><br></pre></td></tr></table></figure>
+<p>&amp;emsp&emsp;若count不存在，随机从集合中弹出一个元素并输出该元素；若count等于0，弹出0个元素并输出空；若count大于0，弹出不重复的count个元素（count大于实际数量时弹出集合中所有元素）并输出这些被弹出的元素；若count小于0，报错<code>(error) ERR index out of range</code>。</p>
+<h4 id="有序集合-zset"><a href="#有序集合-zset" class="headerlink" title="有序集合(zset)"></a>有序集合(zset)</h4><p>&emsp;&emsp;有序集合和散列一样，都用于存储键值对：有序集合的键被称为成员（member),每个成员都是各不相同的。有序集合的值则被称为分值（score），分值必须为浮点数。有序集合是redis里面唯一一个既可以根据成员访问元素(这一点和散列一样),又可以根据分值以及分值的排列顺序访问元素的结构。</p>
+<ul>
+<li>增加(zadd key [NX|XX] [CH] [INCR] score member [score member …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zadd z 1 a 2 b 3 c 4 d 5 e 6 f 7 g</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取分数(zscore key member)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zscore z e</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取排名在某个范围内的元素列表，闭区间(zrange key start stop [withscores])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zrange z 0 10 withscores</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;若withscores参数不存在，则按顺序输出范围内的元素，若withscores参数存在，则一行元素，一行分值按顺序输出范围内的元素-分值。若start/stop为-1，则取顺序是最后的元素-分值；为-2，则取顺序是倒数第二的元素-分值；以此类推。</p>
+<ul>
+<li>获取指定分数范围的元素列表，闭区间,limit参数分页(zrangebyscore key min max [withscores] [limit offset count])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zrangebyscore z 5 10 withscores <span class="built_in">limit</span> 1 2</span><br></pre></td></tr></table></figure>
+<ul>
+<li>增加元素分值(zincrby key increment member)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zincrby z 8 v</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取元素数量(zcard key)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zcard z</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取分值范围内的元素个数(zcount key min max)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zcount z 0 10</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除元素(zrem key member [member …])</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zrem z v z</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除指定排名范围内的元素(zremrangebyrank key start stop)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zremrangebyrank z 0 10</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除指定分值范围内的元素(zremrangebyscore key min max)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zremrangebyscore z 2 10</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取元素正序排名(zrank key member)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zrank z f</span><br></pre></td></tr></table></figure>
+<ul>
+<li>获取元素倒序排名(zrevrank key member)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zrevrank z a</span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>redis</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>正则表达式</title>
     <url>/regex-md.html</url>
     <content><![CDATA[<p>&emsp;&emsp;字符串是编程中用到最多，最常见的一种数据结构，对字符串的处理需求无处不在。正则表达式是一种用来匹配字符串的强力武器，它的设计思想是用一种描述性语言给字符串定义一个规则，凡事符合规则的字符串，就认为”匹配”了。</p>
@@ -2911,140 +2978,6 @@
         <tag>正则表达式</tag>
         <tag>Pattern类</tag>
         <tag>Matcher类</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>使用javaconfig配置spring项目</title>
-    <url>/spring-javaconfig.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;使用javaconfig对spring项目进行配置，记录一下常用的注解及其含义，以方便后期回顾。此项目是使用maven搭建的非web项目，是我学习spring练手用的，是向web项目的过渡阶段产物。</p>
-<a id="more"></a>
-<h3 id="Maven依赖"><a href="#Maven依赖" class="headerlink" title="Maven依赖"></a>Maven依赖</h3><ul>
-<li>先添加spring需要的依赖</li>
-</ul>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-context<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.0.6.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.0.6.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--测试依赖--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.12<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--日志依赖--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.slf4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>slf4j-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--lombok--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.18.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>javax.persistence<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>persistence-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="自动化装配bean"><a href="#自动化装配bean" class="headerlink" title="自动化装配bean"></a>自动化装配bean</h3><p>&emsp;&emsp;新建一个javaconfig包，所有的配置类都放在这个包下面。</p>
-<h4 id="Configuration-配置类声明"><a href="#Configuration-配置类声明" class="headerlink" title="@Configuration 配置类声明"></a>@Configuration 配置类声明</h4><ul>
-<li>新建一个类，这里我的类名为<code>BaseBeanJavaConfig</code></li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;<code>@Configuration</code>注解声明这是一个配置类,所有的配置类都必须使用这个注解，否则spring又怎么会知道他是一个配置类呢。</p>
-<h4 id="ComponentScan-组件扫描"><a href="#ComponentScan-组件扫描" class="headerlink" title="@ComponentScan 组件扫描"></a>@ComponentScan 组件扫描</h4><p>&emsp;&emsp;组件扫描有多种方式可供选择：</p>
-<p>1.没有使用<code>@ComponentScan</code>注解，那么将按照默认规则扫描该配置类所在包。</p>
-<p>2.使用<code>@ComponentScan</code>注解，形如下面代码块所示，那么spring将扫描<code>service.impl</code>包及向下所有包中含有<code>@Component</code>注解的类,在{}中可以使用<code>,</code>分隔设置多个包，这样可以扫描多个包啦。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackages = &#123;<span class="string">"cn.org.ferry.sys.service.impl"</span>&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>3.使用class类型，这种方式spring将扫描该类所在包及向下所有包，当然，这种方式也可以用<code>,</code>分隔设置多个类。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;SysUserServiceImpl<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;一般情况下，我们都是将配置类单独放在一个包中的，毕竟如果业务代码包中多了一个配置类感觉上也怪怪的，所以第一种方式放弃，第二种和第三种方式相比较，如果你重构了代码，包路径改变了，那么使用第二种方式就会出现问题，所以一般情况下采取第三种方案来实现组件扫描。</p>
-<p>&emsp;&emsp;值得一提的是，不管使用那种方式扫描包，你需要装配的bean都需要在类级别上加上注解，毕竟spring扫描的时候也只是扫描指定的包下面含有该注解的类。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 说一下我对这四种注解的简单看法，目前的理解就是在不同的类中使用特定的注解让人更容易理解这个类的作用</span></span><br><span class="line"><span class="meta">@Component</span>  <span class="comment">// 不管什么情况，用它都不会报错</span></span><br><span class="line"><span class="comment">// @Controller 控制器中使用该注解</span></span><br><span class="line"><span class="comment">// @Service service.impl中使用该注解</span></span><br><span class="line"><span class="comment">// @Repository  与mybatis框架整合时 mapper 包中使用此注解</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="装配bean"><a href="#装配bean" class="headerlink" title="装配bean"></a>装配bean</h4><p>&emsp;&emsp;以上操作即可通过spring生成bean，那么接下来就是装配bean了，简单说就是如何使用这个bean。</p>
-<ul>
-<li>就拿上面那个<code>Student</code>类来举例，添加一个方法。</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>在测试类中进行测试这个类有没有实现自动装配</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= BaseBeanJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">StudentTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Student student;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(student.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/spring-javaconfig/spring_auto_bean_test.png" alt="测试结果"></p>
-<p>&emsp;&emsp;当然bean的使用不局限于设置属性这一种方法，也可以通过构造器或者是任意一个方法的形参列表传递。下面的代码结果与上述图片展示结果一样。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StudentUse</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Student student;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StudentUse</span><span class="params">(Student student)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.student = student;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">info</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(student.toString()); <span class="comment">// 使用这个bean</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;通过给<code>@Autowired</code>注解加上属性<code>required = false</code>来避免当没有匹配的bean时spring抛出异常，但是这样设置就得在使用这个bean时进行判空了，因为它有可能没有匹配的bean而是个空值。</p>
-<h3 id="显式装配bean"><a href="#显式装配bean" class="headerlink" title="显式装配bean"></a>显式装配bean</h3><p>&emsp;&emsp;有时候，自动化配置方案行不通，就只能够显式的配置，例如，你希望将第三方类库中的类配置为bean，但是你没有办法对该类进行修改添加<code>@Component</code>注解,那么可以采用显式装配方式进行配置。</p>
-<h4 id="简单bean配置"><a href="#简单bean配置" class="headerlink" title="简单bean配置"></a>简单bean配置</h4><p>&emsp;&emsp;基于一些因素，现在有一个Apple类无法通过自动装配完成bean的装配，现在需要明确的配置该bean。</p>
-<ul>
-<li>Apple类样例</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>配置</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Apple <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;通过上面代码，在一个配置类中的方法上使用<code>@Bean</code>注解，返回值类型是你希望注册的Bean的类型，在该方法中，你可以使用一切java所能实现的技术来满足你的需求以便返回实例。值得一提的是，你可以在该方法的形参列表中传递其他的bean来配合你完成工作。</p>
-<ul>
-<li>测试</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">AppleTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Apple apple;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(apple.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/spring-javaconfig/spring_bean_test2.png" alt="测试结果"></p>
-<p>&emsp;&emsp;显而易见，这样装配是没有问题的，在实际应用中，我们可能会使用到第三方类库中的类，例如数据源，那么我们就可以使用这种显式装配的方式将他配置起来。</p>
-<h4 id="给bean设置id"><a href="#给bean设置id" class="headerlink" title="给bean设置id"></a>给bean设置id</h4><p>&emsp;&emsp;在默认的情况下，bean的id是和带有<code>@Bean</code>注解的方法名一样的，如上例，bean的id为apple。在实际应用中，我们有可能需要自定义bean的id，那么可以通过下面方式完成操作。</p>
-<ul>
-<li>设置bean的id</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(name = <span class="string">"appleBean"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Apple <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;通过在<code>@Bean</code>注解上添加<code>name</code>属性值为bean赋上id。</p>
-<h3 id="混合配置"><a href="#混合配置" class="headerlink" title="混合配置"></a>混合配置</h3><p>&emsp;&emsp;项目的配置需要视情况而定，有时候使用xml配置项目是最佳方案，而在spring中，xml配置和javaconfig配置并不是互斥的，那么就可以同时使用这两种方案来实现项目的最优配置。</p>
-<p>&emsp;&emsp;在自动装配过程中，spring并不会在意你使用的bean是怎么来的，如果你引用了一个外部的配置中的bean，那么你只需要引用一下那个配置类/配置文件即可。</p>
-<h4 id="配置类组合"><a href="#配置类组合" class="headerlink" title="配置类组合"></a>配置类组合</h4><p>&emsp;&emsp;在实际应用中，我们可能根据功能的区分定义多个配置类，这样便于维护以及理解，使得配置类不会过于臃肿。那么问题来了，如何整合众多的配置类呢？</p>
-<ul>
-<li>配置类</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Student<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(name = <span class="string">"sysUserServiceImpl"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> ISysUserService <span class="title">sysUserServiceImpl</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> SysUserServiceImpl();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DataDourceConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>整合配置类</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;BaseBeanConfig<span class="class">.<span class="keyword">class</span>,<span class="title">DataDourceConfig</span>.<span class="title">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;使用<code>@Import</code>注解引入一个配置类，在括号中填入需要引入的配置类的class类型，更通用的方法是建立一个根配置类，在这个配置类中引入所有的配置类。</p>
-<h4 id="配置类引入xml配置文件"><a href="#配置类引入xml配置文件" class="headerlink" title="配置类引入xml配置文件"></a>配置类引入xml配置文件</h4><ul>
-<li>引入配置文件</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;BaseBeanConfig<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class">@<span class="title">ImportResource</span>(</span>&#123;<span class="string">"classpath:/spring/applicationContext-spring.xml"</span>&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;使用<code>@ImportResource</code>注解，后面跟上字符串类型的配置文件的相对路径即可引入对应的配置文件，同样的，也可以使用<code>,</code>分隔然后引入多个配置文件。</p>
-<h3 id="高级装配"><a href="#高级装配" class="headerlink" title="高级装配"></a>高级装配</h3><p>&emsp;&emsp;spring的bean装配技术还有许多技巧，借助它们可以实现更为高级的bean装配功能.</p>
-<h4 id="profile"><a href="#profile" class="headerlink" title="profile"></a>profile</h4><p>&emsp;&emsp;在实际开发中，我们在项目开发到一定程度时需要迁移环境，例如开发环境，测试环境，生产环境等之间的切换。在不同的环境可能需要创建不同的bean，那么我们可以借助<code>@Profile</code>注解来实现这个功能。<code>@Profile</code>注解有两种使用方式，下面列举。</p>
-<ul>
-<li>例子</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">info</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Banana</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">     <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>类级别使用<code>@Profile</code>注解</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Fruits<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line">@Profile("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"apple"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>测试，在测试类中使用<code>@ActiveProfiles</code>注解来选择激活的环境。</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line">@ActiveProfiles("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FruitTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Fruits fruits;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(fruits.info());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法级别使用<code>@Profile</code>注解</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Fruits<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"apple"</span>)</span><br><span class="line">    <span class="meta">@Profile</span>(<span class="string">"dev"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"banana"</span>)</span><br><span class="line">    <span class="meta">@Profile</span>(<span class="string">"test"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">banana</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Banana();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>测试，此时激活dev环境，那么控制台会打印出Apple</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line">@ActiveProfiles("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FruitTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Fruits fruits;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(fruits.info());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/spring-javaconfig/spring_bean_test2.png" alt="测试结果"></p>
-<h4 id="激活profile"><a href="#激活profile" class="headerlink" title="激活profile"></a>激活profile</h4><p>&emsp;&emsp;spring在确定哪个profile处于激活状态时，依赖于两个属性：<code>spring.profiles.active</code>和<code>spring.profiles.default</code>（<code>spring.profiles.active</code>的优先级更高一点）。设置这两个属性值有下列几种办法。</p>
-<ul>
-<li>作为<code>DispatcherServlet</code>的初始化参数；</li>
-<li>作为Web应用的上下文参数；</li>
-<li>作为JDNI条目；</li>
-<li>作为环境变量；</li>
-<li>作为JVM的系统属性；</li>
-<li>集成测试类中，使用<code>@ActiveProfiles</code>注解设置。</li>
-</ul>
-<h4 id="处理自动装配的歧义性"><a href="#处理自动装配的歧义性" class="headerlink" title="处理自动装配的歧义性"></a>处理自动装配的歧义性</h4><p>&emsp;&emsp;在使用自动装配的时候，可能一个接口下面有很多实现类，我们为此都实现了<code>@Component</code>注解，那么在自动装配的时候，spring就会无法判断到底要选择哪个实现类进行装配。</p>
-<ul>
-<li><code>@Primary</code>注解，首选标记</li>
-</ul>
-<p>&emsp;&emsp;可以在你希望装配的实现类上除了<code>@Component</code>注解再加上<code>@Primary</code>注解，这表明当接口下有很多实现类都实现了<code>@Component</code>注解时将首选使用了<code>@Primary</code>注解的实现类进行装配。</p>
-<ul>
-<li><code>@Qualifier</code>注解，使用限定符来限定注入的bean的具体实现</li>
-</ul>
-<p>&emsp;&emsp;也可以不使用<code>@Primary</code>注解，那么在注入bean的地方可以使用<code>@Qualifier</code>注解表明本次注入的bean。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="meta">@Qualifier</span>(<span class="string">"apple"</span>)</span><br><span class="line"><span class="keyword">private</span> Fruits fruits;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>限定符默认为这个bean的ID，也可以自定义限定符</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Qualifier</span>(<span class="string">"apple"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>java</category>
-      </categories>
-      <tags>
-        <tag>spring</tag>
-        <tag>javaconfig</tag>
-        <tag>自动装配</tag>
-        <tag>高级装配</tag>
       </tags>
   </entry>
   <entry>
@@ -3453,6 +3386,140 @@
       </categories>
       <tags>
         <tag>jdk的安装</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用javaconfig配置spring项目</title>
+    <url>/spring-javaconfig.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;使用javaconfig对spring项目进行配置，记录一下常用的注解及其含义，以方便后期回顾。此项目是使用maven搭建的非web项目，是我学习spring练手用的，是向web项目的过渡阶段产物。</p>
+<a id="more"></a>
+<h3 id="Maven依赖"><a href="#Maven依赖" class="headerlink" title="Maven依赖"></a>Maven依赖</h3><ul>
+<li>先添加spring需要的依赖</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-context<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.0.6.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.0.6.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--测试依赖--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.12<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--日志依赖--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.slf4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>slf4j-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--lombok--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.18.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>javax.persistence<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>persistence-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="自动化装配bean"><a href="#自动化装配bean" class="headerlink" title="自动化装配bean"></a>自动化装配bean</h3><p>&emsp;&emsp;新建一个javaconfig包，所有的配置类都放在这个包下面。</p>
+<h4 id="Configuration-配置类声明"><a href="#Configuration-配置类声明" class="headerlink" title="@Configuration 配置类声明"></a>@Configuration 配置类声明</h4><ul>
+<li>新建一个类，这里我的类名为<code>BaseBeanJavaConfig</code></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>@Configuration</code>注解声明这是一个配置类,所有的配置类都必须使用这个注解，否则spring又怎么会知道他是一个配置类呢。</p>
+<h4 id="ComponentScan-组件扫描"><a href="#ComponentScan-组件扫描" class="headerlink" title="@ComponentScan 组件扫描"></a>@ComponentScan 组件扫描</h4><p>&emsp;&emsp;组件扫描有多种方式可供选择：</p>
+<p>1.没有使用<code>@ComponentScan</code>注解，那么将按照默认规则扫描该配置类所在包。</p>
+<p>2.使用<code>@ComponentScan</code>注解，形如下面代码块所示，那么spring将扫描<code>service.impl</code>包及向下所有包中含有<code>@Component</code>注解的类,在{}中可以使用<code>,</code>分隔设置多个包，这样可以扫描多个包啦。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackages = &#123;<span class="string">"cn.org.ferry.sys.service.impl"</span>&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>3.使用class类型，这种方式spring将扫描该类所在包及向下所有包，当然，这种方式也可以用<code>,</code>分隔设置多个类。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;SysUserServiceImpl<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;一般情况下，我们都是将配置类单独放在一个包中的，毕竟如果业务代码包中多了一个配置类感觉上也怪怪的，所以第一种方式放弃，第二种和第三种方式相比较，如果你重构了代码，包路径改变了，那么使用第二种方式就会出现问题，所以一般情况下采取第三种方案来实现组件扫描。</p>
+<p>&emsp;&emsp;值得一提的是，不管使用那种方式扫描包，你需要装配的bean都需要在类级别上加上注解，毕竟spring扫描的时候也只是扫描指定的包下面含有该注解的类。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 说一下我对这四种注解的简单看法，目前的理解就是在不同的类中使用特定的注解让人更容易理解这个类的作用</span></span><br><span class="line"><span class="meta">@Component</span>  <span class="comment">// 不管什么情况，用它都不会报错</span></span><br><span class="line"><span class="comment">// @Controller 控制器中使用该注解</span></span><br><span class="line"><span class="comment">// @Service service.impl中使用该注解</span></span><br><span class="line"><span class="comment">// @Repository  与mybatis框架整合时 mapper 包中使用此注解</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="装配bean"><a href="#装配bean" class="headerlink" title="装配bean"></a>装配bean</h4><p>&emsp;&emsp;以上操作即可通过spring生成bean，那么接下来就是装配bean了，简单说就是如何使用这个bean。</p>
+<ul>
+<li>就拿上面那个<code>Student</code>类来举例，添加一个方法。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>在测试类中进行测试这个类有没有实现自动装配</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= BaseBeanJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">StudentTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Student student;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(student.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/spring-javaconfig/spring_auto_bean_test.png" alt="测试结果"></p>
+<p>&emsp;&emsp;当然bean的使用不局限于设置属性这一种方法，也可以通过构造器或者是任意一个方法的形参列表传递。下面的代码结果与上述图片展示结果一样。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StudentUse</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Student student;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StudentUse</span><span class="params">(Student student)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.student = student;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">info</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(student.toString()); <span class="comment">// 使用这个bean</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;通过给<code>@Autowired</code>注解加上属性<code>required = false</code>来避免当没有匹配的bean时spring抛出异常，但是这样设置就得在使用这个bean时进行判空了，因为它有可能没有匹配的bean而是个空值。</p>
+<h3 id="显式装配bean"><a href="#显式装配bean" class="headerlink" title="显式装配bean"></a>显式装配bean</h3><p>&emsp;&emsp;有时候，自动化配置方案行不通，就只能够显式的配置，例如，你希望将第三方类库中的类配置为bean，但是你没有办法对该类进行修改添加<code>@Component</code>注解,那么可以采用显式装配方式进行配置。</p>
+<h4 id="简单bean配置"><a href="#简单bean配置" class="headerlink" title="简单bean配置"></a>简单bean配置</h4><p>&emsp;&emsp;基于一些因素，现在有一个Apple类无法通过自动装配完成bean的装配，现在需要明确的配置该bean。</p>
+<ul>
+<li>Apple类样例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>配置</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Apple <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;通过上面代码，在一个配置类中的方法上使用<code>@Bean</code>注解，返回值类型是你希望注册的Bean的类型，在该方法中，你可以使用一切java所能实现的技术来满足你的需求以便返回实例。值得一提的是，你可以在该方法的形参列表中传递其他的bean来配合你完成工作。</p>
+<ul>
+<li>测试</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">AppleTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Apple apple;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(apple.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/spring-javaconfig/spring_bean_test2.png" alt="测试结果"></p>
+<p>&emsp;&emsp;显而易见，这样装配是没有问题的，在实际应用中，我们可能会使用到第三方类库中的类，例如数据源，那么我们就可以使用这种显式装配的方式将他配置起来。</p>
+<h4 id="给bean设置id"><a href="#给bean设置id" class="headerlink" title="给bean设置id"></a>给bean设置id</h4><p>&emsp;&emsp;在默认的情况下，bean的id是和带有<code>@Bean</code>注解的方法名一样的，如上例，bean的id为apple。在实际应用中，我们有可能需要自定义bean的id，那么可以通过下面方式完成操作。</p>
+<ul>
+<li>设置bean的id</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(name = <span class="string">"appleBean"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Apple <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;通过在<code>@Bean</code>注解上添加<code>name</code>属性值为bean赋上id。</p>
+<h3 id="混合配置"><a href="#混合配置" class="headerlink" title="混合配置"></a>混合配置</h3><p>&emsp;&emsp;项目的配置需要视情况而定，有时候使用xml配置项目是最佳方案，而在spring中，xml配置和javaconfig配置并不是互斥的，那么就可以同时使用这两种方案来实现项目的最优配置。</p>
+<p>&emsp;&emsp;在自动装配过程中，spring并不会在意你使用的bean是怎么来的，如果你引用了一个外部的配置中的bean，那么你只需要引用一下那个配置类/配置文件即可。</p>
+<h4 id="配置类组合"><a href="#配置类组合" class="headerlink" title="配置类组合"></a>配置类组合</h4><p>&emsp;&emsp;在实际应用中，我们可能根据功能的区分定义多个配置类，这样便于维护以及理解，使得配置类不会过于臃肿。那么问题来了，如何整合众多的配置类呢？</p>
+<ul>
+<li>配置类</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Student<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(name = <span class="string">"sysUserServiceImpl"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> ISysUserService <span class="title">sysUserServiceImpl</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> SysUserServiceImpl();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DataDourceConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>整合配置类</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;BaseBeanConfig<span class="class">.<span class="keyword">class</span>,<span class="title">DataDourceConfig</span>.<span class="title">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;使用<code>@Import</code>注解引入一个配置类，在括号中填入需要引入的配置类的class类型，更通用的方法是建立一个根配置类，在这个配置类中引入所有的配置类。</p>
+<h4 id="配置类引入xml配置文件"><a href="#配置类引入xml配置文件" class="headerlink" title="配置类引入xml配置文件"></a>配置类引入xml配置文件</h4><ul>
+<li>引入配置文件</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;BaseBeanConfig<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class">@<span class="title">ImportResource</span>(</span>&#123;<span class="string">"classpath:/spring/applicationContext-spring.xml"</span>&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;使用<code>@ImportResource</code>注解，后面跟上字符串类型的配置文件的相对路径即可引入对应的配置文件，同样的，也可以使用<code>,</code>分隔然后引入多个配置文件。</p>
+<h3 id="高级装配"><a href="#高级装配" class="headerlink" title="高级装配"></a>高级装配</h3><p>&emsp;&emsp;spring的bean装配技术还有许多技巧，借助它们可以实现更为高级的bean装配功能.</p>
+<h4 id="profile"><a href="#profile" class="headerlink" title="profile"></a>profile</h4><p>&emsp;&emsp;在实际开发中，我们在项目开发到一定程度时需要迁移环境，例如开发环境，测试环境，生产环境等之间的切换。在不同的环境可能需要创建不同的bean，那么我们可以借助<code>@Profile</code>注解来实现这个功能。<code>@Profile</code>注解有两种使用方式，下面列举。</p>
+<ul>
+<li>例子</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">info</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Banana</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">     <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>类级别使用<code>@Profile</code>注解</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Fruits<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line">@Profile("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"apple"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>测试，在测试类中使用<code>@ActiveProfiles</code>注解来选择激活的环境。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line">@ActiveProfiles("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FruitTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Fruits fruits;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(fruits.info());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法级别使用<code>@Profile</code>注解</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Fruits<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"apple"</span>)</span><br><span class="line">    <span class="meta">@Profile</span>(<span class="string">"dev"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"banana"</span>)</span><br><span class="line">    <span class="meta">@Profile</span>(<span class="string">"test"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">banana</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Banana();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>测试，此时激活dev环境，那么控制台会打印出Apple</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line">@ActiveProfiles("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FruitTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Fruits fruits;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(fruits.info());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/spring-javaconfig/spring_bean_test2.png" alt="测试结果"></p>
+<h4 id="激活profile"><a href="#激活profile" class="headerlink" title="激活profile"></a>激活profile</h4><p>&emsp;&emsp;spring在确定哪个profile处于激活状态时，依赖于两个属性：<code>spring.profiles.active</code>和<code>spring.profiles.default</code>（<code>spring.profiles.active</code>的优先级更高一点）。设置这两个属性值有下列几种办法。</p>
+<ul>
+<li>作为<code>DispatcherServlet</code>的初始化参数；</li>
+<li>作为Web应用的上下文参数；</li>
+<li>作为JDNI条目；</li>
+<li>作为环境变量；</li>
+<li>作为JVM的系统属性；</li>
+<li>集成测试类中，使用<code>@ActiveProfiles</code>注解设置。</li>
+</ul>
+<h4 id="处理自动装配的歧义性"><a href="#处理自动装配的歧义性" class="headerlink" title="处理自动装配的歧义性"></a>处理自动装配的歧义性</h4><p>&emsp;&emsp;在使用自动装配的时候，可能一个接口下面有很多实现类，我们为此都实现了<code>@Component</code>注解，那么在自动装配的时候，spring就会无法判断到底要选择哪个实现类进行装配。</p>
+<ul>
+<li><code>@Primary</code>注解，首选标记</li>
+</ul>
+<p>&emsp;&emsp;可以在你希望装配的实现类上除了<code>@Component</code>注解再加上<code>@Primary</code>注解，这表明当接口下有很多实现类都实现了<code>@Component</code>注解时将首选使用了<code>@Primary</code>注解的实现类进行装配。</p>
+<ul>
+<li><code>@Qualifier</code>注解，使用限定符来限定注入的bean的具体实现</li>
+</ul>
+<p>&emsp;&emsp;也可以不使用<code>@Primary</code>注解，那么在注入bean的地方可以使用<code>@Qualifier</code>注解表明本次注入的bean。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="meta">@Qualifier</span>(<span class="string">"apple"</span>)</span><br><span class="line"><span class="keyword">private</span> Fruits fruits;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>限定符默认为这个bean的ID，也可以自定义限定符</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Qualifier</span>(<span class="string">"apple"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>spring</tag>
+        <tag>javaconfig</tag>
+        <tag>自动装配</tag>
+        <tag>高级装配</tag>
       </tags>
   </entry>
 </search>

@@ -28,10 +28,28 @@
 <meta property="og:site_name" content="儿女意向来痴">
 <meta property="og:description" content="&amp;emsp;&amp;emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。">
 <meta property="og:locale" content="zh-CH">
-<meta property="og:updated_time" content="2020-11-14T13:32:02.461Z">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-home.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-anonymous-permission.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-repository.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-proxy.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-proxy2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-repository.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-hosted.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-hosted2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-repository.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-group.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-group2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-role.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-role2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-user.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-user2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-hosted2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-browse.png">
+<meta property="og:updated_time" content="2020-11-22T14:02:57.217Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="搭建maven私服">
 <meta name="twitter:description" content="&amp;emsp;&amp;emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。">
+<meta name="twitter:image" content="https://ferry.org.cn/maven-private-server/nexus-home.png">
 
 <link rel="canonical" href="https://ferry.org.cn/maven-private-server.html">
 
@@ -188,10 +206,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-11-14 10:55:01 / 修改时间：21:32:02" itemprop="dateCreated datePublished" datetime="2020-11-14T10:55:01+08:00">2020-11-14</time>
+              <time title="创建时间：2020-11-14 10:55:01" itemprop="dateCreated datePublished" datetime="2020-11-14T10:55:01+08:00">2020-11-14</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-11-22 22:02:57" itemprop="dateModified" datetime="2020-11-22T22:02:57+08:00">2020-11-22</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -215,9 +239,76 @@
       
         <p>&emsp;&emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。</p>
 <a id="more"></a>
-<h3 id="Nexus"><a href="#Nexus" class="headerlink" title="Nexus"></a>Nexus</h3><p>&emsp;&emsp;目前市面上有三种maven仓库管理器可以搭建私服，分别是<a href="http://archiva.apache.org" target="_blank" rel="noopener">apache的archiva</a>、<a href="https://www.jfrogchina.com" target="_blank" rel="noopener">artifactory</a>、<a href="https://www.sonatype.com" target="_blank" rel="noopener">Sonatype的Nexus</a>。目前使用较多的是Nexus，它简化了本地内部仓库的维护和外部仓库的访问；Nexus在代理远程仓库的同时维护本地仓库，以降低中央仓库的负荷,节省外网带宽和时间；Nexus是一套“开箱即用”的系统不需要数据库，它使用文件系统加Lucene来组织数据；Nexus使用ExtJS来开发界面，利用Restlet来提供完整的REST APIs；Nexus支持WebDAV与LDAP安全身份认证;Nexus还提供了强大的仓库管理功能，构件搜索功能，它基于REST，友好的UI是一个extjs的REST客户端，它占用较少的内存，基于简单文件系统而非数据库。</p>
-<h4 id="安装Nexus"><a href="#安装Nexus" class="headerlink" title="安装Nexus"></a>安装Nexus</h4><p>&emsp;&emsp;这里选择下载Nexus的docker镜像安装，我们可以在<code>docker hub</code>上选择<a href="https://hub.docker.com/r/sonatype/nexus3" target="_blank" rel="noopener">Nexus的官方镜像</a> 。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="Nexus3"><a href="#Nexus3" class="headerlink" title="Nexus3"></a>Nexus3</h3><p>&emsp;&emsp;目前市面上有三种maven仓库管理器可以搭建私服，分别是<a href="http://archiva.apache.org" target="_blank" rel="noopener">apache的archiva</a>、<a href="https://www.jfrogchina.com" target="_blank" rel="noopener">artifactory</a>、<a href="https://www.sonatype.com" target="_blank" rel="noopener">Sonatype的Nexus</a>。目前使用较多的是Nexus，它简化了本地内部仓库的维护和外部仓库的访问；Nexus在代理远程仓库的同时维护本地仓库，以降低中央仓库的负荷,节省外网带宽和时间；Nexus是一套“开箱即用”的系统不需要数据库，它使用文件系统加Lucene来组织数据；Nexus使用ExtJS来开发界面，利用Restlet来提供完整的REST APIs；Nexus支持WebDAV与LDAP安全身份认证;Nexus还提供了强大的仓库管理功能，构件搜索功能，它基于REST，友好的UI是一个extjs的REST客户端，它占用较少的内存，基于简单文件系统而非数据库。</p>
+<p>&emsp;&emsp;这里选择下载Nexus的docker镜像安装，我们可以在<code>docker hub</code>上选择<a href="https://hub.docker.com/r/sonatype/nexus3" target="_blank" rel="noopener">Nexus的官方镜像</a> 。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull sonatype/nexus3</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;运行容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 8081:8081 --name nexus sonatype/nexus3</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;测试</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl http://localhost:8081</span><br></pre></td></tr></table></figure>
+<h3 id="配置nexus"><a href="#配置nexus" class="headerlink" title="配置nexus"></a>配置nexus</h3><h4 id="初始化设置"><a href="#初始化设置" class="headerlink" title="初始化设置"></a>初始化设置</h4><p>&emsp;&emsp;登录</p>
+<p><img src="/maven-private-server/nexus-home.png" alt="登录"></p>
+<p>&emsp;&emsp;用户名是<code>admin</code>，可以通过<code>docker exec -it nexus /bin/bash</code>进入容器，然后查看<code>/nexus-data/admin.password</code>文件获取admin用户的初始密码。</p>
+<p>&emsp;&emsp;登录后会要求修改初始密码,然后需要设置匿名用户的访问权限，这里禁止匿名用户访问。</p>
+<p><img src="/maven-private-server/nexus-anonymous-permission.png" alt="匿名访问控制"></p>
+<h4 id="仓库配置"><a href="#仓库配置" class="headerlink" title="仓库配置"></a>仓库配置</h4><p>&emsp;&emsp;nexus上的maven仓库分三种类型：</p>
+<blockquote>
+<p>proxy：代理仓库，代理远程的中央仓库，当用户向该类型仓库请求时，先在本地寻找，未找到的情况下去代理的中央仓库下载并存入本地然后返回给用户<br>hosted：宿主仓库，部署自己的构建到该仓库中<br>group：仓库组，用来组合多个宿主仓库和代理仓库的，当项目引用多个仓库时，可以使用仓库组将多个仓库组合起来，项目直接使用仓库组即可。</p>
+</blockquote>
+<p>&emsp;&emsp;替换代理仓库地址，删除nexus自带的仓库。这里我们选择<a href="https://maven.aliyun.com/repository/public" target="_blank" rel="noopener">阿里云的中央仓库</a>,这里给出我使用的仓库地址 <code>https://maven.aliyun.com/repository/public</code> 。</p>
+<p>&emsp;&emsp;删除所有nexus自带的仓库，创建以下几个仓库：一个代理仓库，用来代理中央仓库；至少一个宿主仓库（每个项目创建一个对应的宿主仓库）；一个仓库组（可选，若A项目依赖于B项目，那么可以创建一个仓库组将代理仓库和B项目的仓库组合在一起，这样可以避免A项目使用多个仓库）。</p>
+<p>&emsp;&emsp;创建代理仓库</p>
+<p><img src="/maven-private-server/nexus-create-repository.png" alt="创建代理仓库"></p>
+<p><img src="/maven-private-server/nexus-create-proxy.png" alt="创建代理仓库"></p>
+<p><img src="/maven-private-server/nexus-create-proxy2.png" alt="创建代理仓库"></p>
+<p>&emsp;&emsp;创建宿主仓库</p>
+<p><img src="/maven-private-server/nexus-create-repository.png" alt="创建宿主仓库"></p>
+<p><img src="/maven-private-server/nexus-create-hosted.png" alt="创建宿主仓库"></p>
+<p><img src="/maven-private-server/nexus-create-hosted2.png" alt="创建宿主仓库"></p>
+<p>&emsp;&emsp;创建仓库组</p>
+<p><img src="/maven-private-server/nexus-create-repository.png" alt="创建仓库组"></p>
+<p><img src="/maven-private-server/nexus-create-group.png" alt="创建仓库组"></p>
+<p><img src="/maven-private-server/nexus-create-group2.png" alt="创建仓库组"></p>
+<h4 id="用户角色配置"><a href="#用户角色配置" class="headerlink" title="用户角色配置"></a>用户角色配置</h4><p>&emsp;&emsp;创建角色</p>
+<p><img src="/maven-private-server/nexus-create-role.png" alt="创建角色"></p>
+<p><img src="/maven-private-server/nexus-create-role2.png" alt="创建角色"></p>
+<p>&emsp;&emsp;创建用户</p>
+<p><img src="/maven-private-server/nexus-create-user.png" alt="创建用户"></p>
+<p><img src="/maven-private-server/nexus-create-user2.png" alt="创建用户"></p>
+<p>&emsp;&emsp;到这里私服就算是配置好了，下面就是说明一下如何使用私服。</p>
+<h3 id="使用私服"><a href="#使用私服" class="headerlink" title="使用私服"></a>使用私服</h3><h4 id="maven从私服获取依赖"><a href="#maven从私服获取依赖" class="headerlink" title="maven从私服获取依赖"></a>maven从私服获取依赖</h4><p>&emsp;&emsp;我们在上一步创建了角色和用户，并为角色分配了权限，为用户分配了角色，这里我们使用创建的用户来完成私服的使用。</p>
+<p>&emsp;&emsp;首先我们需要直到maven获取依赖的搜索顺序：</p>
+<blockquote>
+<p>本地仓库：本地仓库的地址在maven的配置文件中指定，默认是<code>~/.m2/repository/</code>;<br>远程仓库：项目的配置文件(pom.xml)中的 repositories 配置的优先级高于配置文件(settings.xml)中的 profiles 中配置的 repositories；<br>中央仓库：默认的一个远程仓库，其id为<code>central</code></p>
+</blockquote>
+<p>&emsp;&emsp;在配置中需要注意<strong>若远程仓库需要用户名密码，则需要配置settings.xml配置文件中的server，其id标签和repository的id标签需要保持一致</strong>。</p>
+<p>&emsp;&emsp;镜像仓库的理解：若A仓库的所有内容都可以在B仓库寻找到，那么B仓库就是A仓库的镜像。基于此，我们使用nexus创建一个代理仓库，可以使用这个代理仓库作为中央仓库的镜像，每个项目可以配置其自己的仓库。总结来说，每个项目可以从自己的仓库获取依赖文件，而镜像就是所有项目的最后一道防线，如果所需的依赖从镜像仓库中都不能获取，那么maven就会报错找不到依赖文件。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;mirrors&gt;</span><br><span class="line">    &lt;mirror&gt;</span><br><span class="line">        &lt;id&gt;nexus-proxy-aliyun&lt;/id&gt;</span><br><span class="line">        &lt;mirrorOf&gt;central&lt;/mirrorOf&gt;</span><br><span class="line">        &lt;name&gt;ferry私服代理仓库&lt;/name&gt;</span><br><span class="line">        &lt;url&gt;http://ferry.org.cn:8081/repository/proxy-aliyun/&lt;/url&gt;</span><br><span class="line">    &lt;/mirror&gt;</span><br><span class="line">&lt;/mirrors&gt;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;上面的就是镜像的配置，该配置是写在settings.xml配置文件中的，我们可以配置多个仓库的镜像，这里举例配置了中央仓库的镜像，如上配置，当访问central仓库的时候url会被替换成该镜像配置中的url，如果访问需要用户名密码校验，那么他会去servers标签下寻找与此镜像id相同的server来完成用户认证。<strong>注意：<code>mirrorOf</code>中不能写<code>*</code>,<code>*</code>表示对所有仓库镜像</strong>。</p>
+<p>&emsp;&emsp;基于上面的理解，我们可以为项目配置一个项目级的仓库，然后配置一个中央仓库的镜像仓库。</p>
+<h5 id="配置项目级仓库"><a href="#配置项目级仓库" class="headerlink" title="配置项目级仓库"></a>配置项目级仓库</h5><p>&emsp;&emsp;settings配置文件修改,在servers标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>group-ferry<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">username</span>&gt;</span>developer<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>***********<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;项目下的配置文件pom.xml修改,在repositories标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>group-ferry<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://ferry.org.cn:8081/repository/group-ferry/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;注意，两个id要一致，这是用户认证的关键。</p>
+<h5 id="配置镜像"><a href="#配置镜像" class="headerlink" title="配置镜像"></a>配置镜像</h5><p>&emsp;&emsp;settings配置文件修改,在servers标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>nexus-proxy-aliyun<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">username</span>&gt;</span>developer<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>***********<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;settings配置文件修改,在mirrors标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">mirror</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>nexus-proxy-aliyun<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">mirrorOf</span>&gt;</span>central<span class="tag">&lt;/<span class="name">mirrorOf</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">name</span>&gt;</span>ferry私服代理仓库<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://ferry.org.cn:8081/repository/proxy-aliyun/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">mirror</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;同样的，两个id要一致，这是用户认证的关键。这里<code>mirrorOf</code>值为<code>central</code>，表示是<code>central</code>仓库的镜像。</p>
+<p>&emsp;&emsp;配置全局仓库的话就是先添加用户密码信息（settings.xml中添加一个server标签），然后在settings.xml的<code>profiles</code>中定义，这里不举例了。</p>
+<h4 id="构建服务到私服"><a href="#构建服务到私服" class="headerlink" title="构建服务到私服"></a>构建服务到私服</h4><p>&emsp;&emsp;实际开发中，我们需要将开发好的公共服务发布到私服供其他服务使用，这是我们需要进行一定的配置。</p>
+<p>&emsp;&emsp;这里回顾以下我们之前在nexus上创建的宿主仓库（如下图），我们可以选择版本为稳定发布板（releases）还是开发版（Snapshot）亦或者修复版本（Mixed），还有一个重要的选择，就是<code>Deployment policy</code>需要选择<code>Allow redeploy</code>,否则无法上传我们的构建。</p>
+<p><img src="/maven-private-server/nexus-create-hosted2.png" alt="创建宿主仓库"></p>
+<p>&emsp;&emsp;settings配置文件修改,在servers标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">server</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>ferry-release<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">username</span>&gt;</span>developer<span class="tag">&lt;/<span class="name">username</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">password</span>&gt;</span>***********<span class="tag">&lt;/<span class="name">password</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;项目下的配置文件pom.xml修改,在distributionManagement标签下添加</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">repository</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">id</span>&gt;</span>ferry-release<span class="tag">&lt;/<span class="name">id</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url</span>&gt;</span>http://ferry.org.cn:8081/repository/ferry-releases/<span class="tag">&lt;/<span class="name">url</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">repository</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;两个id要一致，这是用户认证的关键。</p>
+<p>&emsp;&emsp;发布构建的时候在项目根目录下执行<code>mvn clean deploy</code>即可。</p>
+<h3 id="浏览nexus仓库内容"><a href="#浏览nexus仓库内容" class="headerlink" title="浏览nexus仓库内容"></a>浏览nexus仓库内容</h3><p>&emsp;&emsp;nexus提供了友好的UI界面供我们访问仓库内容</p>
+<p><img src="/maven-private-server/nexus-browse.png" alt="browse"></p>
+
     </div>
 
     
@@ -298,7 +389,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Nexus"><span class="nav-number">1.</span> <span class="nav-text">Nexus</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安装Nexus"><span class="nav-number">1.1.</span> <span class="nav-text">安装Nexus</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Nexus3"><span class="nav-number">1.</span> <span class="nav-text">Nexus3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置nexus"><span class="nav-number">2.</span> <span class="nav-text">配置nexus</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化设置"><span class="nav-number">2.1.</span> <span class="nav-text">初始化设置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#仓库配置"><span class="nav-number">2.2.</span> <span class="nav-text">仓库配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#用户角色配置"><span class="nav-number">2.3.</span> <span class="nav-text">用户角色配置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用私服"><span class="nav-number">3.</span> <span class="nav-text">使用私服</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#maven从私服获取依赖"><span class="nav-number">3.1.</span> <span class="nav-text">maven从私服获取依赖</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#配置项目级仓库"><span class="nav-number">3.1.1.</span> <span class="nav-text">配置项目级仓库</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#配置镜像"><span class="nav-number">3.1.2.</span> <span class="nav-text">配置镜像</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#构建服务到私服"><span class="nav-number">3.2.</span> <span class="nav-text">构建服务到私服</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#浏览nexus仓库内容"><span class="nav-number">4.</span> <span class="nav-text">浏览nexus仓库内容</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
