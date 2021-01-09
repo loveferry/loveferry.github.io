@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Spring Security（一） 体系结构</title>
-    <url>/Spring-Security-Architecture-Authentication.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;<code>Spring Security</code>是Spring的安全框架，它能够帮助我们完成用户的认证和访问控制，具体的来说呢就是帮助我们判断当前请求是否需要认证，如果需要认证那么提供的认证信息是否合法有效，提供的认证信息是否具有足够的权限访问当前请求需要的资源。 </p>
+    <title>Spring Security（三） 用户信息配置</title>
+    <url>/Spring-Security-User-Details.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;继上一篇 <a href="Spring-Security-Authentication-Configuration.html">Spring Security（二） 认证配置类</a> 后，这里展开说明一下其中点到的一个接口<code>UserDetailsService</code>，这个接口的作用在于加载用户数据。这里加载的用户数据就是我们合法的用户信息，前端登录传递的用户信息必须是这里加载的用户信息中的一员才可以通过校验。我们可以通过实现这个接口来完成自定义加载用户信息的实现。</p>
 <a id="more"></a>
-<h1 id="认证（Authentication）"><a href="#认证（Authentication）" class="headerlink" title="认证（Authentication）"></a>认证（Authentication）</h1><p>&emsp;&emsp;<strong>认证主要完成对提供的用户信息进行识别，判断其是否合法有效。</strong> 在Spring Security中，为认证设计的接口是<code>AuthenticationManager</code>。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AuthenticationManager</span> </span>&#123;</span><br><span class="line">	<span class="function">Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span></span></span><br><span class="line"><span class="function">			<span class="keyword">throws</span> AuthenticationException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;这个接口只有一个方法，所有的的用户认证都得调用这个接口去完成信息认证，参数<code>authentication</code>其类型也是一个接口，这个接口是对认证信息的封装，Spring Security通过调用该接口的方法获取用户信息完成认证并且后期对用户信息鉴权也需要从此接口获取信息。在调用认证方法后，如果认证顺利，那么就会返回一个认证信息，此认证信息因为已经完成认证，此时调用<code>isAuthenticated()</code>方法应该返回<code>true</code>。注意，返回的这个认证信息一般情况下是创建了一个新的对象，而不是修改参数对象并返回，所以这是一个访问器方法。在实际开发中，我们可以自定义<code>Authentication</code>接口的实现类，在其中封装更多的项目需要的参数，比如说我们用户信息需要携带一个邮箱地址，电话号码等，Spring Security本身提供了一些其实现类供我们使用，例如<code>UsernamePasswordAuthenticationToken</code>用于用户名密码认证的场景，<code>AnonymousAuthenticationToken</code>用于匿名认证的场景。</p>
-<p>&emsp;&emsp;如果认证的过程并不顺利，比如说用户不存在，密码错误，用户失效等常见情况，此时应当抛出认证异常<code>AuthenticationException</code>。认证异常是一个抽象类。其有诸多的子类，在不同的情况下应当抛出不同子类异常，例如当账户失效时应当抛出的<code>AccountExpiredException</code>，当认证的用户名密码错误时应当抛出的<code>BadCredentialsException</code>和用户信息被锁定时应当抛出的<code>DisabledException</code>等。当抛出AuthenticationException异常时，服务应当响应给客户端401状态码，告诉客户端认证失败了，此时客户端应当自行处理最终将其渲染并呈现给用户。</p>
-<p>&emsp;&emsp;AuthenticationManager的一个重要实现就是<code>ProviderManager</code>，一般情况下都是通过ProviderManager完成认证，接下来看看这个类能做些什么吧。</p>
-<p>&emsp;&emsp;通过阅读源码上的注释可以了解到，它是将认证信息Authentication依次尝试AuthenticationProviders列表，如果响应结果不为空表示当前提供者有权决定认证请求，并且不再尝试其他提供者。如果后续提供者成功验证了请求，则将忽略较早的验证异常，并将使用成功的验证。如果没有后续提供者提供非空响应或new AuthenticationException，AuthenticationException则将使用最后收到的提供者。如果没有提供者返回非null的响应，或者表明它甚至可以处理an Authentication，ProviderManager则将抛出 ProviderNotFoundException。还可以设置一个parent的AuthenticationManager，如果没有配置的认证程序可以执行身份验证，也可以尝试使用此方法。但是通常不应该使用此功能。</p>
-<p>&emsp;&emsp;完整的看一下这个类。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Collections;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.Log;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.LogFactory;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.InitializingBean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.MessageSource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.MessageSourceAware;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.support.MessageSourceAccessor;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.CredentialsContainer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.SpringSecurityMessageSource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.util.Assert;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProviderManager</span> <span class="keyword">implements</span> <span class="title">AuthenticationManager</span>, <span class="title">MessageSourceAware</span>,</span></span><br><span class="line"><span class="class">		<span class="title">InitializingBean</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 日志对象</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Log logger = LogFactory.getLog(ProviderManager<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证事件发布器，认证成功或者失败的通知机制</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationEventPublisher eventPublisher = <span class="keyword">new</span> NullEventPublisher();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证提供者列表，实际完成认证工作的列表</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;AuthenticationProvider&gt; providers = Collections.emptyList();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 消息国际化的实现类，这里不做扩展</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">protected</span> MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 父级认证管理器，相当于一个默认的认证程序，如果上面的认证提供者列表中没有一个完成认证工作，那么就会尝试使用这个认证管理器进行认证</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationManager parent;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证成功后是否擦除凭证信息</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> eraseCredentialsAfterAuthentication = <span class="keyword">true</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProviderManager</span><span class="params">(List&lt;AuthenticationProvider&gt; providers)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(providers, <span class="keyword">null</span>); </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 初始化对象的时候必须提供一个认证提供者的列表，父级的认证管理器可以为空</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProviderManager</span><span class="params">(List&lt;AuthenticationProvider&gt; providers,</span></span></span><br><span class="line"><span class="function"><span class="params">            AuthenticationManager parent)</span> </span>&#123;</span><br><span class="line">        Assert.notNull(providers, <span class="string">"providers list cannot be null"</span>);</span><br><span class="line">        <span class="keyword">this</span>.providers = providers;</span><br><span class="line">        <span class="keyword">this</span>.parent = parent;</span><br><span class="line">        checkState();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 属性设置完成后校验，父级认证管理器和认证提供者列表二者至少有一个不能为空，因为若都为空则无法通过此对象完成认证工作 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterPropertiesSet</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        checkState();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">checkState</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (parent == <span class="keyword">null</span> &amp;&amp; providers.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                    <span class="string">"A parent AuthenticationManager or a list of AuthenticationProviders is required"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证过程</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> AuthenticationException </span>&#123;</span><br><span class="line">        Class&lt;? extends Authentication&gt; toTest = authentication.getClass();</span><br><span class="line">        AuthenticationException lastException = <span class="keyword">null</span>;</span><br><span class="line">        Authentication result = <span class="keyword">null</span>;</span><br><span class="line">        Authentication parentResult = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">boolean</span> debug = logger.isDebugEnabled();</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (AuthenticationProvider provider : getProviders()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!provider.supports(toTest)) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (debug) &#123;</span><br><span class="line">                logger.debug(<span class="string">"Authentication attempt using "</span> + provider.getClass().getName());</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = provider.authenticate(authentication);</span><br><span class="line">                <span class="keyword">if</span> (result != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    copyDetails(authentication, result);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (AccountStatusException e) &#123;</span><br><span class="line">                prepareException(e, authentication);</span><br><span class="line">                <span class="comment">// SEC-546: Avoid polling additional providers if auth failure is due to</span></span><br><span class="line">                <span class="comment">// invalid account status</span></span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (InternalAuthenticationServiceException e) &#123;</span><br><span class="line">                prepareException(e, authentication);</span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (AuthenticationException e) &#123;</span><br><span class="line">                lastException = e;</span><br><span class="line">            &#125;</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="keyword">if</span> (result == <span class="keyword">null</span> &amp;&amp; parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// Allow the parent to try.</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = parentResult = parent.authenticate(authentication);</span><br><span class="line">            &#125;<span class="keyword">catch</span> (ProviderNotFoundException e) &#123;</span><br><span class="line">                <span class="comment">// ignore as we will throw below if no other exception occurred prior to</span></span><br><span class="line">                <span class="comment">// calling parent and the parent</span></span><br><span class="line">                <span class="comment">// may throw ProviderNotFound even though a provider in the child already</span></span><br><span class="line">                <span class="comment">// handled the request</span></span><br><span class="line">            &#125;<span class="keyword">catch</span> (AuthenticationException e) &#123;</span><br><span class="line">                lastException = e;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (result != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (eraseCredentialsAfterAuthentication</span><br><span class="line">                    &amp;&amp; (result <span class="keyword">instanceof</span> CredentialsContainer)) &#123;</span><br><span class="line">                <span class="comment">// Authentication is complete. Remove credentials and other secret data</span></span><br><span class="line">                <span class="comment">// from authentication</span></span><br><span class="line">                ((CredentialsContainer) result).eraseCredentials();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// If the parent AuthenticationManager was attempted and successful than it will publish an AuthenticationSuccessEvent</span></span><br><span class="line">            <span class="comment">// This check prevents a duplicate AuthenticationSuccessEvent if the parent AuthenticationManager already published it</span></span><br><span class="line">            <span class="keyword">if</span> (parentResult == <span class="keyword">null</span>) &#123;</span><br><span class="line">                eventPublisher.publishAuthenticationSuccess(result);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Parent was null, or didn't authenticate (or throw an exception).</span></span><br><span class="line">        <span class="keyword">if</span> (lastException == <span class="keyword">null</span>) &#123;</span><br><span class="line">            lastException = <span class="keyword">new</span> ProviderNotFoundException(messages.getMessage(</span><br><span class="line">                <span class="string">"ProviderManager.providerNotFound"</span>,</span><br><span class="line">                <span class="keyword">new</span> Object[] &#123; toTest.getName() &#125;,</span><br><span class="line">                <span class="string">"No AuthenticationProvider found for &#123;0&#125;"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        prepareException(lastException, authentication);</span><br><span class="line">        <span class="keyword">throw</span> lastException;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 将异常通过认证事件发布器发布出去 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"deprecation"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">prepareException</span><span class="params">(AuthenticationException ex, Authentication auth)</span> </span>&#123;</span><br><span class="line">        eventPublisher.publishAuthenticationFailure(ex, auth);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 将需要认证的认证信息赋值到新的认证信息中</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">copyDetails</span><span class="params">(Authentication source, Authentication dest)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> ((dest <span class="keyword">instanceof</span> AbstractAuthenticationToken) &amp;&amp; (dest.getDetails() == <span class="keyword">null</span>)) &#123;</span><br><span class="line">            AbstractAuthenticationToken token = (AbstractAuthenticationToken) dest;</span><br><span class="line">            </span><br><span class="line">            token.setDetails(source.getDetails());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 获取认证提供者</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> List&lt;AuthenticationProvider&gt; <span class="title">getProviders</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> providers;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置消息国际化 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessageSource</span><span class="params">(MessageSource messageSource)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.messages = <span class="keyword">new</span> MessageSourceAccessor(messageSource);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置认证事件发布器</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAuthenticationEventPublisher</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            AuthenticationEventPublisher eventPublisher)</span> </span>&#123;</span><br><span class="line">        Assert.notNull(eventPublisher, <span class="string">"AuthenticationEventPublisher cannot be null"</span>);</span><br><span class="line">        <span class="keyword">this</span>.eventPublisher = eventPublisher;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置是否在认证成功后将凭证信息擦除</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEraseCredentialsAfterAuthentication</span><span class="params">(<span class="keyword">boolean</span> eraseSecretData)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.eraseCredentialsAfterAuthentication = eraseSecretData;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 是否在认证成功后擦除凭证信息</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isEraseCredentialsAfterAuthentication</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> eraseCredentialsAfterAuthentication;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 空的认证事件发布器</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">NullEventPublisher</span> <span class="keyword">implements</span> <span class="title">AuthenticationEventPublisher</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publishAuthenticationFailure</span><span class="params">(AuthenticationException exception,</span></span></span><br><span class="line"><span class="function"><span class="params">                Authentication authentication)</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publishAuthenticationSuccess</span><span class="params">(Authentication authentication)</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;以上代码因个人有强迫症，所以对排版有所改动，但是代码还是那个代码。这个类呢有一个重要属性<code>private List&lt;AuthenticationProvider&gt; providers</code>，它是<code>AuthenticationProvider</code>的集合，下面来了解一个这个认证提供者的组成成分。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AuthenticationProvider</span> </span>&#123;</span><br><span class="line">    <span class="function">Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span> <span class="keyword">throws</span> AuthenticationException</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">supports</span><span class="params">(Class&lt;?&gt; authentication)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;首先这是一个接口，这就意味着我们可以基于此自定义其实现类完成认证操作，该接口提供两个方法，一个是认证方法，要求其调用者需要提供待认证的信息且其实现者实现认证的具体逻辑，认证失败应当返回null或者抛出AuthenticationException，认证成功应当返回调用<code>isAuthenticated()</code>为true的认证对象。另一个方法是测试当前的这个认证支持者是否支持解析该类型的认证对象。显然，<strong>这个接口的作用就是用来提供一个认证器</strong>。</p>
-<p>&emsp;&emsp;上面了解了AuthenticationProvider，再结合authenticate方法看就很明了了，就是一个个的认证器去尝试认证，直到认证成功或者抛出异常为止。说的更细一点就是认证器依次尝试认证，首先判断当前认证器是否支持认证该Authentication。不支持就让下一个认证器尝试认证，支持就调用认证器的认证方法开始认证，具体的认证实现(AuthenticationProvider.authenticate())可以返回空，返回空的时候继续向后尝试使用其他的认证器进行认证，如果所有的认证器都返回的空，那么就是使用父级的认证管理器尝试认证，这是最后的手段，如果再次失败，就会抛出<code>ProviderNotFoundException</code>。如果有认证器认证返回结果不为空，那么就可以认为认证成功了，不再尝试其他的认证器。如果认证过程中抛出了<code>InternalAuthenticationServiceException</code>或者<code>AccountStatusException</code>就会将此异常直接抛出，如果是别的AuthenticationException，那么就会先记录下来，然后让别的认证器尝试认证，如果最后认证器都认证失败了并且父级的认证管理器也认证失败了，那么就会抛出最后记录的那个认证异常。如果认证成功了，会判断是否是父级认证管理器完成的认证，如果是，那么这个认证管理器可能已经发布过认证成功的事件了，这里就不发布了，如果是认证器列表中的某个认证器完成的认证，那么先发布一下认证成功事件，再返回一个崭新的认证信息。</p>
+<h1 id="UserDetailsService"><a href="#UserDetailsService" class="headerlink" title="UserDetailsService"></a>UserDetailsService</h1><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.core.userdetails;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserDetailsService</span> </span>&#123;</span><br><span class="line">    <span class="function">UserDetails <span class="title">loadUserByUsername</span><span class="params">(String username)</span> <span class="keyword">throws</span> UsernameNotFoundException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;加载用户信息的核心接口。它作为用户DAO在整个框架中使用，在<code>DaoAuthenticationProvider</code>中就是使用的此接口获取用户数据。这个接口只有一个访问器方法，简化了新的数据访问策略的支持。</p>
+<p>&emsp;&emsp;关注一下这个访问器方法，他是基于用户名加载用户数据的，当找不到用户时应当抛出<code>UsernameNotFoundException</code>异常，在我们项目开发中，可能不同的实现类实现方式不同，例如有的区分大小写，有的不区分大小写，在这种情况下我们返回的用户信息和前端传过来的就不一致了，此时我们应当在认证通过后将有凭证的用户信息存储在<code>SecurityContext</code>中。</p>
+<h1 id="用户信息组织结构"><a href="#用户信息组织结构" class="headerlink" title="用户信息组织结构"></a>用户信息组织结构</h1><p><img src="/Spring-Security-User-Details/UserDetailsService.png" alt="组织结构图"></p>
+<ul>
+<li><code>UserDetailsManager</code>：对用户信息接口进行扩展，使之可以对用户信息进行更新；</li>
+<li><code>JdbcDaoImpl</code>：封装了默认的查询语句，用于从指定的表获取用户信息；</li>
+<li><code>CachingUserDetailsService</code>：用户数据缓存实现，将加载的数据缓存起来，在使用时先从缓存中获取，若为空再从委托的UserDetailsService接口加载用户并缓存。其中的缓存接口<code>UserCache</code>既可以使用其实现类<code>EhCacheBasedUserCache</code>也可以使用<code>SpringCacheBasedUserCache</code>传入一个<code>Cache</code>从而使用Spring的缓存。</li>
+<li><code>UserDetailsServiceDelegator</code>：是一个内部类，他的作用是获取全局或者局部的<code>AuthenticationManagerBuilder</code>的默认UserDetailsService对象，从而委托给其完成加载数据的操作。</li>
+</ul>
+<p>&emsp;&emsp;总结一下，UserDetailsService接口是用来获取系统的用户信息认证客户端提供的认证信息，在实际项目使用中，更多的是选择将用户信息持久化到数据库中，但是我们用户信息的表结构未必像JdbcUserDetailsManager中的表结构那样标准，所以我们可以实现UserDetailsManager自定义用户数据更新。此外，如果用户基数过大，查询用户信息的逻辑复杂，那么避免服务器负荷过高，可以将加载的用户信息缓存起来，我们可以借鉴CachingUserDetailsService，将实际工作委托给UserDetailsService，在加载用户信息前后添加判断逻辑，若缓存中存在则返回缓存中的用户信息，若不存在则加载并缓存，缓存的实现也是可以定制化开发的，自定义缓存类实现UserCache接口既可。</p>
 ]]></content>
       <categories>
         <category>Spring Security</category>
@@ -69,21 +68,22 @@
       </tags>
   </entry>
   <entry>
-    <title>Spring Security（三） 用户信息配置</title>
-    <url>/Spring-Security-User-Details.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;继上一篇 <a href="Spring-Security-Authentication-Configuration.html">Spring Security（二） 认证配置类</a> 后，这里展开说明一下其中点到的一个接口<code>UserDetailsService</code>，这个接口的作用在于加载用户数据。这里加载的用户数据就是我们合法的用户信息，前端登录传递的用户信息必须是这里加载的用户信息中的一员才可以通过校验。我们可以通过实现这个接口来完成自定义加载用户信息的实现。</p>
+    <title>Spring Security（一） 体系结构</title>
+    <url>/Spring-Security-Architecture-Authentication.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;<code>Spring Security</code>是Spring的安全框架，它能够帮助我们完成用户的认证和访问控制，具体的来说呢就是帮助我们判断当前请求是否需要认证，如果需要认证那么提供的认证信息是否合法有效，提供的认证信息是否具有足够的权限访问当前请求需要的资源。 </p>
 <a id="more"></a>
-<h1 id="UserDetailsService"><a href="#UserDetailsService" class="headerlink" title="UserDetailsService"></a>UserDetailsService</h1><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.core.userdetails;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserDetailsService</span> </span>&#123;</span><br><span class="line">    <span class="function">UserDetails <span class="title">loadUserByUsername</span><span class="params">(String username)</span> <span class="keyword">throws</span> UsernameNotFoundException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;加载用户信息的核心接口。它作为用户DAO在整个框架中使用，在<code>DaoAuthenticationProvider</code>中就是使用的此接口获取用户数据。这个接口只有一个访问器方法，简化了新的数据访问策略的支持。</p>
-<p>&emsp;&emsp;关注一下这个访问器方法，他是基于用户名加载用户数据的，当找不到用户时应当抛出<code>UsernameNotFoundException</code>异常，在我们项目开发中，可能不同的实现类实现方式不同，例如有的区分大小写，有的不区分大小写，在这种情况下我们返回的用户信息和前端传过来的就不一致了，此时我们应当在认证通过后将有凭证的用户信息存储在<code>SecurityContext</code>中。</p>
-<h1 id="用户信息组织结构"><a href="#用户信息组织结构" class="headerlink" title="用户信息组织结构"></a>用户信息组织结构</h1><p><img src="/Spring-Security-User-Details/UserDetailsService.png" alt="组织结构图"></p>
-<ul>
-<li><code>UserDetailsManager</code>：对用户信息接口进行扩展，使之可以对用户信息进行更新；</li>
-<li><code>JdbcDaoImpl</code>：封装了默认的查询语句，用于从指定的表获取用户信息；</li>
-<li><code>CachingUserDetailsService</code>：用户数据缓存实现，将加载的数据缓存起来，在使用时先从缓存中获取，若为空再从委托的UserDetailsService接口加载用户并缓存。其中的缓存接口<code>UserCache</code>既可以使用其实现类<code>EhCacheBasedUserCache</code>也可以使用<code>SpringCacheBasedUserCache</code>传入一个<code>Cache</code>从而使用Spring的缓存。</li>
-<li><code>UserDetailsServiceDelegator</code>：是一个内部类，他的作用是获取全局或者局部的<code>AuthenticationManagerBuilder</code>的默认UserDetailsService对象，从而委托给其完成加载数据的操作。</li>
-</ul>
-<p>&emsp;&emsp;总结一下，UserDetailsService接口是用来获取系统的用户信息认证客户端提供的认证信息，在实际项目使用中，更多的是选择将用户信息持久化到数据库中，但是我们用户信息的表结构未必像JdbcUserDetailsManager中的表结构那样标准，所以我们可以实现UserDetailsManager自定义用户数据更新。此外，如果用户基数过大，查询用户信息的逻辑复杂，那么避免服务器负荷过高，可以将加载的用户信息缓存起来，我们可以借鉴CachingUserDetailsService，将实际工作委托给UserDetailsService，在加载用户信息前后添加判断逻辑，若缓存中存在则返回缓存中的用户信息，若不存在则加载并缓存，缓存的实现也是可以定制化开发的，自定义缓存类实现UserCache接口既可。</p>
+<h1 id="认证（Authentication）"><a href="#认证（Authentication）" class="headerlink" title="认证（Authentication）"></a>认证（Authentication）</h1><p>&emsp;&emsp;<strong>认证主要完成对提供的用户信息进行识别，判断其是否合法有效。</strong> 在Spring Security中，为认证设计的接口是<code>AuthenticationManager</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AuthenticationManager</span> </span>&#123;</span><br><span class="line">	<span class="function">Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span></span></span><br><span class="line"><span class="function">			<span class="keyword">throws</span> AuthenticationException</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这个接口只有一个方法，所有的的用户认证都得调用这个接口去完成信息认证，参数<code>authentication</code>其类型也是一个接口，这个接口是对认证信息的封装，Spring Security通过调用该接口的方法获取用户信息完成认证并且后期对用户信息鉴权也需要从此接口获取信息。在调用认证方法后，如果认证顺利，那么就会返回一个认证信息，此认证信息因为已经完成认证，此时调用<code>isAuthenticated()</code>方法应该返回<code>true</code>。注意，返回的这个认证信息一般情况下是创建了一个新的对象，而不是修改参数对象并返回，所以这是一个访问器方法。在实际开发中，我们可以自定义<code>Authentication</code>接口的实现类，在其中封装更多的项目需要的参数，比如说我们用户信息需要携带一个邮箱地址，电话号码等，Spring Security本身提供了一些其实现类供我们使用，例如<code>UsernamePasswordAuthenticationToken</code>用于用户名密码认证的场景，<code>AnonymousAuthenticationToken</code>用于匿名认证的场景。</p>
+<p>&emsp;&emsp;如果认证的过程并不顺利，比如说用户不存在，密码错误，用户失效等常见情况，此时应当抛出认证异常<code>AuthenticationException</code>。认证异常是一个抽象类。其有诸多的子类，在不同的情况下应当抛出不同子类异常，例如当账户失效时应当抛出的<code>AccountExpiredException</code>，当认证的用户名密码错误时应当抛出的<code>BadCredentialsException</code>和用户信息被锁定时应当抛出的<code>DisabledException</code>等。当抛出AuthenticationException异常时，服务应当响应给客户端401状态码，告诉客户端认证失败了，此时客户端应当自行处理最终将其渲染并呈现给用户。</p>
+<p>&emsp;&emsp;AuthenticationManager的一个重要实现就是<code>ProviderManager</code>，一般情况下都是通过ProviderManager完成认证，接下来看看这个类能做些什么吧。</p>
+<p>&emsp;&emsp;通过阅读源码上的注释可以了解到，它是将认证信息Authentication依次尝试AuthenticationProviders列表，如果响应结果不为空表示当前提供者有权决定认证请求，并且不再尝试其他提供者。如果后续提供者成功验证了请求，则将忽略较早的验证异常，并将使用成功的验证。如果没有后续提供者提供非空响应或new AuthenticationException，AuthenticationException则将使用最后收到的提供者。如果没有提供者返回非null的响应，或者表明它甚至可以处理an Authentication，ProviderManager则将抛出 ProviderNotFoundException。还可以设置一个parent的AuthenticationManager，如果没有配置的认证程序可以执行身份验证，也可以尝试使用此方法。但是通常不应该使用此功能。</p>
+<p>&emsp;&emsp;完整的看一下这个类。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Collections;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.Log;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.logging.LogFactory;</span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.InitializingBean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.MessageSource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.MessageSourceAware;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.support.MessageSourceAccessor;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.CredentialsContainer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.SpringSecurityMessageSource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.util.Assert;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProviderManager</span> <span class="keyword">implements</span> <span class="title">AuthenticationManager</span>, <span class="title">MessageSourceAware</span>,</span></span><br><span class="line"><span class="class">		<span class="title">InitializingBean</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 日志对象</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Log logger = LogFactory.getLog(ProviderManager<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证事件发布器，认证成功或者失败的通知机制</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationEventPublisher eventPublisher = <span class="keyword">new</span> NullEventPublisher();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证提供者列表，实际完成认证工作的列表</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> List&lt;AuthenticationProvider&gt; providers = Collections.emptyList();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 消息国际化的实现类，这里不做扩展</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">protected</span> MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 父级认证管理器，相当于一个默认的认证程序，如果上面的认证提供者列表中没有一个完成认证工作，那么就会尝试使用这个认证管理器进行认证</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationManager parent;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证成功后是否擦除凭证信息</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> eraseCredentialsAfterAuthentication = <span class="keyword">true</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProviderManager</span><span class="params">(List&lt;AuthenticationProvider&gt; providers)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(providers, <span class="keyword">null</span>); </span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 初始化对象的时候必须提供一个认证提供者的列表，父级的认证管理器可以为空</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ProviderManager</span><span class="params">(List&lt;AuthenticationProvider&gt; providers,</span></span></span><br><span class="line"><span class="function"><span class="params">            AuthenticationManager parent)</span> </span>&#123;</span><br><span class="line">        Assert.notNull(providers, <span class="string">"providers list cannot be null"</span>);</span><br><span class="line">        <span class="keyword">this</span>.providers = providers;</span><br><span class="line">        <span class="keyword">this</span>.parent = parent;</span><br><span class="line">        checkState();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 属性设置完成后校验，父级认证管理器和认证提供者列表二者至少有一个不能为空，因为若都为空则无法通过此对象完成认证工作 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterPropertiesSet</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        checkState();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">checkState</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (parent == <span class="keyword">null</span> &amp;&amp; providers.isEmpty()) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(</span><br><span class="line">                    <span class="string">"A parent AuthenticationManager or a list of AuthenticationProviders is required"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 认证过程</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> AuthenticationException </span>&#123;</span><br><span class="line">        Class&lt;? extends Authentication&gt; toTest = authentication.getClass();</span><br><span class="line">        AuthenticationException lastException = <span class="keyword">null</span>;</span><br><span class="line">        Authentication result = <span class="keyword">null</span>;</span><br><span class="line">        Authentication parentResult = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">boolean</span> debug = logger.isDebugEnabled();</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (AuthenticationProvider provider : getProviders()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (!provider.supports(toTest)) &#123;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (debug) &#123;</span><br><span class="line">                logger.debug(<span class="string">"Authentication attempt using "</span> + provider.getClass().getName());</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = provider.authenticate(authentication);</span><br><span class="line">                <span class="keyword">if</span> (result != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    copyDetails(authentication, result);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (AccountStatusException e) &#123;</span><br><span class="line">                prepareException(e, authentication);</span><br><span class="line">                <span class="comment">// SEC-546: Avoid polling additional providers if auth failure is due to</span></span><br><span class="line">                <span class="comment">// invalid account status</span></span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (InternalAuthenticationServiceException e) &#123;</span><br><span class="line">                prepareException(e, authentication);</span><br><span class="line">                <span class="keyword">throw</span> e;</span><br><span class="line">            &#125;<span class="keyword">catch</span> (AuthenticationException e) &#123;</span><br><span class="line">                lastException = e;</span><br><span class="line">            &#125;</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="keyword">if</span> (result == <span class="keyword">null</span> &amp;&amp; parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// Allow the parent to try.</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                result = parentResult = parent.authenticate(authentication);</span><br><span class="line">            &#125;<span class="keyword">catch</span> (ProviderNotFoundException e) &#123;</span><br><span class="line">                <span class="comment">// ignore as we will throw below if no other exception occurred prior to</span></span><br><span class="line">                <span class="comment">// calling parent and the parent</span></span><br><span class="line">                <span class="comment">// may throw ProviderNotFound even though a provider in the child already</span></span><br><span class="line">                <span class="comment">// handled the request</span></span><br><span class="line">            &#125;<span class="keyword">catch</span> (AuthenticationException e) &#123;</span><br><span class="line">                lastException = e;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (result != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (eraseCredentialsAfterAuthentication</span><br><span class="line">                    &amp;&amp; (result <span class="keyword">instanceof</span> CredentialsContainer)) &#123;</span><br><span class="line">                <span class="comment">// Authentication is complete. Remove credentials and other secret data</span></span><br><span class="line">                <span class="comment">// from authentication</span></span><br><span class="line">                ((CredentialsContainer) result).eraseCredentials();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// If the parent AuthenticationManager was attempted and successful than it will publish an AuthenticationSuccessEvent</span></span><br><span class="line">            <span class="comment">// This check prevents a duplicate AuthenticationSuccessEvent if the parent AuthenticationManager already published it</span></span><br><span class="line">            <span class="keyword">if</span> (parentResult == <span class="keyword">null</span>) &#123;</span><br><span class="line">                eventPublisher.publishAuthenticationSuccess(result);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// Parent was null, or didn't authenticate (or throw an exception).</span></span><br><span class="line">        <span class="keyword">if</span> (lastException == <span class="keyword">null</span>) &#123;</span><br><span class="line">            lastException = <span class="keyword">new</span> ProviderNotFoundException(messages.getMessage(</span><br><span class="line">                <span class="string">"ProviderManager.providerNotFound"</span>,</span><br><span class="line">                <span class="keyword">new</span> Object[] &#123; toTest.getName() &#125;,</span><br><span class="line">                <span class="string">"No AuthenticationProvider found for &#123;0&#125;"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        prepareException(lastException, authentication);</span><br><span class="line">        <span class="keyword">throw</span> lastException;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 将异常通过认证事件发布器发布出去 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"deprecation"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">prepareException</span><span class="params">(AuthenticationException ex, Authentication auth)</span> </span>&#123;</span><br><span class="line">        eventPublisher.publishAuthenticationFailure(ex, auth);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 将需要认证的认证信息赋值到新的认证信息中</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">copyDetails</span><span class="params">(Authentication source, Authentication dest)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> ((dest <span class="keyword">instanceof</span> AbstractAuthenticationToken) &amp;&amp; (dest.getDetails() == <span class="keyword">null</span>)) &#123;</span><br><span class="line">            AbstractAuthenticationToken token = (AbstractAuthenticationToken) dest;</span><br><span class="line">            </span><br><span class="line">            token.setDetails(source.getDetails());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 获取认证提供者</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> List&lt;AuthenticationProvider&gt; <span class="title">getProviders</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> providers;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置消息国际化 </span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMessageSource</span><span class="params">(MessageSource messageSource)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.messages = <span class="keyword">new</span> MessageSourceAccessor(messageSource);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置认证事件发布器</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setAuthenticationEventPublisher</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            AuthenticationEventPublisher eventPublisher)</span> </span>&#123;</span><br><span class="line">        Assert.notNull(eventPublisher, <span class="string">"AuthenticationEventPublisher cannot be null"</span>);</span><br><span class="line">        <span class="keyword">this</span>.eventPublisher = eventPublisher;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 设置是否在认证成功后将凭证信息擦除</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setEraseCredentialsAfterAuthentication</span><span class="params">(<span class="keyword">boolean</span> eraseSecretData)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.eraseCredentialsAfterAuthentication = eraseSecretData;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 是否在认证成功后擦除凭证信息</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isEraseCredentialsAfterAuthentication</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> eraseCredentialsAfterAuthentication;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 空的认证事件发布器</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">NullEventPublisher</span> <span class="keyword">implements</span> <span class="title">AuthenticationEventPublisher</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publishAuthenticationFailure</span><span class="params">(AuthenticationException exception,</span></span></span><br><span class="line"><span class="function"><span class="params">                Authentication authentication)</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publishAuthenticationSuccess</span><span class="params">(Authentication authentication)</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;以上代码因个人有强迫症，所以对排版有所改动，但是代码还是那个代码。这个类呢有一个重要属性<code>private List&lt;AuthenticationProvider&gt; providers</code>，它是<code>AuthenticationProvider</code>的集合，下面来了解一个这个认证提供者的组成成分。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> org.springframework.security.authentication;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.Authentication;</span><br><span class="line"><span class="keyword">import</span> org.springframework.security.core.AuthenticationException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">AuthenticationProvider</span> </span>&#123;</span><br><span class="line">    <span class="function">Authentication <span class="title">authenticate</span><span class="params">(Authentication authentication)</span> <span class="keyword">throws</span> AuthenticationException</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">supports</span><span class="params">(Class&lt;?&gt; authentication)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;首先这是一个接口，这就意味着我们可以基于此自定义其实现类完成认证操作，该接口提供两个方法，一个是认证方法，要求其调用者需要提供待认证的信息且其实现者实现认证的具体逻辑，认证失败应当返回null或者抛出AuthenticationException，认证成功应当返回调用<code>isAuthenticated()</code>为true的认证对象。另一个方法是测试当前的这个认证支持者是否支持解析该类型的认证对象。显然，<strong>这个接口的作用就是用来提供一个认证器</strong>。</p>
+<p>&emsp;&emsp;上面了解了AuthenticationProvider，再结合authenticate方法看就很明了了，就是一个个的认证器去尝试认证，直到认证成功或者抛出异常为止。说的更细一点就是认证器依次尝试认证，首先判断当前认证器是否支持认证该Authentication。不支持就让下一个认证器尝试认证，支持就调用认证器的认证方法开始认证，具体的认证实现(AuthenticationProvider.authenticate())可以返回空，返回空的时候继续向后尝试使用其他的认证器进行认证，如果所有的认证器都返回的空，那么就是使用父级的认证管理器尝试认证，这是最后的手段，如果再次失败，就会抛出<code>ProviderNotFoundException</code>。如果有认证器认证返回结果不为空，那么就可以认为认证成功了，不再尝试其他的认证器。如果认证过程中抛出了<code>InternalAuthenticationServiceException</code>或者<code>AccountStatusException</code>就会将此异常直接抛出，如果是别的AuthenticationException，那么就会先记录下来，然后让别的认证器尝试认证，如果最后认证器都认证失败了并且父级的认证管理器也认证失败了，那么就会抛出最后记录的那个认证异常。如果认证成功了，会判断是否是父级认证管理器完成的认证，如果是，那么这个认证管理器可能已经发布过认证成功的事件了，这里就不发布了，如果是认证器列表中的某个认证器完成的认证，那么先发布一下认证成功事件，再返回一个崭新的认证信息。</p>
 ]]></content>
       <categories>
         <category>Spring Security</category>
@@ -380,6 +380,40 @@
       </tags>
   </entry>
   <entry>
+    <title>java集合</title>
+    <url>/collections.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;java集合的学习记录…</p>
+<a id="more"></a>
+<h3 id="ArrayList"><a href="#ArrayList" class="headerlink" title="ArrayList"></a>ArrayList</h3><p>&emsp;&emsp;ArrayList集合是List接口的可变长数组的实现。他的底层是用数组实现的。</p>
+<h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
+<li><p>集合中允许null值存在；</p>
+</li>
+<li><p>集合容量可变，自增长，约1.5倍；</p>
+</li>
+<li><p>非线程安全。</p>
+</li>
+</ul>
+<h4 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h4><ul>
+<li>属性列表</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_CAPACITY = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">transient</span> Object[] elementData;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> size;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里面有一个很重要的属性<code>elementData</code>,该集合对象的所有的值都是存储在这个数组对象中的,只是将存值和取值的实现进行了一定的封装.可以看到,这个属性是反序列化的,这说明ArrayList这个类一定实现了<code>java.io.Serializable</code>接口.</p>
+<ul>
+<li>构造器源码</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (initialCapacity &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.elementData = <span class="keyword">new</span> Object[initialCapacity];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (initialCapacity == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Illegal Capacity: "</span>+</span><br><span class="line">                                           initialCapacity);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(Collection&lt;? extends E&gt; c)</span> </span>&#123;</span><br><span class="line">    elementData = c.toArray();</span><br><span class="line">    <span class="keyword">if</span> ((size = elementData.length) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// c.toArray might (incorrectly) not return Object[] (see 6260652)</span></span><br><span class="line">        <span class="keyword">if</span> (elementData.getClass() != Object[]<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">            <span class="title">elementData</span> </span>= Arrays.copyOf(elementData, size, Object[]<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// replace with empty array.</span></span><br><span class="line">        <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;当使用空构造器时，会将类的静态常量所引用的空数组的地址值赋给<code>elementData</code>属性,此时,该对象被初始化为一个空集合.当使用传递一个int型参数的构造器时,若传参不合法抛出异常,传参为0初始化为一个空集合,传参大于0,则将<code>elementData</code>数组初始化,长度为传递的参数大小.第三种形式就是传递一个集合,将这个集合初始化.</p>
+<h4 id="数据存储"><a href="#数据存储" class="headerlink" title="数据存储"></a>数据存储</h4><p>&emsp;&emsp;ArrayList添加元素有<code>set</code>和<code>add</code>方法</p>
+]]></content>
+      <categories>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>ArrayList</tag>
+        <tag>HashMap</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>注解</title>
     <url>/annotation.html</url>
     <content><![CDATA[<p>&emsp;&emsp;Java注解又称Java标注，是Java语言5.0版本开始支持加入源代码的特殊语法元数据。Java语言中的类、方法、变量、参数和包等都可以被标注。和Javadoc不同，Java标注可以通过反射获取标注内容。在编译器生成类文件时，标注可以被嵌入到字节码中。Java虚拟机可以保留标注内容，在运行时可以获取到标注内容。 当然它也支持自定义Java标注。</p>
@@ -657,40 +691,6 @@
       </tags>
   </entry>
   <entry>
-    <title>java集合</title>
-    <url>/collections.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;java集合的学习记录…</p>
-<a id="more"></a>
-<h3 id="ArrayList"><a href="#ArrayList" class="headerlink" title="ArrayList"></a>ArrayList</h3><p>&emsp;&emsp;ArrayList集合是List接口的可变长数组的实现。他的底层是用数组实现的。</p>
-<h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
-<li><p>集合中允许null值存在；</p>
-</li>
-<li><p>集合容量可变，自增长，约1.5倍；</p>
-</li>
-<li><p>非线程安全。</p>
-</li>
-</ul>
-<h4 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h4><ul>
-<li>属性列表</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_CAPACITY = <span class="number">10</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">transient</span> Object[] elementData;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> size;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;这里面有一个很重要的属性<code>elementData</code>,该集合对象的所有的值都是存储在这个数组对象中的,只是将存值和取值的实现进行了一定的封装.可以看到,这个属性是反序列化的,这说明ArrayList这个类一定实现了<code>java.io.Serializable</code>接口.</p>
-<ul>
-<li>构造器源码</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (initialCapacity &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.elementData = <span class="keyword">new</span> Object[initialCapacity];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (initialCapacity == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Illegal Capacity: "</span>+</span><br><span class="line">                                           initialCapacity);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(Collection&lt;? extends E&gt; c)</span> </span>&#123;</span><br><span class="line">    elementData = c.toArray();</span><br><span class="line">    <span class="keyword">if</span> ((size = elementData.length) != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// c.toArray might (incorrectly) not return Object[] (see 6260652)</span></span><br><span class="line">        <span class="keyword">if</span> (elementData.getClass() != Object[]<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">            <span class="title">elementData</span> </span>= Arrays.copyOf(elementData, size, Object[]<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// replace with empty array.</span></span><br><span class="line">        <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;当使用空构造器时，会将类的静态常量所引用的空数组的地址值赋给<code>elementData</code>属性,此时,该对象被初始化为一个空集合.当使用传递一个int型参数的构造器时,若传参不合法抛出异常,传参为0初始化为一个空集合,传参大于0,则将<code>elementData</code>数组初始化,长度为传递的参数大小.第三种形式就是传递一个集合,将这个集合初始化.</p>
-<h4 id="数据存储"><a href="#数据存储" class="headerlink" title="数据存储"></a>数据存储</h4><p>&emsp;&emsp;ArrayList添加元素有<code>set</code>和<code>add</code>方法</p>
-]]></content>
-      <categories>
-        <category>java</category>
-      </categories>
-      <tags>
-        <tag>ArrayList</tag>
-        <tag>HashMap</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>枚举类</title>
     <url>/enum.html</url>
     <content><![CDATA[<p>&emsp;&emsp;枚举类型（Enumerated Type） 很早就出现在编程语言中，它被用来将一组类似的值包含到一种类型当中。而这种枚举类型的名称则会被定义成独一无二的类型描述符，在这一点上和常量的定义相似。不过相比较常量类型，枚举类型可以为申明的变量提供更大的取值范围。</p>
@@ -766,6 +766,355 @@
       </categories>
       <tags>
         <tag>枚举类型</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>泛型</title>
+    <url>/genericity.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;Java 泛型（generics）是 JDK 5 中引入的一个新特性, 泛型提供了编译时类型安全检测机制，该机制允许程序员在编译时检测到非法的类型。泛型的本质是参数化类型，也就是说所操作的数据类型被指定为一个参数。</p>
+<a id="more"></a>
+<h3 id="泛型类"><a href="#泛型类" class="headerlink" title="泛型类"></a>泛型类</h3><h4 id="泛型初涉"><a href="#泛型初涉" class="headerlink" title="泛型初涉"></a>泛型初涉</h4><ul>
+<li>定义泛型类</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T x;</span><br><span class="line">    <span class="keyword">private</span> T y;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">(T x, T y)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">getX</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setX</span><span class="params">(T x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">getY</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setY</span><span class="params">(T y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Point&#123;"</span> +</span><br><span class="line">                <span class="string">"x="</span> + x +</span><br><span class="line">                <span class="string">", y="</span> + y +</span><br><span class="line">                <span class="string">'&#125;'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;在类名<code>Point</code>后面加上一对尖括号,尖括号中一个英文字母,这样就表示这个类是一个泛型类.这个英文字母在实际应用中可以自己替换成任意一个英文字母,但是在该类中使用这个泛型的时候字母要和这个尖括号中的字母保持一致,不然会报编译错误.在这个泛型类中使用这个T,可以将T当做一个类来进行使用,例如当做Object类,那么T可以当做私有属性的类型,可以作为构造器的形参类型,可以作为方法的形参类型或者是返回值类型来使用.</p>
+<ul>
+<li>实例化泛型类</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericityClassTest</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Point&lt;Integer&gt; point = <span class="keyword">new</span> Point&lt;Integer&gt;(<span class="number">10</span>,<span class="number">10</span>);</span><br><span class="line">    Point&lt;Float&gt; p = <span class="keyword">new</span> Point&lt;Float&gt;(<span class="number">10f</span>,<span class="number">10f</span>);</span><br><span class="line">    System.out.println(point);</span><br><span class="line">    System.out.println(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/genericity/genericity_class.png" alt="运行结果"></p>
+<p>&emsp;&emsp;在实例化泛型类的时候,需要在尖括号中传递一个类名,这个类名就是你希望限定这个对象类型的类名,例如你希望这个对象都是以Integer类型来进行数据处理,那么在尖括号中传递Integer,那么这个对象所实例化的那个类中的T将全部代表Integer类,此时你使用这个泛型的方法,构造器时,如果有T作为参数类型的那么就要求你全部使用Integer类型的参数,否则会报编译时错误.</p>
+<h4 id="多泛型变量定义"><a href="#多泛型变量定义" class="headerlink" title="多泛型变量定义"></a>多泛型变量定义</h4><p>&emsp;&emsp;多泛型定义的java类形如Map集合.</p>
+<ul>
+<li>定义</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 坐标类</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> ferry ferry_sy@163.com</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &lt;X&gt; x轴坐标的类型</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &lt;Y&gt; y轴坐标的类型</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span>&lt;<span class="title">X</span>,<span class="title">Y</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> X x;</span><br><span class="line">    <span class="keyword">private</span> Y y;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">(X x, Y y)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> X <span class="title">getX</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setX</span><span class="params">(X x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Y <span class="title">getY</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setY</span><span class="params">(Y y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Point&#123;"</span> +</span><br><span class="line">                <span class="string">"x="</span> + x +</span><br><span class="line">                <span class="string">", y="</span> + y +</span><br><span class="line">                <span class="string">'&#125;'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里重构了坐标类,使用两个泛型变量进行类的定义,其中X代表x轴的数据类型,Y代表y轴数据类型.当然,在定义泛型类时你可以使用任意多的泛型变量来满足你的需求.</p>
+<ul>
+<li>实例化</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericityClassTest</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Point&lt;Integer, Double&gt; point = <span class="keyword">new</span> Point&lt;Integer, Double&gt;(<span class="number">10</span>,<span class="number">10</span>D);</span><br><span class="line">    System.out.println(point);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/genericity/genericity-class-more.png" alt="运行结果"></p>
+<p>&emsp;&emsp;在创建实例的时候,这里选择将x轴使用Integer类型,y轴使用Double类型来实例化坐标.</p>
+<h4 id="字母命名规范"><a href="#字母命名规范" class="headerlink" title="字母命名规范"></a>字母命名规范</h4><p>&emsp;&emsp;在定义泛型时可以使用任意字母,他们所表示的意义是一样的,但是在实际应用中,我们还是应该使用有意义的字母来进行泛型的定义</p>
+<ol>
+<li><p>E — Element，常用在java Collection里，如：List<e>,Iterator<e>,Set<e></e></e></e></p>
+</li>
+<li><p>K,V — Key，Value，代表Map的键值对</p>
+</li>
+<li><p>N — Number，数字</p>
+</li>
+<li><p>T — Type，类型，如String，Integer等等</p>
+</li>
+</ol>
+<h3 id="泛型接口"><a href="#泛型接口" class="headerlink" title="泛型接口"></a>泛型接口</h3><h4 id="接口定义"><a href="#接口定义" class="headerlink" title="接口定义"></a>接口定义</h4><ul>
+<li>定义</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Fruits</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">toString</span><span class="params">(T <span class="keyword">var</span>)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="实现类方式一"><a href="#实现类方式一" class="headerlink" title="实现类方式一"></a>实现类方式一</h5><ul>
+<li>定义</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Banana</span> <span class="keyword">implements</span> <span class="title">Fruits</span>&lt;<span class="title">String</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Banana</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Banana</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">(String <span class="keyword">var</span>)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name.concat(<span class="string">" "</span>).concat(<span class="keyword">var</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;使用非泛型类实现泛型接口,此时需要将泛型变量赋予具体的类名,此时实现该接口方法时编译器会检测所实现的方法的泛型变量所代表的类型与实现泛型接口的数据类型是否一致,不一致时编译器会认为你并没有实现这个接口的方法.</p>
+<p>&emsp;&emsp;<code>@Data</code>是<code>lombok</code>的注解,它的作用是用来自动生成getter和setter等方法.</p>
+<ul>
+<li>使用</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericityInterfaceTest1</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Banana banana = <span class="keyword">new</span> Banana();</span><br><span class="line">    banana.setName(<span class="string">"banana"</span>);</span><br><span class="line">    System.out.println(banana.toString(<span class="string">"is delicious!"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/genericity/genericity-interface-1.png" alt="运行结果"></p>
+<h4 id="实现类方式二"><a href="#实现类方式二" class="headerlink" title="实现类方式二"></a>实现类方式二</h4><ul>
+<li>定义</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span>&lt;<span class="title">T</span>&gt; <span class="keyword">implements</span> <span class="title">Fruits</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T weight;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Apple</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">(T weight)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.weight = weight;</span><br><span class="line">        <span class="keyword">return</span> toString();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Apple&#123;"</span> +</span><br><span class="line">                <span class="string">"weight="</span> + weight +</span><br><span class="line">                <span class="string">'&#125;'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;使用泛型类实现泛型接口,这个泛型类的泛型变量可以有多个,但是必须有一个变量与泛型接口的泛型变量保持一致.</p>
+<ul>
+<li>使用</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericityInterfaceTest2</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Apple&lt;Double&gt; apple = <span class="keyword">new</span> Apple&lt;Double&gt;();</span><br><span class="line">    System.out.println(apple.toString(<span class="number">0.5</span>D));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/genericity/genericity-interface-2.png" alt="运行结果"></p>
+<h3 id="泛型方法"><a href="#泛型方法" class="headerlink" title="泛型方法"></a>泛型方法</h3><ul>
+<li>在一个普通java类中定义一个泛型类.</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function">T <span class="title">genericity</span><span class="params">(T <span class="keyword">var</span>)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">var</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 泛型方法测试</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericityMethodTest</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Banana banana = <span class="keyword">new</span> Banana(<span class="string">"banana"</span>);</span><br><span class="line">    System.out.println(genericity(banana).getClass().getName());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/genericity/genericity-method.png" alt="运行结果"></p>
+<p>&emsp;&emsp;定义一个方法,在返回值类型前面加上泛型变量即可声明这是一个泛型方法,可以通过形参传递泛型,也可以返回泛型所指定的对象.在本例中实例化<code>Banana</code>类,然后传递到这个泛型方法中,最后返回这个<code>Banana</code>对象.</p>
+<p>&emsp;&emsp;静态方法也可以定义为泛型方法,形式与上述方式类似.</p>
+<h3 id="泛型的通配符"><a href="#泛型的通配符" class="headerlink" title="泛型的通配符"></a>泛型的通配符</h3><h4 id="无边界通配符"><a href="#无边界通配符" class="headerlink" title="无边界通配符"></a>无边界通配符</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">List&lt;?&gt;</span><br></pre></td></tr></table></figure>
+<h4 id="上边界通配符"><a href="#上边界通配符" class="headerlink" title="上边界通配符"></a>上边界通配符</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> String name;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String id;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span> <span class="keyword">extends</span> <span class="title">A</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String sex;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> List&lt;? extends A&gt; sbadjh(List&lt;? extends A&gt; list)&#123;</span><br><span class="line">    list.forEach(a -&gt; a.name = <span class="string">"this is a."</span>);</span><br><span class="line">    <span class="keyword">return</span> list;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sabdkjk</span><span class="params">()</span></span>&#123;</span><br><span class="line">    List&lt;A&gt; aList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    B b = <span class="keyword">new</span> B();</span><br><span class="line">    C c = <span class="keyword">new</span> C();</span><br><span class="line">    aList.add(b);</span><br><span class="line">    aList.add(c);</span><br><span class="line">    sbadjh(aList).forEach(a -&gt; System.out.println(a.name));</span><br><span class="line"></span><br><span class="line">    List&lt;B&gt; bList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    B b1 = <span class="keyword">new</span> B();</span><br><span class="line">    B b2 = <span class="keyword">new</span> B();</span><br><span class="line">    bList.add(b1);</span><br><span class="line">    bList.add(b2);</span><br><span class="line">    sbadjh(bList).forEach(a -&gt; System.out.println(a.name));</span><br><span class="line"></span><br><span class="line">    List&lt;C&gt; CList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    C c1 = <span class="keyword">new</span> C();</span><br><span class="line">    C c2 = <span class="keyword">new</span> C();</span><br><span class="line">    CList.add(c1);</span><br><span class="line">    CList.add(c2);</span><br><span class="line">    sbadjh(CList).forEach(a -&gt; System.out.println(a.name));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="下边界通配符"><a href="#下边界通配符" class="headerlink" title="下边界通配符"></a>下边界通配符</h4><p>&emsp;&emsp;下边界通配符使用和上边界通配符正好反过来,将<code>extends</code>关键字换成<code>super</code>.</p>
+]]></content>
+      <categories>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>泛型</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>kubernetes</title>
+    <url>/kubernetes.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;<code>kubernetes</code>，简称<code>k8s</code>。我们在微服务的部署过程中，面对众多服务的编译，打包部署等手动的，重复性的操作需要花费很多时间和精力，而且人为的部署过程不可控其准确性。而<code>k8s</code>，生产级的服务编排系统，用于管理容器化的应用的，提供了应用的部署，更新，集群等支持。</p>
+<a id="more"></a>
+<h3 id="基于centos7安装"><a href="#基于centos7安装" class="headerlink" title="基于centos7安装"></a>基于centos7安装</h3><p>&emsp;&emsp;安装建议：</p>
+<blockquote>
+<p>安装 k8s 的节点必须是大于 1 核心的 CPU<br>建议主机内存都是2G及以上</p>
+</blockquote>
+<p>&emsp;&emsp;这里安装仅展示一个节点的安装步骤，多节点请参考步骤替换对应主机名即可</p>
+<h4 id="系统参数调整"><a href="#系统参数调整" class="headerlink" title="系统参数调整"></a>系统参数调整</h4><ul>
+<li>主机名修改</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hostnamectl <span class="built_in">set</span>-hostname ferry-aliyun</span><br></pre></td></tr></table></figure>
+<ul>
+<li>主机映射修改（/etc/hosts）</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">172.19.144.**	ferry-aliyun</span><br></pre></td></tr></table></figure>
+<ul>
+<li>停用SELinux</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">setenforce 0</span><br><span class="line">sed -i <span class="string">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/selinux/config</span><br></pre></td></tr></table></figure>
+<ul>
+<li>关闭swap</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">swapoff -a</span><br><span class="line">sed -i <span class="string">'s/.*swap.*/#&amp;/'</span> /etc/fstab</span><br></pre></td></tr></table></figure>
+<ul>
+<li>防火墙设置</li>
+</ul>
+<p>&emsp;&emsp;这里可以设置k8s需要的端口开放，但是在还没有接触的时候我们可能并不清楚哪些端口是它需要的，这里作为测试，我们可以先将防火墙关掉。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl stop firewalld</span><br></pre></td></tr></table></figure>
+<h4 id="k8s相关软件下载"><a href="#k8s相关软件下载" class="headerlink" title="k8s相关软件下载"></a>k8s相关软件下载</h4><ul>
+<li>k8s的yum源配置(创建文件<code>/etc/yum.repos.d/kubernetes.repo</code>)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[kubernetes]</span><br><span class="line">name=Kubernetes</span><br><span class="line">baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">repo_gpgcheck=1</span><br><span class="line">gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg</span><br></pre></td></tr></table></figure>
+<ul>
+<li>安装<code>kubeadm</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum -install -y kubeadm</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>开发工具</category>
+      </categories>
+      <tags>
+        <tag>kubernetes</tag>
+        <tag>k8s</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>lambda</title>
+    <url>/lambda.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;<code>lambda表达式</code>是一个可传递的代码块。</p>
+<a id="more"></a>
+<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><ul>
+<li>基本语法：参数，箭头（-&gt;）以及一个表达式或者代码块。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; <span class="keyword">return</span> msg.length()&gt;str.length()</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span>(msg.length()&gt;str.length() &gt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(msg.length()&gt;str.length() == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<em>如果代码块在有些分支有返回值，有些分支没有返回值是不合法的。返回值的类型无需指定，lambda表达式的返回值类型总是有上下文推导而出。lambda表达式可以捕获外围作用域中变量的值，但是所捕获的变量必须实际上是最终变量</em></p>
+<ul>
+<li>无参表达式：提供空括号</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">() -&gt; System.out.println(<span class="string">"no arguments lambda"</span>)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>忽略参数类型：若参数类型可推导，可忽略参数类型。若只有一个参数且参数类型可推导，可省略括号。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(msg, str) -&gt; <span class="keyword">return</span> msg.length() &gt; str.length()</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">msg -&gt; System.out.println(msg)</span><br></pre></td></tr></table></figure>
+<h3 id="函数式接口"><a href="#函数式接口" class="headerlink" title="函数式接口"></a>函数式接口</h3><ul>
+<li><p>定义：只有一个抽象方法的接口。自己设计接口时，如果接口只有一个抽象方法，那么可以使用注解<code>@FunctionalInterface</code>标记这个接口。这样，当你向这个接口再次添加一个抽象方法时，编译器会产生一个错误。另外javadoc页会指出此接口为函数式接口。</p>
+</li>
+<li><p>demo：返回指定字符串10倍的长度</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 函数式接口</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">LengthInterface</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 匿名内部类方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">innerClass</span><span class="params">()</span></span>&#123;</span><br><span class="line">    System.out.println(<span class="keyword">new</span> LengthInterface() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> msg.length()*<span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* lambda表达式方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lambda</span><span class="params">()</span></span>&#123;</span><br><span class="line">    LengthInterface lengthInterface = msg -&gt; msg.length()*<span class="number">10</span>;</span><br><span class="line">    System.out.println(lengthInterface.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/lambda/lambda_functionalInterface.png" alt="初始化git项目方式2"></p>
+<p>&emsp;&emsp;定义一个函数式接口，这个接口只有一个抽象方法，这个抽象方法的用途是希望获取到指定的字符串进过渲染后的长度。在lambda表达式出现之前，我们想要实现这样的功能，最好的做法是通过匿名内部类来实现，但是在这里，我们可以让函数式接口的引用指向一个lambda表达式，通过lambda表达式定义渲染长度规则，然后在通过引用调用函数式接口的抽象方法。很显然，虽然内部类和lambda都可以实现功能，但是不管是从代码的简洁度，可读性还是从性能对比上（内部类的类加载，解析，初始化等高于lambda表达式的性能开销）lambda表达式都是我们的首选方案。</p>
+<ul>
+<li>常用函数式接口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>函数式接口</th>
+<th>参数类型</th>
+<th>返回类型</th>
+<th>抽象方法</th>
+<th>描述</th>
+<th>其他方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Runnable</td>
+<td>无</td>
+<td>void</td>
+<td>run</td>
+<td>作为无参数或返回值的动作运行</td>
+<td></td>
+</tr>
+<tr>
+<td>Supplier<t></t></td>
+<td>无</td>
+<td>T</td>
+<td>get</td>
+<td>提供一个T类型的值</td>
+<td></td>
+</tr>
+<tr>
+<td>Consumer<t></t></td>
+<td>T</td>
+<td>void</td>
+<td>accept</td>
+<td>处理一个T类铟的值</td>
+<td>andThen</td>
+</tr>
+<tr>
+<td>BiConsumer&lt;T,U&gt;</td>
+<td>T,U</td>
+<td>void</td>
+<td>accept</td>
+<td>处理T和U类型的值</td>
+<td>andThen</td>
+</tr>
+<tr>
+<td>Function&lt;T,R&gt;</td>
+<td>T</td>
+<td>R</td>
+<td>apply</td>
+<td>有一个T类型参数的函数</td>
+<td>compose, andThen, identity</td>
+</tr>
+<tr>
+<td>BiFunction&lt;T,U,R&gt;</td>
+<td>T,U</td>
+<td>R</td>
+<td>apply</td>
+<td>有T和U类型参数的函数</td>
+<td>andThen</td>
+</tr>
+<tr>
+<td>UnaryOperator<t></t></td>
+<td>T</td>
+<td>T</td>
+<td>apply</td>
+<td>类型T上的一元操作符</td>
+<td>compose, andThen, identity</td>
+</tr>
+<tr>
+<td>BinaryOperator<t></t></td>
+<td>T,T</td>
+<td>T</td>
+<td>apply</td>
+<td>类型T上的二元操作符</td>
+<td>andThen, maxBy, minBy</td>
+</tr>
+<tr>
+<td>Predicate<t></t></td>
+<td>T</td>
+<td>boolean</td>
+<td>test</td>
+<td>布尔值函数</td>
+<td>and, or, negate, isEqual</td>
+</tr>
+<tr>
+<td>BiPredicate&lt;T,U&gt;</td>
+<td>T,U</td>
+<td>boolean</td>
+<td>test</td>
+<td>有两个参数的布尔值函数</td>
+<td>and, or, negate</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>基本类型的函数式接口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>函数式接口</th>
+<th>参数类型</th>
+<th>返回类型</th>
+<th>抽象方法 </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BooleanSupplier</td>
+<td>none</td>
+<td>boolean</td>
+<td>getAsBoolean</td>
+</tr>
+<tr>
+<td>PSupplier</td>
+<td>none</td>
+<td>p</td>
+<td>getAsP</td>
+</tr>
+<tr>
+<td>PConsumer</td>
+<td>p</td>
+<td>void</td>
+<td>accept</td>
+</tr>
+<tr>
+<td>ObjPConsumer&lt; T&gt;</td>
+<td>T,p</td>
+<td>void</td>
+<td>accept</td>
+</tr>
+<tr>
+<td>PFunction<t></t></td>
+<td>p</td>
+<td>T</td>
+<td>apply</td>
+</tr>
+<tr>
+<td>PToQFunction</td>
+<td>p</td>
+<td>q</td>
+<td>applyAsQ</td>
+</tr>
+<tr>
+<td>ToPFunction<t></t></td>
+<td>T</td>
+<td>p</td>
+<td>applyAsP</td>
+</tr>
+<tr>
+<td>ToPBiFunction&lt;T,U&gt;</td>
+<td>T,U</td>
+<td>p</td>
+<td>applyAsP</td>
+</tr>
+<tr>
+<td>PUnaryOperator</td>
+<td>p</td>
+<td>p</td>
+<td>testAsP</td>
+</tr>
+<tr>
+<td>PBinaryOperator</td>
+<td>p,p</td>
+<td>p</td>
+<td>testAsP</td>
+</tr>
+<tr>
+<td>PPredicate</td>
+<td>p</td>
+<td>boolean</td>
+<td>test</td>
+</tr>
+</tbody>
+</table>
+<p><em>注：p,q为int, long, double;P, Q为Integer, Long, Double</em></p>
+<h3 id="方法引用"><a href="#方法引用" class="headerlink" title="方法引用"></a>方法引用</h3><p>&emsp;&emsp;将现有的方法传递给函数式接口，等价于lambda表达式</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String::length  &lt;==&gt; msg -&gt; msg.length()</span><br><span class="line">(String msg) -&gt; System.out.println(msg)  &lt;==&gt; System.out::println</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;语法：用操作符<code>::</code>分割对象名或类名与方法名，有三种用法，第一：对象::非静态方法名；第二：类名::静态方法名；第三：类名::非静态方法名。前两种方式，方法引用等价于提供方法参数的lambda表达式。第三种情况，第一个参数将成为方法的目标，例如，(msg, str) -&gt; msg.equals(str) 等同于 String::equals。</p>
+<h3 id="构造器引用"><a href="#构造器引用" class="headerlink" title="构造器引用"></a>构造器引用</h3><p>&emsp;&emsp;和方法引用很类似，只不过方法名为new，具体方式为：类名::new，例如：String::new，具体使用类的哪一个构造器取决于上下文。数组的构造器引用：String[]::new，它有一个参数，即数组的长度，等价于length -&gt; new String[length]。</p>
+]]></content>
+      <categories>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>lambda</tag>
       </tags>
   </entry>
   <entry>
@@ -1030,308 +1379,6 @@
       </categories>
       <tags>
         <tag>git</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>泛型</title>
-    <url>/genericity.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;Java 泛型（generics）是 JDK 5 中引入的一个新特性, 泛型提供了编译时类型安全检测机制，该机制允许程序员在编译时检测到非法的类型。泛型的本质是参数化类型，也就是说所操作的数据类型被指定为一个参数。</p>
-<a id="more"></a>
-<h3 id="泛型类"><a href="#泛型类" class="headerlink" title="泛型类"></a>泛型类</h3><h4 id="泛型初涉"><a href="#泛型初涉" class="headerlink" title="泛型初涉"></a>泛型初涉</h4><ul>
-<li>定义泛型类</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T x;</span><br><span class="line">    <span class="keyword">private</span> T y;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">(T x, T y)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">getX</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setX</span><span class="params">(T x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> T <span class="title">getY</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setY</span><span class="params">(T y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Point&#123;"</span> +</span><br><span class="line">                <span class="string">"x="</span> + x +</span><br><span class="line">                <span class="string">", y="</span> + y +</span><br><span class="line">                <span class="string">'&#125;'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;在类名<code>Point</code>后面加上一对尖括号,尖括号中一个英文字母,这样就表示这个类是一个泛型类.这个英文字母在实际应用中可以自己替换成任意一个英文字母,但是在该类中使用这个泛型的时候字母要和这个尖括号中的字母保持一致,不然会报编译错误.在这个泛型类中使用这个T,可以将T当做一个类来进行使用,例如当做Object类,那么T可以当做私有属性的类型,可以作为构造器的形参类型,可以作为方法的形参类型或者是返回值类型来使用.</p>
-<ul>
-<li>实例化泛型类</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericityClassTest</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Point&lt;Integer&gt; point = <span class="keyword">new</span> Point&lt;Integer&gt;(<span class="number">10</span>,<span class="number">10</span>);</span><br><span class="line">    Point&lt;Float&gt; p = <span class="keyword">new</span> Point&lt;Float&gt;(<span class="number">10f</span>,<span class="number">10f</span>);</span><br><span class="line">    System.out.println(point);</span><br><span class="line">    System.out.println(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/genericity/genericity_class.png" alt="运行结果"></p>
-<p>&emsp;&emsp;在实例化泛型类的时候,需要在尖括号中传递一个类名,这个类名就是你希望限定这个对象类型的类名,例如你希望这个对象都是以Integer类型来进行数据处理,那么在尖括号中传递Integer,那么这个对象所实例化的那个类中的T将全部代表Integer类,此时你使用这个泛型的方法,构造器时,如果有T作为参数类型的那么就要求你全部使用Integer类型的参数,否则会报编译时错误.</p>
-<h4 id="多泛型变量定义"><a href="#多泛型变量定义" class="headerlink" title="多泛型变量定义"></a>多泛型变量定义</h4><p>&emsp;&emsp;多泛型定义的java类形如Map集合.</p>
-<ul>
-<li>定义</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 坐标类</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> ferry ferry_sy@163.com</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &lt;X&gt; x轴坐标的类型</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> &lt;Y&gt; y轴坐标的类型</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Point</span>&lt;<span class="title">X</span>,<span class="title">Y</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> X x;</span><br><span class="line">    <span class="keyword">private</span> Y y;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Point</span><span class="params">(X x, Y y)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> X <span class="title">getX</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setX</span><span class="params">(X x)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.x = x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Y <span class="title">getY</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setY</span><span class="params">(Y y)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.y = y;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Point&#123;"</span> +</span><br><span class="line">                <span class="string">"x="</span> + x +</span><br><span class="line">                <span class="string">", y="</span> + y +</span><br><span class="line">                <span class="string">'&#125;'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;这里重构了坐标类,使用两个泛型变量进行类的定义,其中X代表x轴的数据类型,Y代表y轴数据类型.当然,在定义泛型类时你可以使用任意多的泛型变量来满足你的需求.</p>
-<ul>
-<li>实例化</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericityClassTest</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Point&lt;Integer, Double&gt; point = <span class="keyword">new</span> Point&lt;Integer, Double&gt;(<span class="number">10</span>,<span class="number">10</span>D);</span><br><span class="line">    System.out.println(point);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/genericity/genericity-class-more.png" alt="运行结果"></p>
-<p>&emsp;&emsp;在创建实例的时候,这里选择将x轴使用Integer类型,y轴使用Double类型来实例化坐标.</p>
-<h4 id="字母命名规范"><a href="#字母命名规范" class="headerlink" title="字母命名规范"></a>字母命名规范</h4><p>&emsp;&emsp;在定义泛型时可以使用任意字母,他们所表示的意义是一样的,但是在实际应用中,我们还是应该使用有意义的字母来进行泛型的定义</p>
-<ol>
-<li><p>E — Element，常用在java Collection里，如：List<e>,Iterator<e>,Set<e></e></e></e></p>
-</li>
-<li><p>K,V — Key，Value，代表Map的键值对</p>
-</li>
-<li><p>N — Number，数字</p>
-</li>
-<li><p>T — Type，类型，如String，Integer等等</p>
-</li>
-</ol>
-<h3 id="泛型接口"><a href="#泛型接口" class="headerlink" title="泛型接口"></a>泛型接口</h3><h4 id="接口定义"><a href="#接口定义" class="headerlink" title="接口定义"></a>接口定义</h4><ul>
-<li>定义</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Fruits</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">toString</span><span class="params">(T <span class="keyword">var</span>)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h5 id="实现类方式一"><a href="#实现类方式一" class="headerlink" title="实现类方式一"></a>实现类方式一</h5><ul>
-<li>定义</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Banana</span> <span class="keyword">implements</span> <span class="title">Fruits</span>&lt;<span class="title">String</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Banana</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Banana</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">(String <span class="keyword">var</span>)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name.concat(<span class="string">" "</span>).concat(<span class="keyword">var</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;使用非泛型类实现泛型接口,此时需要将泛型变量赋予具体的类名,此时实现该接口方法时编译器会检测所实现的方法的泛型变量所代表的类型与实现泛型接口的数据类型是否一致,不一致时编译器会认为你并没有实现这个接口的方法.</p>
-<p>&emsp;&emsp;<code>@Data</code>是<code>lombok</code>的注解,它的作用是用来自动生成getter和setter等方法.</p>
-<ul>
-<li>使用</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericityInterfaceTest1</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Banana banana = <span class="keyword">new</span> Banana();</span><br><span class="line">    banana.setName(<span class="string">"banana"</span>);</span><br><span class="line">    System.out.println(banana.toString(<span class="string">"is delicious!"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/genericity/genericity-interface-1.png" alt="运行结果"></p>
-<h4 id="实现类方式二"><a href="#实现类方式二" class="headerlink" title="实现类方式二"></a>实现类方式二</h4><ul>
-<li>定义</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span>&lt;<span class="title">T</span>&gt; <span class="keyword">implements</span> <span class="title">Fruits</span>&lt;<span class="title">T</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> T weight;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Apple</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">(T weight)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.weight = weight;</span><br><span class="line">        <span class="keyword">return</span> toString();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Apple&#123;"</span> +</span><br><span class="line">                <span class="string">"weight="</span> + weight +</span><br><span class="line">                <span class="string">'&#125;'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;使用泛型类实现泛型接口,这个泛型类的泛型变量可以有多个,但是必须有一个变量与泛型接口的泛型变量保持一致.</p>
-<ul>
-<li>使用</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericityInterfaceTest2</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Apple&lt;Double&gt; apple = <span class="keyword">new</span> Apple&lt;Double&gt;();</span><br><span class="line">    System.out.println(apple.toString(<span class="number">0.5</span>D));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/genericity/genericity-interface-2.png" alt="运行结果"></p>
-<h3 id="泛型方法"><a href="#泛型方法" class="headerlink" title="泛型方法"></a>泛型方法</h3><ul>
-<li>在一个普通java类中定义一个泛型类.</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function">T <span class="title">genericity</span><span class="params">(T <span class="keyword">var</span>)</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">var</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 泛型方法测试</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">genericityMethodTest</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Banana banana = <span class="keyword">new</span> Banana(<span class="string">"banana"</span>);</span><br><span class="line">    System.out.println(genericity(banana).getClass().getName());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/genericity/genericity-method.png" alt="运行结果"></p>
-<p>&emsp;&emsp;定义一个方法,在返回值类型前面加上泛型变量即可声明这是一个泛型方法,可以通过形参传递泛型,也可以返回泛型所指定的对象.在本例中实例化<code>Banana</code>类,然后传递到这个泛型方法中,最后返回这个<code>Banana</code>对象.</p>
-<p>&emsp;&emsp;静态方法也可以定义为泛型方法,形式与上述方式类似.</p>
-<h3 id="泛型的通配符"><a href="#泛型的通配符" class="headerlink" title="泛型的通配符"></a>泛型的通配符</h3><h4 id="无边界通配符"><a href="#无边界通配符" class="headerlink" title="无边界通配符"></a>无边界通配符</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">List&lt;?&gt;</span><br></pre></td></tr></table></figure>
-<h4 id="上边界通配符"><a href="#上边界通配符" class="headerlink" title="上边界通配符"></a>上边界通配符</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> String name;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String id;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span> <span class="keyword">extends</span> <span class="title">A</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String sex;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> List&lt;? extends A&gt; sbadjh(List&lt;? extends A&gt; list)&#123;</span><br><span class="line">    list.forEach(a -&gt; a.name = <span class="string">"this is a."</span>);</span><br><span class="line">    <span class="keyword">return</span> list;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sabdkjk</span><span class="params">()</span></span>&#123;</span><br><span class="line">    List&lt;A&gt; aList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    B b = <span class="keyword">new</span> B();</span><br><span class="line">    C c = <span class="keyword">new</span> C();</span><br><span class="line">    aList.add(b);</span><br><span class="line">    aList.add(c);</span><br><span class="line">    sbadjh(aList).forEach(a -&gt; System.out.println(a.name));</span><br><span class="line"></span><br><span class="line">    List&lt;B&gt; bList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    B b1 = <span class="keyword">new</span> B();</span><br><span class="line">    B b2 = <span class="keyword">new</span> B();</span><br><span class="line">    bList.add(b1);</span><br><span class="line">    bList.add(b2);</span><br><span class="line">    sbadjh(bList).forEach(a -&gt; System.out.println(a.name));</span><br><span class="line"></span><br><span class="line">    List&lt;C&gt; CList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    C c1 = <span class="keyword">new</span> C();</span><br><span class="line">    C c2 = <span class="keyword">new</span> C();</span><br><span class="line">    CList.add(c1);</span><br><span class="line">    CList.add(c2);</span><br><span class="line">    sbadjh(CList).forEach(a -&gt; System.out.println(a.name));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="下边界通配符"><a href="#下边界通配符" class="headerlink" title="下边界通配符"></a>下边界通配符</h4><p>&emsp;&emsp;下边界通配符使用和上边界通配符正好反过来,将<code>extends</code>关键字换成<code>super</code>.</p>
-]]></content>
-      <categories>
-        <category>java</category>
-      </categories>
-      <tags>
-        <tag>泛型</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>lambda</title>
-    <url>/lambda.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;<code>lambda表达式</code>是一个可传递的代码块。</p>
-<a id="more"></a>
-<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><ul>
-<li>基本语法：参数，箭头（-&gt;）以及一个表达式或者代码块。</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; <span class="keyword">return</span> msg.length()&gt;str.length()</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span>(msg.length()&gt;str.length() &gt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(msg.length()&gt;str.length() == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;<em>如果代码块在有些分支有返回值，有些分支没有返回值是不合法的。返回值的类型无需指定，lambda表达式的返回值类型总是有上下文推导而出。lambda表达式可以捕获外围作用域中变量的值，但是所捕获的变量必须实际上是最终变量</em></p>
-<ul>
-<li>无参表达式：提供空括号</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">() -&gt; System.out.println(<span class="string">"no arguments lambda"</span>)</span><br></pre></td></tr></table></figure>
-<ul>
-<li>忽略参数类型：若参数类型可推导，可忽略参数类型。若只有一个参数且参数类型可推导，可省略括号。</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(msg, str) -&gt; <span class="keyword">return</span> msg.length() &gt; str.length()</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">msg -&gt; System.out.println(msg)</span><br></pre></td></tr></table></figure>
-<h3 id="函数式接口"><a href="#函数式接口" class="headerlink" title="函数式接口"></a>函数式接口</h3><ul>
-<li><p>定义：只有一个抽象方法的接口。自己设计接口时，如果接口只有一个抽象方法，那么可以使用注解<code>@FunctionalInterface</code>标记这个接口。这样，当你向这个接口再次添加一个抽象方法时，编译器会产生一个错误。另外javadoc页会指出此接口为函数式接口。</p>
-</li>
-<li><p>demo：返回指定字符串10倍的长度</p>
-</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 函数式接口</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">LengthInterface</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 匿名内部类方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">innerClass</span><span class="params">()</span></span>&#123;</span><br><span class="line">    System.out.println(<span class="keyword">new</span> LengthInterface() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> msg.length()*<span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* lambda表达式方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lambda</span><span class="params">()</span></span>&#123;</span><br><span class="line">    LengthInterface lengthInterface = msg -&gt; msg.length()*<span class="number">10</span>;</span><br><span class="line">    System.out.println(lengthInterface.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/lambda/lambda_functionalInterface.png" alt="初始化git项目方式2"></p>
-<p>&emsp;&emsp;定义一个函数式接口，这个接口只有一个抽象方法，这个抽象方法的用途是希望获取到指定的字符串进过渲染后的长度。在lambda表达式出现之前，我们想要实现这样的功能，最好的做法是通过匿名内部类来实现，但是在这里，我们可以让函数式接口的引用指向一个lambda表达式，通过lambda表达式定义渲染长度规则，然后在通过引用调用函数式接口的抽象方法。很显然，虽然内部类和lambda都可以实现功能，但是不管是从代码的简洁度，可读性还是从性能对比上（内部类的类加载，解析，初始化等高于lambda表达式的性能开销）lambda表达式都是我们的首选方案。</p>
-<ul>
-<li>常用函数式接口</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>函数式接口</th>
-<th>参数类型</th>
-<th>返回类型</th>
-<th>抽象方法</th>
-<th>描述</th>
-<th>其他方法</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Runnable</td>
-<td>无</td>
-<td>void</td>
-<td>run</td>
-<td>作为无参数或返回值的动作运行</td>
-<td></td>
-</tr>
-<tr>
-<td>Supplier<t></t></td>
-<td>无</td>
-<td>T</td>
-<td>get</td>
-<td>提供一个T类型的值</td>
-<td></td>
-</tr>
-<tr>
-<td>Consumer<t></t></td>
-<td>T</td>
-<td>void</td>
-<td>accept</td>
-<td>处理一个T类铟的值</td>
-<td>andThen</td>
-</tr>
-<tr>
-<td>BiConsumer&lt;T,U&gt;</td>
-<td>T,U</td>
-<td>void</td>
-<td>accept</td>
-<td>处理T和U类型的值</td>
-<td>andThen</td>
-</tr>
-<tr>
-<td>Function&lt;T,R&gt;</td>
-<td>T</td>
-<td>R</td>
-<td>apply</td>
-<td>有一个T类型参数的函数</td>
-<td>compose, andThen, identity</td>
-</tr>
-<tr>
-<td>BiFunction&lt;T,U,R&gt;</td>
-<td>T,U</td>
-<td>R</td>
-<td>apply</td>
-<td>有T和U类型参数的函数</td>
-<td>andThen</td>
-</tr>
-<tr>
-<td>UnaryOperator<t></t></td>
-<td>T</td>
-<td>T</td>
-<td>apply</td>
-<td>类型T上的一元操作符</td>
-<td>compose, andThen, identity</td>
-</tr>
-<tr>
-<td>BinaryOperator<t></t></td>
-<td>T,T</td>
-<td>T</td>
-<td>apply</td>
-<td>类型T上的二元操作符</td>
-<td>andThen, maxBy, minBy</td>
-</tr>
-<tr>
-<td>Predicate<t></t></td>
-<td>T</td>
-<td>boolean</td>
-<td>test</td>
-<td>布尔值函数</td>
-<td>and, or, negate, isEqual</td>
-</tr>
-<tr>
-<td>BiPredicate&lt;T,U&gt;</td>
-<td>T,U</td>
-<td>boolean</td>
-<td>test</td>
-<td>有两个参数的布尔值函数</td>
-<td>and, or, negate</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>基本类型的函数式接口</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>函数式接口</th>
-<th>参数类型</th>
-<th>返回类型</th>
-<th>抽象方法 </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>BooleanSupplier</td>
-<td>none</td>
-<td>boolean</td>
-<td>getAsBoolean</td>
-</tr>
-<tr>
-<td>PSupplier</td>
-<td>none</td>
-<td>p</td>
-<td>getAsP</td>
-</tr>
-<tr>
-<td>PConsumer</td>
-<td>p</td>
-<td>void</td>
-<td>accept</td>
-</tr>
-<tr>
-<td>ObjPConsumer&lt; T&gt;</td>
-<td>T,p</td>
-<td>void</td>
-<td>accept</td>
-</tr>
-<tr>
-<td>PFunction<t></t></td>
-<td>p</td>
-<td>T</td>
-<td>apply</td>
-</tr>
-<tr>
-<td>PToQFunction</td>
-<td>p</td>
-<td>q</td>
-<td>applyAsQ</td>
-</tr>
-<tr>
-<td>ToPFunction<t></t></td>
-<td>T</td>
-<td>p</td>
-<td>applyAsP</td>
-</tr>
-<tr>
-<td>ToPBiFunction&lt;T,U&gt;</td>
-<td>T,U</td>
-<td>p</td>
-<td>applyAsP</td>
-</tr>
-<tr>
-<td>PUnaryOperator</td>
-<td>p</td>
-<td>p</td>
-<td>testAsP</td>
-</tr>
-<tr>
-<td>PBinaryOperator</td>
-<td>p,p</td>
-<td>p</td>
-<td>testAsP</td>
-</tr>
-<tr>
-<td>PPredicate</td>
-<td>p</td>
-<td>boolean</td>
-<td>test</td>
-</tr>
-</tbody>
-</table>
-<p><em>注：p,q为int, long, double;P, Q为Integer, Long, Double</em></p>
-<h3 id="方法引用"><a href="#方法引用" class="headerlink" title="方法引用"></a>方法引用</h3><p>&emsp;&emsp;将现有的方法传递给函数式接口，等价于lambda表达式</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String::length  &lt;==&gt; msg -&gt; msg.length()</span><br><span class="line">(String msg) -&gt; System.out.println(msg)  &lt;==&gt; System.out::println</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;语法：用操作符<code>::</code>分割对象名或类名与方法名，有三种用法，第一：对象::非静态方法名；第二：类名::静态方法名；第三：类名::非静态方法名。前两种方式，方法引用等价于提供方法参数的lambda表达式。第三种情况，第一个参数将成为方法的目标，例如，(msg, str) -&gt; msg.equals(str) 等同于 String::equals。</p>
-<h3 id="构造器引用"><a href="#构造器引用" class="headerlink" title="构造器引用"></a>构造器引用</h3><p>&emsp;&emsp;和方法引用很类似，只不过方法名为new，具体方式为：类名::new，例如：String::new，具体使用类的哪一个构造器取决于上下文。数组的构造器引用：String[]::new，它有一个参数，即数组的长度，等价于length -&gt; new String[length]。</p>
-]]></content>
-      <categories>
-        <category>java</category>
-      </categories>
-      <tags>
-        <tag>lambda</tag>
       </tags>
   </entry>
   <entry>
@@ -2550,6 +2597,152 @@
       </tags>
   </entry>
   <entry>
+    <title>正则表达式</title>
+    <url>/regex-md.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;字符串是编程中用到最多，最常见的一种数据结构，对字符串的处理需求无处不在。正则表达式是一种用来匹配字符串的强力武器，它的设计思想是用一种描述性语言给字符串定义一个规则，凡事符合规则的字符串，就认为”匹配”了。</p>
+<a id="more"></a>
+<h1 id="正则表达式介绍"><a href="#正则表达式介绍" class="headerlink" title="正则表达式介绍"></a>正则表达式介绍</h1><p>&emsp;&emsp;一个正则表达式通常被称为一个模式（pattern），为用来描述或者匹配一系列符合某个句法规则的字符串。例如：Handel、Händel和Haendel这三个字符串，都可以由H(a|ä|ae)ndel这个模式来描述。大部分正则表达式的形式都有如下的结构：</p>
+<ul>
+<li><p>选择：竖线|代表选择（即或集），具有最低优先级。例如gray|grey可以匹配grey或gray。</p>
+</li>
+<li><p>数量限定：某个字符后的数量限定符用来限定前面这个字符允许出现的个数。最常见的数量限定符包括+、?和*（不加数量限定则代表出现一次且仅出现一次）：</p>
+</li>
+</ul>
+<blockquote>
+<p><code>+</code>代表前面的字符必须至少出现一次。（1次或多次）。例如，goo+gle可以匹配google、gooogle、goooogle等;<br><code>?</code>代表前面的字符最多只可以出现一次。（0次或1次）。例如，colou?r可以匹配color或者colour;<br><code>*</code>代表前面的字符可以不出现，也可以出现一次或者多次。（0次、1次或多次）。例如，0*42可以匹配42、042、0042、00042等。</p>
+</blockquote>
+<ul>
+<li>匹配：圆括号()可以用来定义操作符的范围和优先度。例如，gr(a|e)y等价于gray|grey，(grand)?father匹配father和grandfather。上述这些构造子都可以自由组合，因此H(ae?|ä)ndel和H(a|ae|ä)ndel是相同的，表示{“Handel”, “Haendel”, “Händel”}。</li>
+</ul>
+<h2 id="表达式全集"><a href="#表达式全集" class="headerlink" title="表达式全集"></a>表达式全集</h2><p><img src="/regex-md/regex.png" alt="查看"></p>
+<h2 id="元字符"><a href="#元字符" class="headerlink" title="元字符"></a>元字符</h2><p><img src="/regex-md/regex-echar.png" alt="查看"></p>
+<h2 id="重复"><a href="#重复" class="headerlink" title="重复"></a>重复</h2><p><img src="/regex-md/regex-repetition.png" alt="查看"></p>
+<h2 id="优先权"><a href="#优先权" class="headerlink" title="优先权"></a>优先权</h2><p><img src="/regex-md/regex_order.png" alt="查看"></p>
+<h1 id="匹配原理"><a href="#匹配原理" class="headerlink" title="匹配原理"></a>匹配原理</h1><p>&emsp;&emsp;实现正则表达式引擎的有两种方式：DFA 自动机（确定型有穷自动机）和 NFA 自动机（不确定型有穷自动机）。DFA 自动机的时间复杂度是线性的，更加稳定，但是功能有限。而 NFA 的时间复杂度比较不稳定，有时候很好，有时候不怎么好，好不好取决于你写的正则表达式。但是胜在 NFA 的功能更加强大，所以包括 Java 、.NET、Perl、Python、Ruby、PHP 等语言都使用了 NFA 去实现其正则表达式。</p>
+<h2 id="DFA"><a href="#DFA" class="headerlink" title="DFA"></a>DFA</h2><p>&emsp;&emsp;DFA从匹配文本入手，从左到右，每个字符不会匹配两次，它的时间复杂度是多项式的，所以通常情况下，它的速度更快，但支持的特性很少，不支持捕获组、各种引用等等。举例说明：字符串：<code>after tonight</code>,表达式：<code>to(nite|nighta|night)</code>;从a开始匹配t，直到第一个t跟正则的t匹配，但e跟o匹配失败，继续，直到文本里面的第二个 t 匹配正则的t，接着o与o匹配，n的时候发现正则里面有三个可选匹配，开始并行匹配，直到文本中的g使得第一个可选条件不匹配，继续，直到最后匹配。</p>
+<h2 id="NFA"><a href="#NFA" class="headerlink" title="NFA"></a>NFA</h2><p>&emsp;&emsp;NFA 是以正则表达式为基准去匹配的。也就是说，NFA 自动机会读取正则表达式的一个一个字符，然后拿去和目标字符串匹配，匹配成功就换正则表达式的下一个字符，否则继续和目标字符串的下一个字符比较。</p>
+<p>&emsp;&emsp;以正则表达式<code>ab*c</code>匹配字符串 <font color="#00dddd">a</font><font color="#dd00dd">a</font>bc为例：</p>
+<blockquote>
+<p>第一步：用a匹配字符<font color="#00dddd">a</font>，匹配成功；<br>第二步：用b*匹配字符<font color="#dd00dd">a</font>，匹配失败；<br>第三步：用c匹配字符<font color="#dd00dd">a</font>，匹配失败；<br>第四步：回溯，表达式回退到a,用a匹配字符<font color="#dd00dd">a</font>，匹配成功；<br>第五步：用b*匹配字符b，匹配成功；<br>第六步：用b*匹配字符c，匹配失败；<br>第七步：用c匹配字符c，匹配成功；</p>
+</blockquote>
+<p>&emsp;&emsp;可以看到，在第三步匹配失败的时候发生了<strong>回溯</strong>，表达式回到了开头从字符串的下一个位置重新匹配。</p>
+<h1 id="java正则表达式"><a href="#java正则表达式" class="headerlink" title="java正则表达式"></a>java正则表达式</h1><p>&emsp;&emsp;java.util.regex是一个用正则表达式所订制的模式来对字符串进行匹配工作的类库包。它包括两个类：Pattern和Matcher，Pattern：一个Pattern是一个正则表达式经编译后的表现模式。 Matcher：一个Matcher对象是一个状态机器，它依据Pattern对象做为匹配模式对字符串展开匹配检查。 首先一个Pattern实例订制了一个所用语法与PERL的类似的正则表达式经编译后的模式，然后一个Matcher实例在这个给定的Pattern实例的模式控制下进行字符串的匹配工作。</p>
+<h2 id="匹配模式"><a href="#匹配模式" class="headerlink" title="匹配模式"></a>匹配模式</h2><ul>
+<li>构建匹配模式</li>
+</ul>
+<p>&emsp;&emsp;Pattern类用于创建一个正则表达式,也可以说创建一个匹配模式,它的构造方法是私有的,不可以直接创建,但可以通过Pattern.complie(String regex)简单工厂方法创建一个正则表达式。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"r+"</span>);</span><br><span class="line">logger.info(pattern.pattern());</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;通过调用静态方法compile创建一个正则表达式的对象，在这个对象上调用pattern/toString方法返回这个正则表达式的字符串表现形式。</p>
+<ul>
+<li>拆分给定序列</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\.+?"</span>);</span><br><span class="line"></span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, <span class="number">4</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, <span class="number">3</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, <span class="number">2</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, <span class="number">1</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, <span class="number">0</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, -<span class="number">1</span>)));</span><br></pre></td></tr></table></figure>
+<p><img src="/regex-md/regex-split.png" alt="查看"></p>
+<p>&emsp;&emsp;字符串的split方法，当给定的正则表达式不是简单字符时，调用pattern.split得到结果。</p>
+<ul>
+<li>匹配给定输入</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// '.'匹配任意字符(除了\n和\r),'+'匹配前面的表达式一次或者多次</span></span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, Pattern.matches(<span class="string">".+"</span>, <span class="string">"https://ferry.org.cn"</span>));</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;本质上是创建匹配器，然后调用匹配器的matches方法。String的matches方法就是调用的Pattern.matches。</p>
+<h2 id="匹配器"><a href="#匹配器" class="headerlink" title="匹配器"></a>匹配器</h2><ul>
+<li>创建匹配器</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\.+?"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"https://ferry.org.cn"</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>匹配操作</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 匹配一个或者多个'.'</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\.+?"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"https://ferry.org.cn"</span>);</span><br><span class="line"><span class="comment">// 整个输入序列是否完全匹配该正则表达式</span></span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.matches());</span><br><span class="line"><span class="comment">// 从输入序列的开头开始匹配该正则表达式</span></span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.lookingAt());</span><br><span class="line"><span class="comment">// 输入序列中是否有某一个自序列能够匹配正则表达式</span></span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.find());</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;matches和lookingAt方法每次调用都会从输入序列的开头开始匹配，而find方法第一次从开头开始匹配，后面每次调用都是从上次匹配到的子字符串在输入序列的结束位置开始继续向后匹配。</p>
+<ul>
+<li>获取匹配的子字符串在字符串中的索引</li>
+</ul>
+<p>&emsp;&emsp;当使用matches,lookingAt或者find方法返回true时，此时就可以使用start和end查找匹配到的子字符串在字符串的索引位置。返回的索引数值总是等于下一个字符在字符串中的下标。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">".+"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"https://ferry.org.cn"</span>);</span><br><span class="line"><span class="keyword">if</span>(matcher.matches())&#123;</span><br><span class="line">    logger.info(<span class="string">"matches start: &#123;&#125;"</span>, matcher.start());</span><br><span class="line">    logger.info(<span class="string">"matches end: &#123;&#125;"</span>, matcher.end());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"^http(s)?"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"https://ferry.org.cn"</span>);</span><br><span class="line"><span class="keyword">if</span>(matcher.lookingAt())&#123;</span><br><span class="line">    logger.info(<span class="string">"lookingAt start: &#123;&#125;"</span>, matcher.start());</span><br><span class="line">    logger.info(<span class="string">"lookingAt end: &#123;&#125;"</span>, matcher.end());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\.+?"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"https://ferry.org.cn"</span>);</span><br><span class="line"><span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">while</span> (matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"find &#123;&#125; start: &#123;&#125;"</span>, ++count, matcher.start());</span><br><span class="line">    logger.info(<span class="string">"find &#123;&#125; end: &#123;&#125;"</span>, count, matcher.end());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>替换</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"/+?"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferry/org/cn"</span>);</span><br><span class="line">logger.info(<span class="string">"replaceFirst: &#123;&#125;"</span>, matcher.replaceFirst(<span class="string">"."</span>));</span><br><span class="line">logger.info(<span class="string">"replaceAll: &#123;&#125;"</span>, matcher.replaceAll(<span class="string">"."</span>));</span><br></pre></td></tr></table></figure>
+<ul>
+<li>分组</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(\\w+)\\.+?(\\w+)"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferrysy.com"</span>);</span><br><span class="line"><span class="keyword">if</span>(matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"group count: &#123;&#125;"</span>, matcher.groupCount());</span><br><span class="line">    logger.info(<span class="string">"group 0: &#123;&#125;"</span>, matcher.group(<span class="number">0</span>));</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">do</span>&#123;</span><br><span class="line">        logger.info(<span class="string">"group &#123;&#125;: &#123;&#125;"</span>, ++i, matcher.group(i));</span><br><span class="line">    &#125;<span class="keyword">while</span> (i &lt; matcher.groupCount());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/regex-md/regex-group.png" alt="查看"></p>
+<p>&emsp;&emsp;正则表达式中，匹配<code>(pattern)</code>但并非是零宽预言的子字符串就是一个分组，可以使用groupCount方法查看分组数量，matcher.group(0)表示整个匹配的字符串，matcher.group(i)表示获取匹配的第i个分组。</p>
+<h1 id="进阶用法"><a href="#进阶用法" class="headerlink" title="进阶用法"></a>进阶用法</h1><h2 id="分组"><a href="#分组" class="headerlink" title="分组"></a>分组</h2><p>&emsp;&emsp;分组，用小括号来指定子表达式(也叫做分组)，可以指定这个子表达式的重复次数，你也可以对子表达式进行其它一些操作。</p>
+<p>1, 默认情况下，每个分组都有一个组号，规则是：从左向右，以分组的左括号为标志，第一个出现的分组的组号为1，第二个为2，以此类推；<br>2, 后向引用用于重复搜索前面某个分组匹配的文本。例如，\1 代表分组1匹配的文本。注意，\1 代表的是分组1匹配到的文本，而不是分组1的表达式，其次，\1并不是分组；</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(\\w+)\\.+?(\\w+)"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferrysy.com"</span>);</span><br><span class="line"><span class="keyword">if</span>(matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"group count: &#123;&#125;"</span>, matcher.groupCount());</span><br><span class="line">    logger.info(<span class="string">"group 0: &#123;&#125;"</span>, matcher.group(<span class="number">0</span>));</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">do</span>&#123;</span><br><span class="line">        logger.info(<span class="string">"group &#123;&#125;: &#123;&#125;"</span>, ++i, matcher.group(i));</span><br><span class="line">    &#125;<span class="keyword">while</span> (i &lt; matcher.groupCount());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\b(\\w+)\\b\\s\\1"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferry ferry"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.groupCount());</span><br><span class="line"><span class="keyword">if</span>(matcher.find())&#123;</span><br><span class="line">    logger.info(matcher.group(<span class="number">1</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="零宽断言"><a href="#零宽断言" class="headerlink" title="零宽断言"></a>零宽断言</h2><p>&emsp;&emsp;查找在某些内容(但并不包括这些内容)之前或之后的东西，用于指定一个位置，这个位置应该满足一定的条件(即断言)，因此它们也被称为零宽断言。</p>
+<ul>
+<li><strong>零宽度正预测先行断言(?=exp)</strong></li>
+</ul>
+<p>&emsp;&emsp;它断言自身出现的位置的后面能匹配表达式。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 可以匹配does不可以匹配do</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"do(?=es)"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"do"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.lookingAt());</span><br><span class="line">matcher.reset(<span class="string">"does"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.lookingAt());</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 限制字符串长度</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(?=(^.&#123;5&#125;$))\\w+"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferry"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.matches());</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>零宽度正回顾后发断言(?&lt;=exp)</strong></li>
+</ul>
+<p>&emsp;&emsp;断言自身出现的位置的前面能匹配表达式 exp。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 可以匹配where不可以匹配here</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(?&lt;=wh)ere"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"here"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.find());</span><br><span class="line">matcher.reset(<span class="string">"where"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.find());</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>零宽度负预测先行断言(?!exp)</strong></li>
+</ul>
+<p>&emsp;&emsp;断言此位置的后面不能匹配表达式 exp。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 每五个字符后的字符不能是数字</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(.&#123;5&#125;(?!\\d))+"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferrylove2"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.matches());</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>零宽度负回顾后发断言(?&lt;!exp)</strong></li>
+</ul>
+<p>&emsp;&emsp;断言此位置的前面不能匹配表达式exp。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 匹配五个下写字母且前面一个字符不是数字的</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(?&lt;!\\d)[a-z]&#123;5&#125;"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferry"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.matches());</span><br><span class="line">matcher.reset(<span class="string">"1ferry"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.find());</span><br></pre></td></tr></table></figure>
+<h2 id="贪婪-懒惰与独占"><a href="#贪婪-懒惰与独占" class="headerlink" title="贪婪,懒惰与独占"></a>贪婪,懒惰与独占</h2><ul>
+<li><strong>贪婪</strong></li>
+</ul>
+<p>&emsp;&emsp;当正则表达式中包含能接受重复的限定符时，通常的行为是（在使整个表达式能得到匹配的前提下）匹配尽可能多的字符。这被称为贪婪匹配。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 贪婪匹配</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\d.*\\d"</span>); <span class="comment">// 匹配两个数字，数字中间有零或多个字符</span></span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"1fer22ry9"</span>);</span><br><span class="line"><span class="keyword">while</span> (matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"&#123;&#125;"</span>, matcher.group());</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 最终匹配的是整个字符串</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>懒惰</strong></li>
+</ul>
+<p>&emsp;&emsp;有时，我们更需要懒惰匹配，也就是匹配尽可能少的字符。前面给出的限定符都可以被转化为懒惰匹配模式，只要在它后面加上一个问号?。这样.*?就意味着匹配任意数量的重复，但是在能使整个匹配成功的前提下使用最少的重复。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 懒惰匹配</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\d.*?\\d"</span>); <span class="comment">// 匹配两个数字，数字中间有零或多个字符</span></span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"11fer22ry99"</span>);</span><br><span class="line"><span class="keyword">while</span> (matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"&#123;&#125;"</span>, matcher.group());</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 匹配的结果有三个，11，22，99</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>最先开始的匹配拥有最高优先权</strong></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\d.*?\\d"</span>); <span class="comment">// 匹配两个数字，数字中间有零或多个字符</span></span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"1fer22ry99"</span>);</span><br><span class="line"><span class="keyword">while</span> (matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"&#123;&#125;"</span>, matcher.group());</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 匹配结果有两个，1fer2,2ry9</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;上述正则表达式虽然是懒惰模式，理论上应该匹配22，99，但是第一个出现的数字是1，所以1具有优先匹配权。</p>
+<ul>
+<li><strong>懒惰限定符</strong></li>
+</ul>
+<p><img src="/regex-md/regex-lazy.png" alt="查看"></p>
+<ul>
+<li><strong>独占</strong></li>
+</ul>
+<p>&emsp;&emsp;在独占模式下，表达式尽可能长的匹配字符串，若匹配失败则结束匹配而不会回溯。独占表达式就是在重复表达式后面添加一个<code>+</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 独占模式</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"s*+\\w"</span>);  <span class="comment">// 此表达式相当于匹配零或多个s,最后一个字符不能是s结尾</span></span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ss"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>,matcher.matches());  <span class="comment">// false</span></span><br><span class="line">matcher.reset(<span class="string">"s4"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.matches());  <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<h2 id="平衡组"><a href="#平衡组" class="headerlink" title="平衡组"></a>平衡组</h2><p>&emsp;&emsp;平衡组，故名思义，平衡即对称，主要是结合几种正则语法规则，提供对配对出现的嵌套结构的匹配。平衡组有狭义与广义两种定义，狭义平衡组指(?Expression) 语法，而广义平衡组并不是固定的语法规则，而是几种语法规则的综合运用，我们平时所说的平衡组通常指的是广义平衡组。</p>
+<p>&emsp;&emsp;下面是可能会用到的语法结构：</p>
+<blockquote>
+<p>(?&lt;group>) 把捕获的内容命名为group,并压入堆栈<br>(?<-group>) 从堆栈中弹出最后压入堆栈的名为group的捕获内容，如果堆栈本来为空，则本分组的匹配失败<br>(?(group)yes|no) 如果堆栈上存在以名为group的捕获内容的话，继续匹配yes部分的表达式，否则继续匹配no部分<br>(?!) 顺序否定环视，由于没有后缀表达式，试图匹配总是失败</-group></p>
+</blockquote>
+<h1 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h1><p>&emsp;&emsp;正则表达式的学习最好是结合例子，单纯的记忆是很难玩的懂的，前面介绍了正则的java使用，那么在实践中会使用java的类去展示正则表达式的实际效果。</p>
+<h2 id="英文域名"><a href="#英文域名" class="headerlink" title="英文域名"></a>英文域名</h2><p>&emsp;&emsp;域名的匹配规则如下：</p>
+<blockquote>
+<p>域名由多个标签(各级域名)组成，每个标签长度限制63，域名总长度253；<br>各个标签之间用<code>.</code>连接；<br>标签可以由英文字母，阿拉伯数字和中横线组成<br>中横线不能连续出现、不能单独注册，也不能放在开头和结尾。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="邮箱校验"><a href="#邮箱校验" class="headerlink" title="邮箱校验"></a>邮箱校验</h3><p>&emsp;&emsp;先说一下邮箱的规则，邮箱分两部分有符号<code>@</code>连接，第一部分：组成元素可以是大小写英文字母，中横线，阿拉伯数字，下划线，英文句号，这里我们暂且规定邮箱第一部分长度不小于5，且只能用大小写英文字母开头；第二部分：域名。</p>
+]]></content>
+      <categories>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>正则表达式</tag>
+        <tag>Pattern类</tag>
+        <tag>Matcher类</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>redis</title>
     <url>/redis.html</url>
     <content><![CDATA[<p>&emsp;&emsp;redis学习之路。</p>
@@ -2832,152 +3025,6 @@
 ]]></content>
       <tags>
         <tag>redis</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>正则表达式</title>
-    <url>/regex-md.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;字符串是编程中用到最多，最常见的一种数据结构，对字符串的处理需求无处不在。正则表达式是一种用来匹配字符串的强力武器，它的设计思想是用一种描述性语言给字符串定义一个规则，凡事符合规则的字符串，就认为”匹配”了。</p>
-<a id="more"></a>
-<h1 id="正则表达式介绍"><a href="#正则表达式介绍" class="headerlink" title="正则表达式介绍"></a>正则表达式介绍</h1><p>&emsp;&emsp;一个正则表达式通常被称为一个模式（pattern），为用来描述或者匹配一系列符合某个句法规则的字符串。例如：Handel、Händel和Haendel这三个字符串，都可以由H(a|ä|ae)ndel这个模式来描述。大部分正则表达式的形式都有如下的结构：</p>
-<ul>
-<li><p>选择：竖线|代表选择（即或集），具有最低优先级。例如gray|grey可以匹配grey或gray。</p>
-</li>
-<li><p>数量限定：某个字符后的数量限定符用来限定前面这个字符允许出现的个数。最常见的数量限定符包括+、?和*（不加数量限定则代表出现一次且仅出现一次）：</p>
-</li>
-</ul>
-<blockquote>
-<p><code>+</code>代表前面的字符必须至少出现一次。（1次或多次）。例如，goo+gle可以匹配google、gooogle、goooogle等;<br><code>?</code>代表前面的字符最多只可以出现一次。（0次或1次）。例如，colou?r可以匹配color或者colour;<br><code>*</code>代表前面的字符可以不出现，也可以出现一次或者多次。（0次、1次或多次）。例如，0*42可以匹配42、042、0042、00042等。</p>
-</blockquote>
-<ul>
-<li>匹配：圆括号()可以用来定义操作符的范围和优先度。例如，gr(a|e)y等价于gray|grey，(grand)?father匹配father和grandfather。上述这些构造子都可以自由组合，因此H(ae?|ä)ndel和H(a|ae|ä)ndel是相同的，表示{“Handel”, “Haendel”, “Händel”}。</li>
-</ul>
-<h2 id="表达式全集"><a href="#表达式全集" class="headerlink" title="表达式全集"></a>表达式全集</h2><p><img src="/regex-md/regex.png" alt="查看"></p>
-<h2 id="元字符"><a href="#元字符" class="headerlink" title="元字符"></a>元字符</h2><p><img src="/regex-md/regex-echar.png" alt="查看"></p>
-<h2 id="重复"><a href="#重复" class="headerlink" title="重复"></a>重复</h2><p><img src="/regex-md/regex-repetition.png" alt="查看"></p>
-<h2 id="优先权"><a href="#优先权" class="headerlink" title="优先权"></a>优先权</h2><p><img src="/regex-md/regex_order.png" alt="查看"></p>
-<h1 id="匹配原理"><a href="#匹配原理" class="headerlink" title="匹配原理"></a>匹配原理</h1><p>&emsp;&emsp;实现正则表达式引擎的有两种方式：DFA 自动机（确定型有穷自动机）和 NFA 自动机（不确定型有穷自动机）。DFA 自动机的时间复杂度是线性的，更加稳定，但是功能有限。而 NFA 的时间复杂度比较不稳定，有时候很好，有时候不怎么好，好不好取决于你写的正则表达式。但是胜在 NFA 的功能更加强大，所以包括 Java 、.NET、Perl、Python、Ruby、PHP 等语言都使用了 NFA 去实现其正则表达式。</p>
-<h2 id="DFA"><a href="#DFA" class="headerlink" title="DFA"></a>DFA</h2><p>&emsp;&emsp;DFA从匹配文本入手，从左到右，每个字符不会匹配两次，它的时间复杂度是多项式的，所以通常情况下，它的速度更快，但支持的特性很少，不支持捕获组、各种引用等等。举例说明：字符串：<code>after tonight</code>,表达式：<code>to(nite|nighta|night)</code>;从a开始匹配t，直到第一个t跟正则的t匹配，但e跟o匹配失败，继续，直到文本里面的第二个 t 匹配正则的t，接着o与o匹配，n的时候发现正则里面有三个可选匹配，开始并行匹配，直到文本中的g使得第一个可选条件不匹配，继续，直到最后匹配。</p>
-<h2 id="NFA"><a href="#NFA" class="headerlink" title="NFA"></a>NFA</h2><p>&emsp;&emsp;NFA 是以正则表达式为基准去匹配的。也就是说，NFA 自动机会读取正则表达式的一个一个字符，然后拿去和目标字符串匹配，匹配成功就换正则表达式的下一个字符，否则继续和目标字符串的下一个字符比较。</p>
-<p>&emsp;&emsp;以正则表达式<code>ab*c</code>匹配字符串 <font color="#00dddd">a</font><font color="#dd00dd">a</font>bc为例：</p>
-<blockquote>
-<p>第一步：用a匹配字符<font color="#00dddd">a</font>，匹配成功；<br>第二步：用b*匹配字符<font color="#dd00dd">a</font>，匹配失败；<br>第三步：用c匹配字符<font color="#dd00dd">a</font>，匹配失败；<br>第四步：回溯，表达式回退到a,用a匹配字符<font color="#dd00dd">a</font>，匹配成功；<br>第五步：用b*匹配字符b，匹配成功；<br>第六步：用b*匹配字符c，匹配失败；<br>第七步：用c匹配字符c，匹配成功；</p>
-</blockquote>
-<p>&emsp;&emsp;可以看到，在第三步匹配失败的时候发生了<strong>回溯</strong>，表达式回到了开头从字符串的下一个位置重新匹配。</p>
-<h1 id="java正则表达式"><a href="#java正则表达式" class="headerlink" title="java正则表达式"></a>java正则表达式</h1><p>&emsp;&emsp;java.util.regex是一个用正则表达式所订制的模式来对字符串进行匹配工作的类库包。它包括两个类：Pattern和Matcher，Pattern：一个Pattern是一个正则表达式经编译后的表现模式。 Matcher：一个Matcher对象是一个状态机器，它依据Pattern对象做为匹配模式对字符串展开匹配检查。 首先一个Pattern实例订制了一个所用语法与PERL的类似的正则表达式经编译后的模式，然后一个Matcher实例在这个给定的Pattern实例的模式控制下进行字符串的匹配工作。</p>
-<h2 id="匹配模式"><a href="#匹配模式" class="headerlink" title="匹配模式"></a>匹配模式</h2><ul>
-<li>构建匹配模式</li>
-</ul>
-<p>&emsp;&emsp;Pattern类用于创建一个正则表达式,也可以说创建一个匹配模式,它的构造方法是私有的,不可以直接创建,但可以通过Pattern.complie(String regex)简单工厂方法创建一个正则表达式。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"r+"</span>);</span><br><span class="line">logger.info(pattern.pattern());</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;通过调用静态方法compile创建一个正则表达式的对象，在这个对象上调用pattern/toString方法返回这个正则表达式的字符串表现形式。</p>
-<ul>
-<li>拆分给定序列</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\.+?"</span>);</span><br><span class="line"></span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, <span class="number">4</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, <span class="number">3</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, <span class="number">2</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, <span class="number">1</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, <span class="number">0</span>)));</span><br><span class="line">logger.info(Arrays.toString(pattern.split(<span class="string">"https://ferry.org.cn"</span>, -<span class="number">1</span>)));</span><br></pre></td></tr></table></figure>
-<p><img src="/regex-md/regex-split.png" alt="查看"></p>
-<p>&emsp;&emsp;字符串的split方法，当给定的正则表达式不是简单字符时，调用pattern.split得到结果。</p>
-<ul>
-<li>匹配给定输入</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// '.'匹配任意字符(除了\n和\r),'+'匹配前面的表达式一次或者多次</span></span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, Pattern.matches(<span class="string">".+"</span>, <span class="string">"https://ferry.org.cn"</span>));</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;本质上是创建匹配器，然后调用匹配器的matches方法。String的matches方法就是调用的Pattern.matches。</p>
-<h2 id="匹配器"><a href="#匹配器" class="headerlink" title="匹配器"></a>匹配器</h2><ul>
-<li>创建匹配器</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\.+?"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"https://ferry.org.cn"</span>);</span><br></pre></td></tr></table></figure>
-<ul>
-<li>匹配操作</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 匹配一个或者多个'.'</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\.+?"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"https://ferry.org.cn"</span>);</span><br><span class="line"><span class="comment">// 整个输入序列是否完全匹配该正则表达式</span></span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.matches());</span><br><span class="line"><span class="comment">// 从输入序列的开头开始匹配该正则表达式</span></span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.lookingAt());</span><br><span class="line"><span class="comment">// 输入序列中是否有某一个自序列能够匹配正则表达式</span></span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.find());</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;matches和lookingAt方法每次调用都会从输入序列的开头开始匹配，而find方法第一次从开头开始匹配，后面每次调用都是从上次匹配到的子字符串在输入序列的结束位置开始继续向后匹配。</p>
-<ul>
-<li>获取匹配的子字符串在字符串中的索引</li>
-</ul>
-<p>&emsp;&emsp;当使用matches,lookingAt或者find方法返回true时，此时就可以使用start和end查找匹配到的子字符串在字符串的索引位置。返回的索引数值总是等于下一个字符在字符串中的下标。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">".+"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"https://ferry.org.cn"</span>);</span><br><span class="line"><span class="keyword">if</span>(matcher.matches())&#123;</span><br><span class="line">    logger.info(<span class="string">"matches start: &#123;&#125;"</span>, matcher.start());</span><br><span class="line">    logger.info(<span class="string">"matches end: &#123;&#125;"</span>, matcher.end());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"^http(s)?"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"https://ferry.org.cn"</span>);</span><br><span class="line"><span class="keyword">if</span>(matcher.lookingAt())&#123;</span><br><span class="line">    logger.info(<span class="string">"lookingAt start: &#123;&#125;"</span>, matcher.start());</span><br><span class="line">    logger.info(<span class="string">"lookingAt end: &#123;&#125;"</span>, matcher.end());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\.+?"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"https://ferry.org.cn"</span>);</span><br><span class="line"><span class="keyword">int</span> count = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">while</span> (matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"find &#123;&#125; start: &#123;&#125;"</span>, ++count, matcher.start());</span><br><span class="line">    logger.info(<span class="string">"find &#123;&#125; end: &#123;&#125;"</span>, count, matcher.end());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>替换</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"/+?"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferry/org/cn"</span>);</span><br><span class="line">logger.info(<span class="string">"replaceFirst: &#123;&#125;"</span>, matcher.replaceFirst(<span class="string">"."</span>));</span><br><span class="line">logger.info(<span class="string">"replaceAll: &#123;&#125;"</span>, matcher.replaceAll(<span class="string">"."</span>));</span><br></pre></td></tr></table></figure>
-<ul>
-<li>分组</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(\\w+)\\.+?(\\w+)"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferrysy.com"</span>);</span><br><span class="line"><span class="keyword">if</span>(matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"group count: &#123;&#125;"</span>, matcher.groupCount());</span><br><span class="line">    logger.info(<span class="string">"group 0: &#123;&#125;"</span>, matcher.group(<span class="number">0</span>));</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">do</span>&#123;</span><br><span class="line">        logger.info(<span class="string">"group &#123;&#125;: &#123;&#125;"</span>, ++i, matcher.group(i));</span><br><span class="line">    &#125;<span class="keyword">while</span> (i &lt; matcher.groupCount());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/regex-md/regex-group.png" alt="查看"></p>
-<p>&emsp;&emsp;正则表达式中，匹配<code>(pattern)</code>但并非是零宽预言的子字符串就是一个分组，可以使用groupCount方法查看分组数量，matcher.group(0)表示整个匹配的字符串，matcher.group(i)表示获取匹配的第i个分组。</p>
-<h1 id="进阶用法"><a href="#进阶用法" class="headerlink" title="进阶用法"></a>进阶用法</h1><h2 id="分组"><a href="#分组" class="headerlink" title="分组"></a>分组</h2><p>&emsp;&emsp;分组，用小括号来指定子表达式(也叫做分组)，可以指定这个子表达式的重复次数，你也可以对子表达式进行其它一些操作。</p>
-<p>1, 默认情况下，每个分组都有一个组号，规则是：从左向右，以分组的左括号为标志，第一个出现的分组的组号为1，第二个为2，以此类推；<br>2, 后向引用用于重复搜索前面某个分组匹配的文本。例如，\1 代表分组1匹配的文本。注意，\1 代表的是分组1匹配到的文本，而不是分组1的表达式，其次，\1并不是分组；</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(\\w+)\\.+?(\\w+)"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferrysy.com"</span>);</span><br><span class="line"><span class="keyword">if</span>(matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"group count: &#123;&#125;"</span>, matcher.groupCount());</span><br><span class="line">    logger.info(<span class="string">"group 0: &#123;&#125;"</span>, matcher.group(<span class="number">0</span>));</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">do</span>&#123;</span><br><span class="line">        logger.info(<span class="string">"group &#123;&#125;: &#123;&#125;"</span>, ++i, matcher.group(i));</span><br><span class="line">    &#125;<span class="keyword">while</span> (i &lt; matcher.groupCount());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\b(\\w+)\\b\\s\\1"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferry ferry"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.groupCount());</span><br><span class="line"><span class="keyword">if</span>(matcher.find())&#123;</span><br><span class="line">    logger.info(matcher.group(<span class="number">1</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="零宽断言"><a href="#零宽断言" class="headerlink" title="零宽断言"></a>零宽断言</h2><p>&emsp;&emsp;查找在某些内容(但并不包括这些内容)之前或之后的东西，用于指定一个位置，这个位置应该满足一定的条件(即断言)，因此它们也被称为零宽断言。</p>
-<ul>
-<li><strong>零宽度正预测先行断言(?=exp)</strong></li>
-</ul>
-<p>&emsp;&emsp;它断言自身出现的位置的后面能匹配表达式。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 可以匹配does不可以匹配do</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"do(?=es)"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"do"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.lookingAt());</span><br><span class="line">matcher.reset(<span class="string">"does"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.lookingAt());</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 限制字符串长度</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(?=(^.&#123;5&#125;$))\\w+"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferry"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.matches());</span><br></pre></td></tr></table></figure>
-<ul>
-<li><strong>零宽度正回顾后发断言(?&lt;=exp)</strong></li>
-</ul>
-<p>&emsp;&emsp;断言自身出现的位置的前面能匹配表达式 exp。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 可以匹配where不可以匹配here</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(?&lt;=wh)ere"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"here"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.find());</span><br><span class="line">matcher.reset(<span class="string">"where"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.find());</span><br></pre></td></tr></table></figure>
-<ul>
-<li><strong>零宽度负预测先行断言(?!exp)</strong></li>
-</ul>
-<p>&emsp;&emsp;断言此位置的后面不能匹配表达式 exp。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 每五个字符后的字符不能是数字</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(.&#123;5&#125;(?!\\d))+"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferrylove2"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.matches());</span><br></pre></td></tr></table></figure>
-<ul>
-<li><strong>零宽度负回顾后发断言(?&lt;!exp)</strong></li>
-</ul>
-<p>&emsp;&emsp;断言此位置的前面不能匹配表达式exp。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 匹配五个下写字母且前面一个字符不是数字的</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"(?&lt;!\\d)[a-z]&#123;5&#125;"</span>);</span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ferry"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.matches());</span><br><span class="line">matcher.reset(<span class="string">"1ferry"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.find());</span><br></pre></td></tr></table></figure>
-<h2 id="贪婪-懒惰与独占"><a href="#贪婪-懒惰与独占" class="headerlink" title="贪婪,懒惰与独占"></a>贪婪,懒惰与独占</h2><ul>
-<li><strong>贪婪</strong></li>
-</ul>
-<p>&emsp;&emsp;当正则表达式中包含能接受重复的限定符时，通常的行为是（在使整个表达式能得到匹配的前提下）匹配尽可能多的字符。这被称为贪婪匹配。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 贪婪匹配</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\d.*\\d"</span>); <span class="comment">// 匹配两个数字，数字中间有零或多个字符</span></span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"1fer22ry9"</span>);</span><br><span class="line"><span class="keyword">while</span> (matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"&#123;&#125;"</span>, matcher.group());</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 最终匹配的是整个字符串</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><strong>懒惰</strong></li>
-</ul>
-<p>&emsp;&emsp;有时，我们更需要懒惰匹配，也就是匹配尽可能少的字符。前面给出的限定符都可以被转化为懒惰匹配模式，只要在它后面加上一个问号?。这样.*?就意味着匹配任意数量的重复，但是在能使整个匹配成功的前提下使用最少的重复。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 懒惰匹配</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\d.*?\\d"</span>); <span class="comment">// 匹配两个数字，数字中间有零或多个字符</span></span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"11fer22ry99"</span>);</span><br><span class="line"><span class="keyword">while</span> (matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"&#123;&#125;"</span>, matcher.group());</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 匹配的结果有三个，11，22，99</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li><strong>最先开始的匹配拥有最高优先权</strong></li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Pattern pattern = Pattern.compile(<span class="string">"\\d.*?\\d"</span>); <span class="comment">// 匹配两个数字，数字中间有零或多个字符</span></span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"1fer22ry99"</span>);</span><br><span class="line"><span class="keyword">while</span> (matcher.find())&#123;</span><br><span class="line">    logger.info(<span class="string">"&#123;&#125;"</span>, matcher.group());</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 匹配结果有两个，1fer2,2ry9</span></span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;上述正则表达式虽然是懒惰模式，理论上应该匹配22，99，但是第一个出现的数字是1，所以1具有优先匹配权。</p>
-<ul>
-<li><strong>懒惰限定符</strong></li>
-</ul>
-<p><img src="/regex-md/regex-lazy.png" alt="查看"></p>
-<ul>
-<li><strong>独占</strong></li>
-</ul>
-<p>&emsp;&emsp;在独占模式下，表达式尽可能长的匹配字符串，若匹配失败则结束匹配而不会回溯。独占表达式就是在重复表达式后面添加一个<code>+</code>。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 独占模式</span></span><br><span class="line">Pattern pattern = Pattern.compile(<span class="string">"s*+\\w"</span>);  <span class="comment">// 此表达式相当于匹配零或多个s,最后一个字符不能是s结尾</span></span><br><span class="line">Matcher matcher = pattern.matcher(<span class="string">"ss"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>,matcher.matches());  <span class="comment">// false</span></span><br><span class="line">matcher.reset(<span class="string">"s4"</span>);</span><br><span class="line">logger.info(<span class="string">"&#123;&#125;"</span>, matcher.matches());  <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-<h2 id="平衡组"><a href="#平衡组" class="headerlink" title="平衡组"></a>平衡组</h2><p>&emsp;&emsp;平衡组，故名思义，平衡即对称，主要是结合几种正则语法规则，提供对配对出现的嵌套结构的匹配。平衡组有狭义与广义两种定义，狭义平衡组指(?Expression) 语法，而广义平衡组并不是固定的语法规则，而是几种语法规则的综合运用，我们平时所说的平衡组通常指的是广义平衡组。</p>
-<p>&emsp;&emsp;下面是可能会用到的语法结构：</p>
-<blockquote>
-<p>(?&lt;group>) 把捕获的内容命名为group,并压入堆栈<br>(?<-group>) 从堆栈中弹出最后压入堆栈的名为group的捕获内容，如果堆栈本来为空，则本分组的匹配失败<br>(?(group)yes|no) 如果堆栈上存在以名为group的捕获内容的话，继续匹配yes部分的表达式，否则继续匹配no部分<br>(?!) 顺序否定环视，由于没有后缀表达式，试图匹配总是失败</-group></p>
-</blockquote>
-<h1 id="练习"><a href="#练习" class="headerlink" title="练习"></a>练习</h1><p>&emsp;&emsp;正则表达式的学习最好是结合例子，单纯的记忆是很难玩的懂的，前面介绍了正则的java使用，那么在实践中会使用java的类去展示正则表达式的实际效果。</p>
-<h2 id="英文域名"><a href="#英文域名" class="headerlink" title="英文域名"></a>英文域名</h2><p>&emsp;&emsp;域名的匹配规则如下：</p>
-<blockquote>
-<p>域名由多个标签(各级域名)组成，每个标签长度限制63，域名总长度253；<br>各个标签之间用<code>.</code>连接；<br>标签可以由英文字母，阿拉伯数字和中横线组成<br>中横线不能连续出现、不能单独注册，也不能放在开头和结尾。</p>
-</blockquote>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<h3 id="邮箱校验"><a href="#邮箱校验" class="headerlink" title="邮箱校验"></a>邮箱校验</h3><p>&emsp;&emsp;先说一下邮箱的规则，邮箱分两部分有符号<code>@</code>连接，第一部分：组成元素可以是大小写英文字母，中横线，阿拉伯数字，下划线，英文句号，这里我们暂且规定邮箱第一部分长度不小于5，且只能用大小写英文字母开头；第二部分：域名。</p>
-]]></content>
-      <categories>
-        <category>java</category>
-      </categories>
-      <tags>
-        <tag>正则表达式</tag>
-        <tag>Pattern类</tag>
-        <tag>Matcher类</tag>
       </tags>
   </entry>
   <entry>
