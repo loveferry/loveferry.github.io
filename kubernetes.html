@@ -20,18 +20,29 @@
     var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="&amp;emsp;&amp;emsp;kubernetes，简称k8s。我们在微服务的部署过程中，面对众多服务的编译，打包部署等手动的，重复性的操作需要花费很多时间和精力，而且人为的部署过程不可控其准确性。而k8s，生产级的服务编排系统，用于管理容器化的应用的，提供了应用的部署，更新，集群等支持。">
+  <meta name="description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
 <meta name="keywords" content="kubernetes,k8s">
 <meta property="og:type" content="article">
 <meta property="og:title" content="kubernetes">
 <meta property="og:url" content="https://ferry.org.cn/kubernetes.html">
 <meta property="og:site_name" content="儿女意向来痴">
-<meta property="og:description" content="&amp;emsp;&amp;emsp;kubernetes，简称k8s。我们在微服务的部署过程中，面对众多服务的编译，打包部署等手动的，重复性的操作需要花费很多时间和精力，而且人为的部署过程不可控其准确性。而k8s，生产级的服务编排系统，用于管理容器化的应用的，提供了应用的部署，更新，集群等支持。">
+<meta property="og:description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
 <meta property="og:locale" content="zh-CH">
-<meta property="og:updated_time" content="2020-11-29T13:11:02.898Z">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_need_image_list.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_github_repository.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_github_dockerfile.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_aliyun_docker_repository.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_aliyun_docker_repository2.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_click_aliyun_docker_repository.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_click_aliyun_create_rule.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_create_docker_build_rule.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_docker_build.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_set_password.png">
+<meta property="og:updated_time" content="2021-01-20T12:17:41.383Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes">
-<meta name="twitter:description" content="&amp;emsp;&amp;emsp;kubernetes，简称k8s。我们在微服务的部署过程中，面对众多服务的编译，打包部署等手动的，重复性的操作需要花费很多时间和精力，而且人为的部署过程不可控其准确性。而k8s，生产级的服务编排系统，用于管理容器化的应用的，提供了应用的部署，更新，集群等支持。">
+<meta name="twitter:description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
+<meta name="twitter:image" content="https://ferry.org.cn/kubernetes/k8s_need_image_list.png">
 
 <link rel="canonical" href="https://ferry.org.cn/kubernetes.html">
 
@@ -188,10 +199,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-11-29 19:55:58 / 修改时间：21:11:02" itemprop="dateCreated datePublished" datetime="2020-11-29T19:55:58+08:00">2020-11-29</time>
+              <time title="创建时间：2020-11-29 19:55:58" itemprop="dateCreated datePublished" datetime="2020-11-29T19:55:58+08:00">2020-11-29</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-20 20:17:41" itemprop="dateModified" datetime="2021-01-20T20:17:41+08:00">2021-01-20</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -213,42 +230,237 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>&emsp;&emsp;<code>kubernetes</code>，简称<code>k8s</code>。我们在微服务的部署过程中，面对众多服务的编译，打包部署等手动的，重复性的操作需要花费很多时间和精力，而且人为的部署过程不可控其准确性。而<code>k8s</code>，生产级的服务编排系统，用于管理容器化的应用的，提供了应用的部署，更新，集群等支持。</p>
+        <p>&emsp;&emsp;<code>Kubernetes</code>(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 <code>Kubernetes</code> 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。 <code>Kubernetes</code> 以更高效的方式跨集群自动分发和调度应用容器。 <code>Kubernetes</code> 是一个开源平台，并且可应用于生产环境。</p>
 <a id="more"></a>
-<h3 id="基于centos7安装"><a href="#基于centos7安装" class="headerlink" title="基于centos7安装"></a>基于centos7安装</h3><p>&emsp;&emsp;安装建议：</p>
+<p>&emsp;&emsp;一个 <code>Kubernetes</code> 集群包含两种类型的资源:</p>
+<ul>
+<li>Master 调度整个集群</li>
+<li>Nodes 负责运行应用</li>
+</ul>
+<p>&emsp;&emsp;Master 负责管理整个集群。 Master 协调集群中的所有活动，例如调度应用、维护应用的所需状态、应用扩容以及推出新的更新。Node 是一个虚拟机或者物理机，它在 <code>Kubernetes</code> 集群中充当工作机器的角色 每个Node都有 <code>Kubelet</code> , 它管理 Node 而且是 Node 与 Master 通信的代理。 Node 还应该具有用于​​处理容器操作的工具，例如 <code>Docker</code> 或 <code>rkt</code> 。处理生产级流量的 <code>Kubernetes</code> 集群至少应具有三个 Node 。</p>
+<p>&emsp;&emsp;Master 管理集群，Node 用于托管正在运行的应用。在 Kubernetes 上部署应用时，您告诉 Master 启动应用容器。 Master 就编排容器在集群的 Node 上运行。 Node 使用 Master 暴露的 <code>Kubernetes API</code> 与 Master 通信。终端用户也可以使用 <code>Kubernetes API</code> 与集群交互。</p>
+<p>&emsp;&emsp;<code>Kubernetes</code> 既可以部署在物理机上也可以部署在虚拟机上。您可以使用 <code>Minikube</code> 开始部署 <code>Kubernetes</code> 集群。 <code>Minikube</code> 是一种轻量级的 <code>Kubernetes</code> 实现，可在本地计算机上创建 VM 并部署仅包含一个节点的简单集群。 <code>Minikube</code> 可用于 <code>Linux</code> ， <code>macOS</code> 和 <code>Windows</code> 系统。<code>Minikube CLI</code> 提供了用于引导集群工作的多种操作，包括启动、停止、查看状态和删除。</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>&emsp;&emsp;安装要求：</p>
 <blockquote>
-<p>安装 k8s 的节点必须是大于 1 核心的 CPU<br>建议主机内存都是2G及以上</p>
+<p>安装 k8s 的节点必须是大于 1 核心的 CPU<br>建议主机内存都是2G及以上<br>使用的物理机操作系统：Ubuntu 16.04+、Debian 9+、CentOS 7、Red Hat Enterprise Linux (RHEL) 7、Fedora 25+、HypriotOS v1.0.1+、Flatcar Container Linux<br>集群中的机器网络能够互联<br>节点之中不可以有重复的主机名、MAC 地址或 product_uuid<br>禁用交换分区。为了保证 kubelet 正常工作，你 必须 禁用交换分区</p>
 </blockquote>
-<p>&emsp;&emsp;这里安装仅展示一个节点的安装步骤，多节点请参考步骤替换对应主机名即可</p>
-<h4 id="系统参数调整"><a href="#系统参数调整" class="headerlink" title="系统参数调整"></a>系统参数调整</h4><ul>
-<li>主机名修改</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostnamectl <span class="built_in">set</span>-hostname ferry-aliyun</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>kubernetes</code> 集群搭建有两种方式：</p>
 <ul>
-<li>主机映射修改（/etc/hosts）</li>
+<li>使用部署工具快速搭建 <code>kubernetes</code> 集群，例如 <code>minikube</code>（快速搭建一个运行在本地的单节点的 <code>kubernetes</code>，一般用于本地学习），<code>kubeadm</code> 等</li>
+<li>从官网下载二进制文件手动部署</li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">172.19.144.**	ferry-aliyun</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;这里记录两种方式安装 <code>kubernetes</code> 集群，一种是使用 <code>kubeadm</code> 自动部署集群，一种是下载二进制文件手动部署。</p>
+<p>&emsp;&emsp;集群安装要求校验：</p>
 <ul>
-<li>停用SELinux</li>
+<li>查看逻辑内核数：</li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setenforce 0</span><br><span class="line">sed -i <span class="string">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/selinux/config</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/cpuinfo| grep <span class="string">"processor"</span>| wc -l</span><br></pre></td></tr></table></figure>
 <ul>
-<li>关闭swap</li>
+<li>查看内存大小</li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">swapoff -a</span><br><span class="line">sed -i <span class="string">'s/.*swap.*/#&amp;/'</span> /etc/fstab</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">free -m</span><br></pre></td></tr></table></figure>
 <ul>
-<li>防火墙设置</li>
+<li>查看linux内核版本</li>
 </ul>
-<p>&emsp;&emsp;这里可以设置k8s需要的端口开放，但是在还没有接触的时候我们可能并不清楚哪些端口是它需要的，这里作为测试，我们可以先将防火墙关掉。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl stop firewalld</span><br></pre></td></tr></table></figure>
-<h4 id="k8s相关软件下载"><a href="#k8s相关软件下载" class="headerlink" title="k8s相关软件下载"></a>k8s相关软件下载</h4><ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/version</span><br></pre></td></tr></table></figure>
+<ul>
+<li>集群机器网络互联</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping 172.16.98.2</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看主机名，mac地址，product_uuid</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hostname</span><br><span class="line">ip addr</span><br><span class="line">cat /sys/class/dmi/id/product_uuid</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如果主机名重复，请修改</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostnamectl <span class="built_in">set</span>-hostname k8s_master</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置主机映射(/etc/hosts)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">172.16.98.2 k8s-master</span><br></pre></td></tr></table></figure>
+<ul>
+<li>永久禁用交换分区(/etc/fstab)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># /dev/mapper/centos-swap swap                    swap    defaults        0 0</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>端口设置</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>方向</th>
+<th>端口范围</th>
+<th>作用</th>
+<th>使用者</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>6443</td>
+<td>Kubernetes API 服务器</td>
+<td>所有组件</td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>2379-2380</td>
+<td>etcd 服务器客户端 API</td>
+<td>kube-apiserver, etcd</td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>10250</td>
+<td>Kubelet API</td>
+<td>kubelet 自身、控制平面组件</td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>10251</td>
+<td>kube-scheduler</td>
+<td>kube-scheduler 自身</td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>10252</td>
+<td>kube-controller-manager</td>
+<td>kube-controller-manager 自身</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --zone=public --add-port=6443/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=2379/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=2380/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=10250/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=10251/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=10252/tcp --permanent</span><br><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
+<h4 id="使用kubeadm引导集群"><a href="#使用kubeadm引导集群" class="headerlink" title="使用kubeadm引导集群"></a>使用kubeadm引导集群</h4><h5 id="安装runtime"><a href="#安装runtime" class="headerlink" title="安装runtime"></a>安装runtime</h5><p>&emsp;&emsp;runtime是一个负责运行容器的软件，需要在集群的每个机器上安装。在linux上结合 <code>Kubernetes</code> 使用的几种通用容器为：<code>containerd</code>、<code>CRI-O</code>、<code>Docker</code>。这里我们选择<code>Docker</code>。</p>
+<p>&emsp;&emsp;这里提供传送门<a href="https://docs.docker.com/engine/install/#server" target="_blank" rel="noopener">docker官网的安装说明</a>,可以查看对应的操作系统安装 <code>Docker</code> 的详细步骤。下面的安装是基于centos7安装 <code>Docker</code> 的</p>
+<ul>
+<li>docker安装</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine</span><br><span class="line">yum install -y yum-utils</span><br><span class="line">yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line">yum install docker-ce docker-ce-cli containerd.io</span><br><span class="line">systemctl start docker</span><br><span class="line">systemctl <span class="built_in">enable</span> docker</span><br></pre></td></tr></table></figure>
+<h5 id="安装-kubeadm、kubelet-和-kubectl"><a href="#安装-kubeadm、kubelet-和-kubectl" class="headerlink" title="安装 kubeadm、kubelet 和 kubectl"></a>安装 kubeadm、kubelet 和 kubectl</h5><p>&emsp;&emsp;在集群的每个机器上安装下面的软件包：</p>
+<ul>
+<li><code>kubeadm</code>：用来初始化集群的指令。</li>
+<li><code>kubelet</code>：在集群中的每个节点上用来启动 Pod 和容器等。</li>
+<li><code>kubectl</code>：用来与集群通信的命令行工具。</li>
+</ul>
+<p>&emsp;&emsp;在实际安装之前我们还需要了解一下 <code>Kubernetes</code> 版本与版本间的偏差策略</p>
+<h6 id="版本差异"><a href="#版本差异" class="headerlink" title="版本差异"></a>版本差异</h6><p>&emsp;&emsp;<code>Kubernetes</code> 版本号格式为 x.y.z，其中 x 为大版本号，y 为小版本号，z 为补丁版本号。</p>
+<ul>
+<li><code>kube-apiserver</code></li>
+</ul>
+<p>&emsp;&emsp;在 高可用（HA）集群 中， 多个 <code>kube-apiserver</code> 实例小版本号最多差1。也就是说，集群的每一个节点版本可以有差异，但是小版本差异最多为1。举例，k8s_master机器上版本号为1.19,那么集群的其他机器上安装的版本只能在1.18,1.19,1.20之间选择</p>
+<ul>
+<li><code>kubelet</code></li>
+</ul>
+<p>&emsp;&emsp;<code>kubelet</code> 版本号不能高于 <code>kube-apiserver</code>，最多可以比 <code>kube-apiserver</code> 低两个小版本。在集群中，则 <code>kubelet</code> 版本号不能高于集群中 <code>kube-apiserver</code> 最低的版本号，最多可以比集群中 <code>kube-apiserver</code> 最高的版本号低两个小版本。举例，存在 <code>kube-apiserver</code> 版本1.20，那么 <code>kubelet</code> 版本可以选择1.18,1.19,1.20。但如果集群中的 <code>kube-apiserver</code> 版本不一致，存在两个版本1.20,1.19，那么可选的 <code>kubelet</code> 版本为 1.19,1.18。</p>
+<ul>
+<li><code>kube-controller-manager</code>、 <code>kube-scheduler</code> 和 <code>cloud-controller-manager</code></li>
+</ul>
+<p>&emsp;&emsp;<code>kube-controller-manager</code>、<code>kube-scheduler</code> 和 <code>cloud-controller-manager</code> 版本不能高于 <code>kube-apiserver</code> 版本号。 最好它们的版本号与 <code>kube-apiserver</code> 保持一致，但允许比 <code>kube-apiserver</code> 低一个小版本（为了支持在线升级）。如果在 HA 集群中，多个 <code>kube-apiserver</code> 实例版本号不一致，他们也可以跟任意一个 <code>kube-apiserver</code> 实例通信（例如，通过 load balancer）， 但 <code>kube-controller-manager</code>、<code>kube-scheduler</code> 和 <code>cloud-controller-manager</code> 版本可用范围会相应的减小。</p>
+<ul>
+<li><code>kubectl</code></li>
+</ul>
+<p>&emsp;&emsp;<code>kubectl</code> 可以比 <code>kube-apiserver</code> 高一个小版本，也可以低一个小版本。在集群中，<code>kubectl</code> 可以比集群中最高的 <code>kube-apiserver</code> 版本号低一个小版本，可以比最低的 <code>kube-apiserver</code> 版本号高一个小版本。</p>
+<ul>
+<li><code>kube-proxy</code></li>
+</ul>
+<p>&emsp;&emsp;<code>kube-proxy</code> 必须与节点上的 <code>kubelet</code> 的小版本相同;<code>kube-proxy</code> 一定不能比 <code>kube-apiserver</code> 小版本高;<code>kube-proxy</code> 最多只能比 <code>kube-apiserver</code> 低两个小版本</p>
+<h6 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h6><ul>
 <li>k8s的yum源配置(创建文件<code>/etc/yum.repos.d/kubernetes.repo</code>)</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[kubernetes]</span><br><span class="line">name=Kubernetes</span><br><span class="line">baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">repo_gpgcheck=1</span><br><span class="line">gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg</span><br></pre></td></tr></table></figure>
 <ul>
-<li>安装<code>kubeadm</code></li>
+<li>查看可安装的版本</li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum -install -y kubeadm</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum list kubeadm kubectl kubelet</span><br></pre></td></tr></table></figure>
+<ul>
+<li>安装指定版本</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yum install -y kubelet-1.20.2-0 kubeadm-1.20.2-0 kubectl-1.20.2-0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置服务开机自启（这里不设置在初始化集群的时候会报错）</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> kubelet</span><br></pre></td></tr></table></figure>
+<h5 id="使用-kubeadm-创建集群"><a href="#使用-kubeadm-创建集群" class="headerlink" title="使用 kubeadm 创建集群"></a>使用 kubeadm 创建集群</h5><p>&emsp;&emsp;这一步将完成单个控制平面的安装。在初始化控制平面之前，我们需要验证一下与 gcr.io 容器镜像仓库的连通性。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubeadm config images pull</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如果这一步报错，说没有响应，那么就是无法连接到该仓库，此时，我们需要从国内的镜像仓库获取对应的镜像了。这一步网上有很多的方法，例如从 <code>docker hub</code> 上搜索对应的镜像，下载并重新打标签，这种方式依赖于 <code>docker hub</code>上现存的镜像版本，如果你需要的版本没找到，那就有点尴尬了。下面提供的这种方法虽然繁琐了些，但是他能保证你需要获取的版本一定能获取到。</p>
+<ul>
+<li>查看需要的镜像</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubeadm config images list</span><br></pre></td></tr></table></figure>
+<p><img src="/kubernetes/k8s_need_image_list.png" alt="需要的镜像"></p>
+<p>&emsp;&emsp;代码仓操作：</p>
+<ul>
+<li>登录代码仓创建仓库，将执行 <code>kubeadm config images list</code> 查看到的镜像依次创建了仓库。我这里选择的是github，如果无法访问github也可以选择你能访问的任何私仓，只要这个私仓公网可以访问即可。</li>
+</ul>
+<p><img src="/kubernetes/k8s_create_github_repository.png" alt="创建仓库"></p>
+<ul>
+<li>在仓库中创建 <code>Dockerfile</code> 文件,以 <code>kube-proxy</code> 为例，仓库名为 <code>kube-proxy</code>，<code>Dockerfile</code>内容为<code>FROM k8s.gcr.io/kube-proxy:v1.20.2</code>。</li>
+</ul>
+<p><img src="/kubernetes/k8s_create_github_dockerfile.png" alt="创建dockerfile"></p>
+<ul>
+<li>登录<a href="https://cr.console.aliyun.com/cn-hangzhou/instances/repositories" target="_blank" rel="noopener">阿里云容器镜像服务</a>,创建镜像仓库。容器镜像服务-&gt;默认实例-&gt;镜像仓库-&gt;创建镜像仓库</li>
+</ul>
+<p><img src="/kubernetes/k8s_create_aliyun_docker_repository.png" alt="创建dockerfile"></p>
+<p><img src="/kubernetes/k8s_create_aliyun_docker_repository2.png" alt="创建dockerfile"></p>
+<ul>
+<li>创建规则执行构建,若失败则查看日志，大概率是构建规则选的分支，文件，路径与代码仓中的不匹配</li>
+</ul>
+<p><img src="/kubernetes/k8s_click_aliyun_docker_repository.png" alt="查看镜像仓库"></p>
+<p><img src="/kubernetes/k8s_click_aliyun_create_rule.png" alt="查看构建"></p>
+<p><img src="/kubernetes/k8s_aliyun_create_docker_build_rule.png" alt="创建构建规则"></p>
+<p><img src="/kubernetes/k8s_aliyun_docker_build.png" alt="执行构建"></p>
+<ul>
+<li>设置访问凭证</li>
+</ul>
+<p><img src="/kubernetes/k8s_aliyun_set_password.png" alt="执行构建"></p>
+<ul>
+<li>在控制平面登录阿里云的镜像仓库，用户名为阿里云的账户名，拉取镜像，这里登录的地址一定要看好，镜像仓库所在的区域不同，登录的仓库地址也是有所区别的。具体的登录地址可以点击仓库进入仓库详情页面，基本信息-操作指南中查看</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker login --username=ferry_sy registry.cn-shanghai.aliyuncs.com</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>镜像重命名</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2 k8s.gcr.io/kube-apiserver:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2 k8s.gcr.io/kube-controller-manager:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2 k8s.gcr.io/kube-scheduler:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2 k8s.gcr.io/kube-proxy:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2 k8s.gcr.io/pause:3.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0 k8s.gcr.io/etcd:3.4.13-0</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0 k8s.gcr.io/coredns:1.7.0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除阿里云镜像</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>初始化集群</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubeadm init</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;错误诊断：</p>
+<ul>
+<li>有警告firewall防火墙是开启状态，并提示需要开放必须的端口，此时我们检查它提示的端口是否已经开放即可。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">firewall-cmd --zone=public --list-ports</span><br></pre></td></tr></table></figure>
+<ul>
+<li>有警告kube和docker使用的 <code>cgroup</code> 不一致，此时我们使用 <code>docker info</code> 命令，在输出信息中查找 <code>Cgroup Driver: cgroupfs</code> 这一行，<code>kubelet</code> 的该参数查询我没有找到，所以这里提供修改docker的方法。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> &#123; <span class="string">"exec-opts"</span>: [<span class="string">"native.cgroupdriver=systemd"</span>] &#125; &gt; /etc/docker/daemon.json</span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>报错 <code>/proc/sys/net/bridge/bridge-nf-call-iptables contents are not set to 1</code>，这是因为未指定kubelet网络插件，则使用 noop 插件，该插件设置 <code>net/bridge/bridge-nf-call-iptables=1</code>，以确保简单的配置 （如带网桥的 <code>Docker</code> ）与 <code>iptables</code> 代理正常工作</p>
+</li>
+<li><p>编辑文件<code>/etc/sysctl.conf</code>，添加设置然后重启系统</p>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">net.bridge.bridge-nf-call-iptables = 1</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;解决了所有错误后我们再次初始化集群，当shell中输出如下日志时说明集群已经初始化成功了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubeadm init</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line">[init] Using Kubernetes version: v1.20.2</span><br><span class="line">[preflight] Running pre-flight checks</span><br><span class="line">	[WARNING Firewalld]: firewalld is active, please ensure ports [6443 10250] are open or your cluster may not <span class="keyword">function</span> correctly</span><br><span class="line">[preflight] Pulling images required <span class="keyword">for</span> setting up a Kubernetes cluster</span><br><span class="line">[preflight] This might take a minute or two, depending on the speed of your internet connection</span><br><span class="line">[preflight] You can also perform this action <span class="keyword">in</span> beforehand using <span class="string">'kubeadm config images pull'</span></span><br><span class="line">[certs] Using certificateDir folder <span class="string">"/etc/kubernetes/pki"</span></span><br><span class="line">[certs] Generating <span class="string">"ca"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"apiserver"</span> certificate and key</span><br><span class="line">[certs] apiserver serving cert is signed <span class="keyword">for</span> DNS names [k8s-master kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 172.16.98.2]</span><br><span class="line">[certs] Generating <span class="string">"apiserver-kubelet-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"front-proxy-ca"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"front-proxy-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"etcd/ca"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"etcd/server"</span> certificate and key</span><br><span class="line">[certs] etcd/server serving cert is signed <span class="keyword">for</span> DNS names [k8s-master localhost] and IPs [172.16.98.2 127.0.0.1 ::1]</span><br><span class="line">[certs] Generating <span class="string">"etcd/peer"</span> certificate and key</span><br><span class="line">[certs] etcd/peer serving cert is signed <span class="keyword">for</span> DNS names [k8s-master localhost] and IPs [172.16.98.2 127.0.0.1 ::1]</span><br><span class="line">[certs] Generating <span class="string">"etcd/healthcheck-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"apiserver-etcd-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"sa"</span> key and public key</span><br><span class="line">[kubeconfig] Using kubeconfig folder <span class="string">"/etc/kubernetes"</span></span><br><span class="line">[kubeconfig] Writing <span class="string">"admin.conf"</span> kubeconfig file</span><br><span class="line">[kubeconfig] Writing <span class="string">"kubelet.conf"</span> kubeconfig file</span><br><span class="line">[kubeconfig] Writing <span class="string">"controller-manager.conf"</span> kubeconfig file</span><br><span class="line">[kubeconfig] Writing <span class="string">"scheduler.conf"</span> kubeconfig file</span><br><span class="line">[kubelet-start] Writing kubelet environment file with flags to file <span class="string">"/var/lib/kubelet/kubeadm-flags.env"</span></span><br><span class="line">[kubelet-start] Writing kubelet configuration to file <span class="string">"/var/lib/kubelet/config.yaml"</span></span><br><span class="line">[kubelet-start] Starting the kubelet</span><br><span class="line">[control-plane] Using manifest folder <span class="string">"/etc/kubernetes/manifests"</span></span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-apiserver"</span></span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-controller-manager"</span></span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-scheduler"</span></span><br><span class="line">[etcd] Creating static Pod manifest <span class="keyword">for</span> <span class="built_in">local</span> etcd <span class="keyword">in</span> <span class="string">"/etc/kubernetes/manifests"</span></span><br><span class="line">[<span class="built_in">wait</span>-control-plane] Waiting <span class="keyword">for</span> the kubelet to boot up the control plane as static Pods from directory <span class="string">"/etc/kubernetes/manifests"</span>. This can take up to 4m0s</span><br><span class="line">[apiclient] All control plane components are healthy after 11.503773 seconds</span><br><span class="line">[upload-config] Storing the configuration used <span class="keyword">in</span> ConfigMap <span class="string">"kubeadm-config"</span> <span class="keyword">in</span> the <span class="string">"kube-system"</span> Namespace</span><br><span class="line">[kubelet] Creating a ConfigMap <span class="string">"kubelet-config-1.20"</span> <span class="keyword">in</span> namespace kube-system with the configuration <span class="keyword">for</span> the kubelets <span class="keyword">in</span> the cluster</span><br><span class="line">[upload-certs] Skipping phase. Please see --upload-certs</span><br><span class="line">[mark-control-plane] Marking the node k8s-master as control-plane by adding the labels <span class="string">"node-role.kubernetes.io/master=''"</span> and <span class="string">"node-role.kubernetes.io/control-plane='' (deprecated)"</span></span><br><span class="line">[mark-control-plane] Marking the node k8s-master as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]</span><br><span class="line">[bootstrap-token] Using token: ayqhud.254isto3e88zn9ba</span><br><span class="line">[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get nodes</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs <span class="keyword">in</span> order <span class="keyword">for</span> nodes to get long term certificate credentials</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow certificate rotation <span class="keyword">for</span> all node client certificates <span class="keyword">in</span> the cluster</span><br><span class="line">[bootstrap-token] Creating the <span class="string">"cluster-info"</span> ConfigMap <span class="keyword">in</span> the <span class="string">"kube-public"</span> namespace</span><br><span class="line">[kubelet-finalize] Updating <span class="string">"/etc/kubernetes/kubelet.conf"</span> to point to a rotatable kubelet client certificate and key</span><br><span class="line">[addons] Applied essential addon: CoreDNS</span><br><span class="line">[addons] Applied essential addon: kube-proxy</span><br><span class="line"></span><br><span class="line">Your Kubernetes control-plane has initialized successfully!</span><br><span class="line"></span><br><span class="line">To start using your cluster, you need to run the following as a regular user:</span><br><span class="line"></span><br><span class="line">  mkdir -p <span class="variable">$HOME</span>/.kube</span><br><span class="line">  sudo cp -i /etc/kubernetes/admin.conf <span class="variable">$HOME</span>/.kube/config</span><br><span class="line">  sudo chown $(id -u):$(id -g) <span class="variable">$HOME</span>/.kube/config</span><br><span class="line"></span><br><span class="line">Alternatively, <span class="keyword">if</span> you are the root user, you can run:</span><br><span class="line"></span><br><span class="line">  <span class="built_in">export</span> KUBECONFIG=/etc/kubernetes/admin.conf</span><br><span class="line"></span><br><span class="line">You should now deploy a pod network to the cluster.</span><br><span class="line">Run <span class="string">"kubectl apply -f [podnetwork].yaml"</span> with one of the options listed at:</span><br><span class="line">  https://kubernetes.io/docs/concepts/cluster-administration/addons/</span><br><span class="line"></span><br><span class="line">Then you can join any number of worker nodes by running the following on each as root:</span><br><span class="line"></span><br><span class="line">kubeadm join 172.16.98.2:6443 --token ayqhud.254isto3e88zn9ba \</span><br><span class="line">    --discovery-token-ca-cert-hash sha256:9393b7ecc8c6f81d81eb362e4b74e2635eedda15e749872a74cb6ac77bc8c1e5</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们可以从中捕获关键信息，在日志末尾它提示我们，如果想要非root用户使用集群，需要做那些操作，如果是root用户需要怎么做，才能够使用集群，将工作节点加入集群执行怎样的命令。</p>
+<ul>
+<li>root用户下添加环境变量(~/.bash_profile) </li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> KUBECONFIG=/etc/kubernetes/admin.conf</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.base_profile</span><br></pre></td></tr></table></figure>
+<h5 id="安装-Pod-网络附加组件"><a href="#安装-Pod-网络附加组件" class="headerlink" title="安装 Pod 网络附加组件"></a>安装 Pod 网络附加组件</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get pods --all-namespaces</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;执行上述命令会发现此时集群的 <code>coredns</code> 的状态一直是 <code>Pending</code>，这是因为系统就是这么设计的。 <code>kubeadm</code> 的网络供应商是中立的，因此管理员应该选择 安装 <code>pod</code> 的网络解决方案。 你必须完成 <code>Pod</code> 的网络配置，然后才能完全部署 <code>CoreDNS</code>。 在网络被配置好之前，<code>DNS</code> 组件会一直处于 <code>Pending</code> 状态。</p>
+
     </div>
 
     
@@ -330,7 +542,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#基于centos7安装"><span class="nav-number">1.</span> <span class="nav-text">基于centos7安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#系统参数调整"><span class="nav-number">1.1.</span> <span class="nav-text">系统参数调整</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#k8s相关软件下载"><span class="nav-number">1.2.</span> <span class="nav-text">k8s相关软件下载</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装"><span class="nav-number">1.</span> <span class="nav-text">安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用kubeadm引导集群"><span class="nav-number">1.1.</span> <span class="nav-text">使用kubeadm引导集群</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#安装runtime"><span class="nav-number">1.1.1.</span> <span class="nav-text">安装runtime</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装-kubeadm、kubelet-和-kubectl"><span class="nav-number">1.1.2.</span> <span class="nav-text">安装 kubeadm、kubelet 和 kubectl</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#版本差异"><span class="nav-number">1.1.2.1.</span> <span class="nav-text">版本差异</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#安装-1"><span class="nav-number">1.1.2.2.</span> <span class="nav-text">安装</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用-kubeadm-创建集群"><span class="nav-number">1.1.3.</span> <span class="nav-text">使用 kubeadm 创建集群</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装-Pod-网络附加组件"><span class="nav-number">1.1.4.</span> <span class="nav-text">安装 Pod 网络附加组件</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
