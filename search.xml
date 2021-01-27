@@ -1317,9 +1317,9 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0</span><br></pre></td></tr></table></figure>
 <ul>
-<li>初始化集群</li>
+<li>初始化集群，<code>--pod-network-cidr</code> 参数用于配置CIDR，参数值可以填写 “内网ip/16”。具体含义自行百度吧。</li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm init</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm init --pod-network-cidr=172.16.98.2/16</span><br></pre></td></tr></table></figure>
 <p>&emsp;&emsp;错误诊断：</p>
 <ul>
 <li>有警告firewall防火墙是开启状态，并提示需要开放必须的端口，此时我们检查它提示的端口是否已经开放即可。</li>
@@ -1345,14 +1345,45 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> KUBECONFIG=/etc/kubernetes/admin.conf</span><br></pre></td></tr></table></figure>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.base_profile</span><br></pre></td></tr></table></figure>
-<h5 id="安装-Pod-网络附加组件"><a href="#安装-Pod-网络附加组件" class="headerlink" title="安装 Pod 网络附加组件"></a>安装 Pod 网络附加组件</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl get pods --all-namespaces</span><br></pre></td></tr></table></figure>
+<h5 id="CNI-容器网络接口"><a href="#CNI-容器网络接口" class="headerlink" title="CNI(容器网络接口)"></a>CNI(容器网络接口)</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl get pods --all-namespaces</span><br></pre></td></tr></table></figure>
 <p>&emsp;&emsp;执行上述命令会发现此时集群的 <code>coredns</code> 的状态一直是 <code>Pending</code>，这是因为系统就是这么设计的。 <code>kubeadm</code> 的网络供应商是中立的，因此管理员应该选择 安装 <code>pod</code> 的网络解决方案。 你必须完成 <code>Pod</code> 的网络配置，然后才能完全部署 <code>CoreDNS</code>。 在网络被配置好之前，<code>DNS</code> 组件会一直处于 <code>Pending</code> 状态。</p>
-]]></content>
+<p>&emsp;&emsp;CNI的选择有很多，<code>Kube-router</code> 是 <code>Kubernetes</code> 的专用网络解决方案， 旨在提供高性能和易操作性。 <code>Kube-router</code> 提供了一个基于 <code>Linux LVS/IPVS</code> 的服务代理、一个基于 <code>Linux</code> 内核转发的无覆盖 <code>Pod-to-Pod</code> 网络解决方案和基于 <code>iptables/ipset</code> 的网络策略执行器。</p>
+<p>&emsp;&emsp;这里选择采用 <code>Kube-router</code> 代替 <code>Kube-proxy</code> 并且提供网络解决方案。</p>
+<p>&emsp;&emsp;首先需要下载 <code>Kube-router</code> 的yaml文件，我们需要访问 <code>raw.githubusercontent.com</code> 去获取，但是很有可能我们无法访问这个网站，那么我们先<a href="https://site.ip138.com/raw.Githubusercontent.com" target="_blank" rel="noopener">获取该域名对应的ip地址</a>然后在 <code>/etc/hosts</code> 文件中配置域名映射,这样我们就可以访问了。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml</span><br><span class="line">wget https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter-all-features.yaml</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;上面两个yaml，第一个是仅提供网络解决方案的，第二个还可以代替 <code>Kube-proxy</code>。</p>
+<ul>
+<li>应用下载的yaml</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl apply -f kubeadm-kuberouter-all-features.yaml</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;应用之后可以看一下状态，不出意外应该是启动不了。</p>
+<p><img src="/kubernetes/k8s_kube-router_apply.png" alt="错误状态"></p>
+<p>&emsp;&emsp;遇到这种情况我们可以和先前下载 <code>kube-proxy</code> 等镜像一样，通过阿里云的镜像仓库服务来下载。</p>
+<p>&emsp;&emsp;下载好之后查看pod状态如果发现状态是 <code>CrashLoopBackOff</code>，此时我们可以查看日志</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl logs kube-router-bxl96 -n kube-system</span><br></pre></td></tr></table></figure>
+<p><img src="/kubernetes/k8s_kube-router_pod_crashloopbackoff.png" alt="错误日志"></p>
+<p>&emsp;&emsp;这说明我们初始化集群 <code>kubeadm init</code> 的时候没有使用参数 <code>--pod-network-cidr</code>，这里我们只能添加一下这个参数配置。</p>
+<ul>
+<li><code>kubeadm-config</code> 增加 <code>podSubnet</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl edit cm kubeadm-config -n kube-system</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">data:</span><br><span class="line">  ClusterConfiguration: |</span><br><span class="line">    networking:</span><br><span class="line">      podSubnet: 172.16.0.0/16</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>kube-controller-manager</code> 修改,增加 <code>allocate-node-cidrs</code> 和 <code>cluster-cidr</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vi /etc/kubernetes/manifests/kube-controller-manager.yaml</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - <span class="built_in">command</span>:</span><br><span class="line">    - --allocate-node-cidrs=<span class="literal">true</span></span><br><span class="line">    - --cluster-cidr=172.16.0.0/16</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除 <code>kube-router</code> pod</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl delete pod kube-router-bxl96 -n kube-system</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;删除pod后集群会立刻再创建一个pod，稍等一会可以观察pod的状态，理论上此时就没有什么问题了。<code>kube-router</code> 创建好了那么之前一直在 <code>ContainerCreating</code> 的 <code>coredns</code> 的pod随后状态也会变成 <code>running</code>。</p>
+<p>&emsp;&emsp;由于这里使用的是 <code>kube-router</code> 的全特性，可以代替 <code>kube-proxy</code>, 所以我们删除 <code>kube-proxy</code>。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl delete ds kube-proxy -n kube-system</span><br></pre></td></tr></table></figure>]]></content>
       <categories>
-        <category>开发工具</category>
+        <category>kubernetes</category>
       </categories>
       <tags>
-        <tag>kubernetes</tag>
         <tag>k8s</tag>
       </tags>
   </entry>
