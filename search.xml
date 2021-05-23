@@ -1427,9 +1427,25 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl get node</span><br></pre></td></tr></table></figure>
 <h3 id="集群参数设置"><a href="#集群参数设置" class="headerlink" title="集群参数设置"></a>集群参数设置</h3><h4 id="kube-proxy模式切换"><a href="#kube-proxy模式切换" class="headerlink" title="kube-proxy模式切换"></a>kube-proxy模式切换</h4><p>&emsp;&emsp;<code>ipvs</code>相比较<code>iptables</code>来说性能更好，我们将<code>kube-proxy</code>的模式切换成<code>ipvs</code>。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl edit cm -n kube-system</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl edit cm kube-proxy -n kube-system</span><br></pre></td></tr></table></figure>
 <p>将<code>data.config.conf.mode</code>设置成<code>ipvs</code>保存退出即可。</p>
-]]></content>
+<h3 id="常见资源"><a href="#常见资源" class="headerlink" title="常见资源"></a>常见资源</h3><ul>
+<li>查看所有资源</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl api-resources</span><br></pre></td></tr></table></figure>
+<p><img src="/kubernetes/k8s_api_resource.png" alt="查看所有资源列表"></p>
+<h4 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h4><p>&emsp;&emsp;Kubernetes 支持多个虚拟集群，它们底层依赖于同一个物理集群。这些虚拟集群被称为命名空间。k8s创建之初有三个命名空间。<code>default</code>空间是默认的命名空间，没有指定命名空间创建的资源会在此空间中；<code>kube-system</code>是k8s创建的命名空间，k8s集群管理的众多资源在此命名空间中；<code>kube-public</code>是公共的资源空间，我们约定（不是规定）共有的资源在此空间存放，以便所有用户共享。</p>
+<ul>
+<li>创建</li>
+</ul>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Namespace</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">ferry</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl apply -f ferry.yaml</span><br></pre></td></tr></table></figure>
+<p><img src="/kubernetes/k8s_create_namesapces.png" alt="创建命名空间"></p>
+<p>&emsp;&emsp;后续所有在非<code>default</code>命名空间中的资源，访问都需要增加参数<code>-n namespaceName</code>指定命名空间。</p>
+<ul>
+<li>获取所有命名空间</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl get ns</span><br></pre></td></tr></table></figure>]]></content>
       <categories>
         <category>kubernetes</category>
       </categories>
