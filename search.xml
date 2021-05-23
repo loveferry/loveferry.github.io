@@ -1407,7 +1407,7 @@
 <li>工作节点</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm join 172.16.98.2:6443 --token udl1vd.ln1kzbtertnzbfmi --discovery-token-ca-cert-hash sha256:9393b7ecc8c6f81d81eb362e4b74e2635eedda15e749872a74cb6ac77bc8c1e5</span><br></pre></td></tr></table></figure>
-<p><img src="k8s_join_node_to_master.png" alt="加入节点错误"></p>
+<p><img src="/kubernetes/k8s_join_node_to_master.png" alt="加入节点错误"></p>
 <p>&emsp;&emsp;出错了，说明我们工作节点的环境准备不是很充分，此时我们按照提示一步步解决。</p>
 <ul>
 <li>未识别的的主机名,编辑工作节点的 <code>/etc/hosts</code> 文件</li>
