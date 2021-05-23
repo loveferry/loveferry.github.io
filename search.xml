@@ -1115,332 +1115,6 @@
       </tags>
   </entry>
   <entry>
-    <title>kubernetes集群部署</title>
-    <url>/kubernetes.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;<code>Kubernetes</code>(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 <code>Kubernetes</code> 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。 <code>Kubernetes</code> 以更高效的方式跨集群自动分发和调度应用容器。 <code>Kubernetes</code> 是一个开源平台，并且可应用于生产环境。</p>
-<a id="more"></a>
-<p>&emsp;&emsp;一个 <code>Kubernetes</code> 集群包含两种类型的资源:</p>
-<ul>
-<li>Master 控制平面，调度整个集群</li>
-<li>Nodes 工作节点，负责运行应用</li>
-</ul>
-<p>&emsp;&emsp;Master 负责管理整个集群。 Master 协调集群中的所有活动，例如调度应用、维护应用的所需状态、应用扩容以及推出新的更新。Node 是一个虚拟机或者物理机，它在 <code>Kubernetes</code> 集群中充当工作机器的角色 每个Node都有 <code>Kubelet</code> , 它管理 Node 而且是 Node 与 Master 通信的代理。 Node 还应该具有用于​​处理容器操作的工具，例如 <code>Docker</code> 或 <code>rkt</code> 。处理生产级流量的 <code>Kubernetes</code> 集群至少应具有三个 Node 。</p>
-<p>&emsp;&emsp;Master 管理集群，Node 用于托管正在运行的应用。在 Kubernetes 上部署应用时，您告诉 Master 启动应用容器。 Master 就编排容器在集群的 Node 上运行。 Node 使用 Master 暴露的 <code>Kubernetes API</code> 与 Master 通信。终端用户也可以使用 <code>Kubernetes API</code> 与集群交互。</p>
-<p>&emsp;&emsp;<code>Kubernetes</code> 既可以部署在物理机上也可以部署在虚拟机上。您可以使用 <code>Minikube</code> 开始部署 <code>Kubernetes</code> 集群。 <code>Minikube</code> 是一种轻量级的 <code>Kubernetes</code> 实现，可在本地计算机上创建 VM 并部署仅包含一个节点的简单集群。 <code>Minikube</code> 可用于 <code>Linux</code> ， <code>macOS</code> 和 <code>Windows</code> 系统。<code>Minikube CLI</code> 提供了用于引导集群工作的多种操作，包括启动、停止、查看状态和删除。</p>
-<p>&emsp;&emsp;<code>kubernetes</code> 集群搭建有两种方式：</p>
-<ul>
-<li>使用部署工具快速搭建 <code>kubernetes</code> 集群，例如 <code>minikube</code>（快速搭建一个运行在本地的单节点的 <code>kubernetes</code>，一般用于本地学习），<code>kubeadm</code> 等</li>
-<li>从官网下载二进制文件手动部署</li>
-</ul>
-<p>&emsp;&emsp;这里记录两种方式安装 <code>kubernetes</code> 集群，一种是使用 <code>kubeadm</code> 自动部署集群，一种是下载二进制文件手动部署。</p>
-<h3 id="集群机器检查"><a href="#集群机器检查" class="headerlink" title="集群机器检查"></a>集群机器检查</h3><p>&emsp;&emsp;集群内所有节点均需检查是否符合要求。</p>
-<p>&emsp;&emsp;安装要求：</p>
-<blockquote>
-<p>安装 k8s 的节点必须是大于 1 核心的 CPU<br>建议主机内存都是2G及以上<br>使用的物理机操作系统：Ubuntu 16.04+、Debian 9+、CentOS 7、Red Hat Enterprise Linux (RHEL) 7、Fedora 25+、HypriotOS v1.0.1+、Flatcar Container Linux<br>集群中的机器网络能够互联<br>节点之中不可以有重复的主机名、MAC 地址或 product_uuid<br>禁用交换分区。为了保证 kubelet 正常工作，你 必须 禁用交换分区</p>
-</blockquote>
-<p>&emsp;&emsp;集群安装要求查看并修改：</p>
-<ul>
-<li>查看逻辑内核数：</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat /proc/cpuinfo| grep <span class="string">"processor"</span>| wc -l</span><br></pre></td></tr></table></figure>
-<ul>
-<li>查看主机名，mac地址，product_uuid</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hostname</span><br><span class="line">ip addr</span><br><span class="line">cat /sys/class/dmi/id/product_uuid</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;如果主机名重复，请修改</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hostnamectl <span class="built_in">set</span>-hostname k8s_master</span><br></pre></td></tr></table></figure>
-<ul>
-<li>永久禁用交换分区(/etc/fstab)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># /dev/mapper/centos-swap swap                    swap    defaults        0 0</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>查看内存大小</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">free -m</span><br></pre></td></tr></table></figure>
-<ul>
-<li>查看linux内核版本</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat /proc/version</span><br></pre></td></tr></table></figure>
-<ul>
-<li>集群机器网络互联</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ping 172.16.98.2</span><br></pre></td></tr></table></figure>
-<ul>
-<li>设置主机映射(/etc/hosts)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">172.16.98.2 k8s-master</span><br></pre></td></tr></table></figure>
-<ul>
-<li>加载模块(<code>/etc/modules-load.d/containerd.conf</code>)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">overlay</span><br><span class="line">br_netfilter</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">modprobe overlay</span><br><span class="line">modprobe br_netfilter</span><br></pre></td></tr></table></figure>
-<ul>
-<li>设置sysctl参数(<code>/etc/sysctl.d/99-kubernetes-cri.conf</code>)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">net.bridge.bridge-nf-call-iptables  = 1</span><br><span class="line">net.ipv4.ip_forward                 = 1</span><br><span class="line">net.bridge.bridge-nf-call-ip6tables = 1</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sysctl --system</span><br></pre></td></tr></table></figure>
-<ul>
-<li>端口设置</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>协议</th>
-<th>方向</th>
-<th>端口范围</th>
-<th>作用</th>
-<th>使用者</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>TCP</td>
-<td>入站</td>
-<td>6443</td>
-<td>Kubernetes API 服务器</td>
-<td>所有组件</td>
-</tr>
-<tr>
-<td>TCP</td>
-<td>入站</td>
-<td>2379-2380</td>
-<td>etcd 服务器客户端 API</td>
-<td>kube-apiserver, etcd</td>
-</tr>
-<tr>
-<td>TCP</td>
-<td>入站</td>
-<td>10250</td>
-<td>Kubelet API</td>
-<td>kubelet 自身、控制平面组件</td>
-</tr>
-<tr>
-<td>TCP</td>
-<td>入站</td>
-<td>10251</td>
-<td>kube-scheduler</td>
-<td>kube-scheduler 自身</td>
-</tr>
-<tr>
-<td>TCP</td>
-<td>入站</td>
-<td>10252</td>
-<td>kube-controller-manager</td>
-<td>kube-controller-manager 自身</td>
-</tr>
-</tbody>
-</table>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">firewall-cmd --zone=public --add-port=6443/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=2379/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=2380/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=10250/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=10251/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=10252/tcp --permanent</span><br><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
-<h3 id="使用kubeadm引导集群"><a href="#使用kubeadm引导集群" class="headerlink" title="使用kubeadm引导集群"></a>使用kubeadm引导集群</h3><h4 id="安装容器"><a href="#安装容器" class="headerlink" title="安装容器"></a>安装容器</h4><p>&emsp;&emsp;这一步需要在集群所有节点执行。</p>
-<p>&emsp;&emsp;在linux上结合 <code>Kubernetes</code> 使用的几种通用容器为：<code>containerd</code>、<code>CRI-O</code>、<code>Docker</code>。这里我们选择<code>Docker</code>。</p>
-<p>&emsp;&emsp;这里提供传送门<a href="https://docs.docker.com/engine/install/#server" target="_blank" rel="noopener">docker官网的安装说明</a>,可以查看对应的操作系统安装 <code>Docker</code> 的详细步骤。下面的安装是基于centos7安装 <code>Docker</code> 的</p>
-<ul>
-<li>docker安装</li>
-</ul>
-<p>&emsp;&emsp;我们可以先去<a href="https://github.com/kubernetes/kubernetes/blob/v1.21.1/build/dependencies.yaml" target="_blank" rel="noopener">kubernetes的github仓库依赖关系</a>中看到我们想要安装的k8s集群版本对应的docker版本。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine</span><br><span class="line">yum install -y yum-utils</span><br><span class="line">yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line">yum install -y docker-ce-20.10.6 docker-ce-cli-20.10.6 containerd.io</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
-<ul>
-<li>配置(<code>/etc/docker/daemon.json</code>)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"exec-opts"</span>: [<span class="string">"native.cgroupdriver=systemd"</span>],</span><br><span class="line">  <span class="string">"log-driver"</span>: <span class="string">"json-file"</span>,</span><br><span class="line">  <span class="string">"log-opts"</span>: &#123;</span><br><span class="line">    <span class="string">"max-size"</span>: <span class="string">"100m"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"storage-driver"</span>: <span class="string">"overlay2"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> docker</span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
-<h4 id="安装工具"><a href="#安装工具" class="headerlink" title="安装工具"></a>安装工具</h4><ul>
-<li><code>kubeadm</code>：用来初始化集群的指令。</li>
-<li><code>kubelet</code>：在集群中的每个节点上用来启动 Pod 和容器等。</li>
-<li><code>kubectl</code>：用来与集群通信的命令行工具。</li>
-</ul>
-<p>&emsp;&emsp;在实际安装之前我们还需要了解一下 <code>Kubernetes</code> 版本与版本间的偏差策略</p>
-<h5 id="版本差异"><a href="#版本差异" class="headerlink" title="版本差异"></a>版本差异</h5><p>&emsp;&emsp;<code>Kubernetes</code> 版本号格式为 x.y.z，其中 x 为大版本号，y 为小版本号，z 为补丁版本号。</p>
-<ul>
-<li><code>kube-apiserver</code></li>
-</ul>
-<p>&emsp;&emsp;在 高可用（HA）集群 中， 多个 <code>kube-apiserver</code> 实例小版本号最多差1。也就是说，集群的每一个节点版本可以有差异，但是小版本差异最多为1。举例，k8s_master机器上版本号为1.19,那么集群的其他机器上安装的版本只能在1.18,1.19,1.20之间选择</p>
-<ul>
-<li><code>kubelet</code></li>
-</ul>
-<p>&emsp;&emsp;<code>kubelet</code> 版本号不能高于 <code>kube-apiserver</code>，最多可以比 <code>kube-apiserver</code> 低两个小版本。在集群中，则 <code>kubelet</code> 版本号不能高于集群中 <code>kube-apiserver</code> 最低的版本号，最多可以比集群中 <code>kube-apiserver</code> 最高的版本号低两个小版本。举例，存在 <code>kube-apiserver</code> 版本1.20，那么 <code>kubelet</code> 版本可以选择1.18,1.19,1.20。但如果集群中的 <code>kube-apiserver</code> 版本不一致，存在两个版本1.20,1.19，那么可选的 <code>kubelet</code> 版本为 1.19,1.18。</p>
-<ul>
-<li><code>kube-controller-manager</code>、 <code>kube-scheduler</code> 和 <code>cloud-controller-manager</code></li>
-</ul>
-<p>&emsp;&emsp;<code>kube-controller-manager</code>、<code>kube-scheduler</code> 和 <code>cloud-controller-manager</code> 版本不能高于 <code>kube-apiserver</code> 版本号。 最好它们的版本号与 <code>kube-apiserver</code> 保持一致，但允许比 <code>kube-apiserver</code> 低一个小版本（为了支持在线升级）。如果在 HA 集群中，多个 <code>kube-apiserver</code> 实例版本号不一致，他们也可以跟任意一个 <code>kube-apiserver</code> 实例通信（例如，通过 load balancer）， 但 <code>kube-controller-manager</code>、<code>kube-scheduler</code> 和 <code>cloud-controller-manager</code> 版本可用范围会相应的减小。</p>
-<ul>
-<li><code>kubectl</code></li>
-</ul>
-<p>&emsp;&emsp;<code>kubectl</code> 可以比 <code>kube-apiserver</code> 高一个小版本，也可以低一个小版本。在集群中，<code>kubectl</code> 可以比集群中最高的 <code>kube-apiserver</code> 版本号低一个小版本，可以比最低的 <code>kube-apiserver</code> 版本号高一个小版本。</p>
-<ul>
-<li><code>kube-proxy</code></li>
-</ul>
-<p>&emsp;&emsp;<code>kube-proxy</code> 必须与节点上的 <code>kubelet</code> 的小版本相同;<code>kube-proxy</code> 一定不能比 <code>kube-apiserver</code> 小版本高;<code>kube-proxy</code> 最多只能比 <code>kube-apiserver</code> 低两个小版本</p>
-<h5 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h5><p>&emsp;&emsp;需要在集群所有机器完成这一步。</p>
-<ul>
-<li>k8s的yum源配置(创建文件<code>/etc/yum.repos.d/kubernetes.repo</code>)</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[kubernetes]</span><br><span class="line">name=Kubernetes</span><br><span class="line">baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">repo_gpgcheck=1</span><br><span class="line">gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg</span><br></pre></td></tr></table></figure>
-<ul>
-<li>查看可安装的版本</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum list kubeadm kubectl kubelet</span><br></pre></td></tr></table></figure>
-<ul>
-<li>安装指定版本</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum install -y kubelet-1.20.2-0 kubeadm-1.20.2-0 kubectl-1.20.2-0</span><br></pre></td></tr></table></figure>
-<ul>
-<li>设置服务开机自启（这里不设置在初始化集群的时候会报错）</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> kubelet</span><br></pre></td></tr></table></figure>
-<h4 id="初始化集群"><a href="#初始化集群" class="headerlink" title="初始化集群"></a>初始化集群</h4><p>&emsp;&emsp;这一步只需要在控制平面执行即可。</p>
-<p>&emsp;&emsp;在初始化控制平面之前，我们需要验证一下与 gcr.io 容器镜像仓库的连通性。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm config images pull</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;如果这一步报错，说没有响应，那么就是无法连接到该仓库，此时，我们需要从国内的镜像仓库获取对应的镜像了。这一步网上有很多的方法，例如从 <code>docker hub</code> 上搜索对应的镜像，下载并重新打标签，这种方式依赖于 <code>docker hub</code>上现存的镜像版本，如果你需要的版本没找到，那就有点尴尬了。下面提供的这种方法虽然繁琐了些，但是他能保证你需要获取的版本一定能获取到。</p>
-<ul>
-<li>查看需要的镜像</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm config images list</span><br></pre></td></tr></table></figure>
-<p><img src="/kubernetes/k8s_need_image_list.png" alt="需要的镜像"></p>
-<p>&emsp;&emsp;代码仓操作：</p>
-<ul>
-<li>登录代码仓创建仓库，将执行 <code>kubeadm config images list</code> 查看到的镜像依次创建了仓库。我这里选择的是github，如果无法访问github也可以选择你能访问的任何私仓，只要这个私仓公网可以访问即可。</li>
-</ul>
-<p><img src="/kubernetes/k8s_create_github_repository.png" alt="创建仓库"></p>
-<ul>
-<li>在仓库中创建 <code>Dockerfile</code> 文件,以 <code>kube-proxy</code> 为例，仓库名为 <code>kube-proxy</code>，<code>Dockerfile</code>内容为<code>FROM k8s.gcr.io/kube-proxy:v1.20.2</code>。</li>
-</ul>
-<p><img src="/kubernetes/k8s_create_github_dockerfile.png" alt="创建dockerfile"></p>
-<ul>
-<li>登录<a href="https://cr.console.aliyun.com/cn-hangzhou/instances/repositories" target="_blank" rel="noopener">阿里云容器镜像服务</a>,创建镜像仓库。容器镜像服务-&gt;默认实例-&gt;镜像仓库-&gt;创建镜像仓库</li>
-</ul>
-<p><img src="/kubernetes/k8s_create_aliyun_docker_repository.png" alt="创建dockerfile"></p>
-<p><img src="/kubernetes/k8s_create_aliyun_docker_repository2.png" alt="创建dockerfile"></p>
-<ul>
-<li>创建规则执行构建,若失败则查看日志，大概率是构建规则选的分支，文件，路径与代码仓中的不匹配</li>
-</ul>
-<p><img src="/kubernetes/k8s_click_aliyun_docker_repository.png" alt="查看镜像仓库"></p>
-<p><img src="/kubernetes/k8s_click_aliyun_create_rule.png" alt="查看构建"></p>
-<p><img src="/kubernetes/k8s_aliyun_create_docker_build_rule.png" alt="创建构建规则"></p>
-<p><img src="/kubernetes/k8s_aliyun_docker_build.png" alt="执行构建"></p>
-<ul>
-<li>设置访问凭证</li>
-</ul>
-<p><img src="/kubernetes/k8s_aliyun_set_password.png" alt="执行构建"></p>
-<ul>
-<li>在控制平面登录阿里云的镜像仓库，用户名为阿里云的账户名，拉取镜像，这里登录的地址一定要看好，镜像仓库所在的区域不同，登录的仓库地址也是有所区别的。具体的登录地址可以点击仓库进入仓库详情页面，基本信息-操作指南中查看</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker login --username=ferry_sy registry.cn-shanghai.aliyuncs.com</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0</span><br></pre></td></tr></table></figure>
-<ul>
-<li>镜像重命名</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2 k8s.gcr.io/kube-apiserver:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2 k8s.gcr.io/kube-controller-manager:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2 k8s.gcr.io/kube-scheduler:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2 k8s.gcr.io/kube-proxy:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2 k8s.gcr.io/pause:3.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0 k8s.gcr.io/etcd:3.4.13-0</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0 k8s.gcr.io/coredns:1.7.0</span><br></pre></td></tr></table></figure>
-<ul>
-<li>删除阿里云镜像</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0</span><br></pre></td></tr></table></figure>
-<ul>
-<li>初始化集群，<code>--pod-network-cidr</code> 参数用于配置CIDR，参数值可以填写 “内网ip/16”。</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm init --pod-network-cidr=172.10.0.0/16 --service-cidr=10.96.0.0/12</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[init] Using Kubernetes version: v1.20.2</span><br><span class="line">[preflight] Running pre-flight checks</span><br><span class="line">	[WARNING Firewalld]: firewalld is active, please ensure ports [6443 10250] are open or your cluster may not <span class="keyword">function</span> correctly</span><br><span class="line">[preflight] Pulling images required <span class="keyword">for</span> setting up a Kubernetes cluster</span><br><span class="line">[preflight] This might take a minute or two, depending on the speed of your internet connection</span><br><span class="line">[preflight] You can also perform this action <span class="keyword">in</span> beforehand using <span class="string">'kubeadm config images pull'</span></span><br><span class="line">[certs] Using certificateDir folder <span class="string">"/etc/kubernetes/pki"</span></span><br><span class="line">[certs] Generating <span class="string">"ca"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"apiserver"</span> certificate and key</span><br><span class="line">[certs] apiserver serving cert is signed <span class="keyword">for</span> DNS names [k8s-master kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 172.16.98.2]</span><br><span class="line">[certs] Generating <span class="string">"apiserver-kubelet-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"front-proxy-ca"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"front-proxy-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"etcd/ca"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"etcd/server"</span> certificate and key</span><br><span class="line">[certs] etcd/server serving cert is signed <span class="keyword">for</span> DNS names [k8s-master localhost] and IPs [172.16.98.2 127.0.0.1 ::1]</span><br><span class="line">[certs] Generating <span class="string">"etcd/peer"</span> certificate and key</span><br><span class="line">[certs] etcd/peer serving cert is signed <span class="keyword">for</span> DNS names [k8s-master localhost] and IPs [172.16.98.2 127.0.0.1 ::1]</span><br><span class="line">[certs] Generating <span class="string">"etcd/healthcheck-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"apiserver-etcd-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"sa"</span> key and public key</span><br><span class="line">[kubeconfig] Using kubeconfig folder <span class="string">"/etc/kubernetes"</span></span><br><span class="line">[kubeconfig] Writing <span class="string">"admin.conf"</span> kubeconfig file</span><br><span class="line">[kubeconfig] Writing <span class="string">"kubelet.conf"</span> kubeconfig file</span><br><span class="line">[kubeconfig] Writing <span class="string">"controller-manager.conf"</span> kubeconfig file</span><br><span class="line">[kubeconfig] Writing <span class="string">"scheduler.conf"</span> kubeconfig file</span><br><span class="line">[kubelet-start] Writing kubelet environment file with flags to file <span class="string">"/var/lib/kubelet/kubeadm-flags.env"</span></span><br><span class="line">[kubelet-start] Writing kubelet configuration to file <span class="string">"/var/lib/kubelet/config.yaml"</span></span><br><span class="line">[kubelet-start] Starting the kubelet</span><br><span class="line">[control-plane] Using manifest folder <span class="string">"/etc/kubernetes/manifests"</span></span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-apiserver"</span></span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-controller-manager"</span></span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-scheduler"</span></span><br><span class="line">[etcd] Creating static Pod manifest <span class="keyword">for</span> <span class="built_in">local</span> etcd <span class="keyword">in</span> <span class="string">"/etc/kubernetes/manifests"</span></span><br><span class="line">[<span class="built_in">wait</span>-control-plane] Waiting <span class="keyword">for</span> the kubelet to boot up the control plane as static Pods from directory <span class="string">"/etc/kubernetes/manifests"</span>. This can take up to 4m0s</span><br><span class="line">[apiclient] All control plane components are healthy after 11.503773 seconds</span><br><span class="line">[upload-config] Storing the configuration used <span class="keyword">in</span> ConfigMap <span class="string">"kubeadm-config"</span> <span class="keyword">in</span> the <span class="string">"kube-system"</span> Namespace</span><br><span class="line">[kubelet] Creating a ConfigMap <span class="string">"kubelet-config-1.20"</span> <span class="keyword">in</span> namespace kube-system with the configuration <span class="keyword">for</span> the kubelets <span class="keyword">in</span> the cluster</span><br><span class="line">[upload-certs] Skipping phase. Please see --upload-certs</span><br><span class="line">[mark-control-plane] Marking the node k8s-master as control-plane by adding the labels <span class="string">"node-role.kubernetes.io/master=''"</span> and <span class="string">"node-role.kubernetes.io/control-plane='' (deprecated)"</span></span><br><span class="line">[mark-control-plane] Marking the node k8s-master as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]</span><br><span class="line">[bootstrap-token] Using token: ayqhud.254isto3e88zn9ba</span><br><span class="line">[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get nodes</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs <span class="keyword">in</span> order <span class="keyword">for</span> nodes to get long term certificate credentials</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow certificate rotation <span class="keyword">for</span> all node client certificates <span class="keyword">in</span> the cluster</span><br><span class="line">[bootstrap-token] Creating the <span class="string">"cluster-info"</span> ConfigMap <span class="keyword">in</span> the <span class="string">"kube-public"</span> namespace</span><br><span class="line">[kubelet-finalize] Updating <span class="string">"/etc/kubernetes/kubelet.conf"</span> to point to a rotatable kubelet client certificate and key</span><br><span class="line">[addons] Applied essential addon: CoreDNS</span><br><span class="line">[addons] Applied essential addon: kube-proxy</span><br><span class="line"></span><br><span class="line">Your Kubernetes control-plane has initialized successfully!</span><br><span class="line"></span><br><span class="line">To start using your cluster, you need to run the following as a regular user:</span><br><span class="line"></span><br><span class="line">  mkdir -p <span class="variable">$HOME</span>/.kube</span><br><span class="line">  sudo cp -i /etc/kubernetes/admin.conf <span class="variable">$HOME</span>/.kube/config</span><br><span class="line">  sudo chown $(id -u):$(id -g) <span class="variable">$HOME</span>/.kube/config</span><br><span class="line"></span><br><span class="line">Alternatively, <span class="keyword">if</span> you are the root user, you can run:</span><br><span class="line"></span><br><span class="line">  <span class="built_in">export</span> KUBECONFIG=/etc/kubernetes/admin.conf</span><br><span class="line"></span><br><span class="line">You should now deploy a pod network to the cluster.</span><br><span class="line">Run <span class="string">"kubectl apply -f [podnetwork].yaml"</span> with one of the options listed at:</span><br><span class="line">  https://kubernetes.io/docs/concepts/cluster-administration/addons/</span><br><span class="line"></span><br><span class="line">Then you can join any number of worker nodes by running the following on each as root:</span><br><span class="line"></span><br><span class="line">kubeadm join 172.16.98.2:6443 --token ayqhud.254isto3e88zn9ba \</span><br><span class="line">    --discovery-token-ca-cert-hash sha256:9393b7ecc8c6f81d81eb362e4b74e2635eedda15e749872a74cb6ac77bc8c1e5</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;我们可以从中捕获关键信息，在日志末尾它提示我们，如果想要非root用户使用集群，需要做那些操作，如果是root用户需要怎么做，才能够使用集群，将工作节点加入集群执行怎样的命令。</p>
-<ul>
-<li>root用户下添加环境变量(~/.bash_profile) </li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> KUBECONFIG=/etc/kubernetes/admin.conf</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bash_profile</span><br></pre></td></tr></table></figure>
-<h4 id="CNI-容器网络接口"><a href="#CNI-容器网络接口" class="headerlink" title="CNI(容器网络接口)"></a>CNI(容器网络接口)</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl get pods --all-namespaces</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;执行上述命令会发现此时集群的 <code>coredns</code> 的状态一直是 <code>Pending</code>，这是因为系统就是这么设计的。 <code>kubeadm</code> 的网络供应商是中立的，因此管理员应该选择 安装 <code>pod</code> 的网络解决方案。 你必须完成 <code>Pod</code> 的网络配置，然后才能完全部署 <code>CoreDNS</code>。 在网络被配置好之前，<code>DNS</code> 组件会一直处于 <code>Pending</code> 状态。</p>
-<h5 id="kube-router"><a href="#kube-router" class="headerlink" title="kube-router"></a>kube-router</h5><p>&emsp;&emsp;CNI的选择有很多，<code>Kube-router</code> 是 <code>Kubernetes</code> 的专用网络解决方案， 旨在提供高性能和易操作性。 <code>Kube-router</code> 提供了一个基于 <code>Linux LVS/IPVS</code> 的服务代理、一个基于 <code>Linux</code> 内核转发的无覆盖 <code>Pod-to-Pod</code> 网络解决方案和基于 <code>iptables/ipset</code> 的网络策略执行器。</p>
-<p>&emsp;&emsp;这里选择采用 <code>Kube-router</code> 代替 <code>Kube-proxy</code> 并且提供网络解决方案。</p>
-<p>&emsp;&emsp;首先需要下载 <code>Kube-router</code> 的yaml文件，我们需要访问 <code>raw.githubusercontent.com</code> 去获取，但是很有可能我们无法访问这个网站，那么我们先<a href="https://site.ip138.com/raw.Githubusercontent.com" target="_blank" rel="noopener">获取该域名对应的ip地址</a>然后在 <code>/etc/hosts</code> 文件中配置域名映射,这样我们就可以访问了。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml</span><br><span class="line">wget https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter-all-features.yaml</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;上面两个yaml，第一个是仅提供网络解决方案的，第二个还可以代替 <code>Kube-proxy</code>。</p>
-<ul>
-<li>应用下载的yaml</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl apply -f kubeadm-kuberouter-all-features.yaml</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;应用之后可以看一下状态，不出意外应该是启动不了。</p>
-<p><img src="/kubernetes/k8s_kube-router_apply.png" alt="错误状态"></p>
-<p>&emsp;&emsp;遇到这种情况我们可以和先前下载 <code>kube-proxy</code> 等镜像一样，通过阿里云的镜像仓库服务来下载。</p>
-<p>&emsp;&emsp;下载好之后查看pod状态如果发现状态是 <code>CrashLoopBackOff</code>，此时我们可以查看日志</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl logs kube-router-bxl96 -n kube-system</span><br></pre></td></tr></table></figure>
-<p><img src="/kubernetes/k8s_kube-router_pod_crashloopbackoff.png" alt="错误日志"></p>
-<p>&emsp;&emsp;这说明我们初始化集群 <code>kubeadm init</code> 的时候没有使用参数 <code>--pod-network-cidr</code>，这里我们只能添加一下这个参数配置。</p>
-<ul>
-<li><code>kubeadm-config</code> 增加 <code>podSubnet</code></li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl edit cm kubeadm-config -n kube-system</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">data:</span><br><span class="line">  ClusterConfiguration: |</span><br><span class="line">    networking:</span><br><span class="line">      podSubnet: 172.16.0.0/16</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>kube-controller-manager</code> 修改,增加 <code>allocate-node-cidrs</code> 和 <code>cluster-cidr</code></li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vi /etc/kubernetes/manifests/kube-controller-manager.yaml</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - <span class="built_in">command</span>:</span><br><span class="line">    - --allocate-node-cidrs=<span class="literal">true</span></span><br><span class="line">    - --cluster-cidr=172.16.0.0/16</span><br></pre></td></tr></table></figure>
-<ul>
-<li>删除 <code>kube-router</code> pod</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl delete pod kube-router-bxl96 -n kube-system</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;删除pod后集群会立刻再创建一个pod，稍等一会可以观察pod的状态，理论上此时就没有什么问题了。<code>kube-router</code> 创建好了那么之前一直在 <code>ContainerCreating</code> 的 <code>coredns</code> 的pod随后状态也会变成 <code>running</code>。</p>
-<p>&emsp;&emsp;由于这里使用的是 <code>kube-router</code> 的全特性，可以代替 <code>kube-proxy</code>, 所以我们删除 <code>kube-proxy</code>。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl delete ds kube-proxy -n kube-system</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;至此，我们工作平面已经初步安装完成，现在需要加入工作节点壮大我们的集群。</p>
-<p>&emsp;&emsp;使用weave插件</p>
-<h5 id="weave"><a href="#weave" class="headerlink" title="weave"></a>weave</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl apply -f <span class="string">"https://cloud.weave.works/k8s/net?k8s-version=<span class="variable">$(kubectl version | base64 | tr -d '\n')</span>"</span></span><br></pre></td></tr></table></figure>
-<h5 id="flannel"><a href="#flannel" class="headerlink" title="flannel"></a>flannel</h5><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">policy/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">PodSecurityPolicy</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">psp.flannel.unprivileged</span></span><br><span class="line">  <span class="attr">annotations:</span></span><br><span class="line">    <span class="attr">seccomp.security.alpha.kubernetes.io/allowedProfileNames:</span> <span class="string">docker/default</span></span><br><span class="line">    <span class="attr">seccomp.security.alpha.kubernetes.io/defaultProfileName:</span> <span class="string">docker/default</span></span><br><span class="line">    <span class="attr">apparmor.security.beta.kubernetes.io/allowedProfileNames:</span> <span class="string">runtime/default</span></span><br><span class="line">    <span class="attr">apparmor.security.beta.kubernetes.io/defaultProfileName:</span> <span class="string">runtime/default</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">privileged:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">configMap</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">secret</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">emptyDir</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">hostPath</span></span><br><span class="line">  <span class="attr">allowedHostPaths:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pathPrefix:</span> <span class="string">"/etc/cni/net.d"</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pathPrefix:</span> <span class="string">"/etc/kube-flannel"</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pathPrefix:</span> <span class="string">"/run/flannel"</span></span><br><span class="line">  <span class="attr">readOnlyRootFilesystem:</span> <span class="literal">false</span></span><br><span class="line">  <span class="comment"># Users and groups</span></span><br><span class="line">  <span class="attr">runAsUser:</span></span><br><span class="line">    <span class="attr">rule:</span> <span class="string">RunAsAny</span></span><br><span class="line">  <span class="attr">supplementalGroups:</span></span><br><span class="line">    <span class="attr">rule:</span> <span class="string">RunAsAny</span></span><br><span class="line">  <span class="attr">fsGroup:</span></span><br><span class="line">    <span class="attr">rule:</span> <span class="string">RunAsAny</span></span><br><span class="line">  <span class="comment"># Privilege Escalation</span></span><br><span class="line">  <span class="attr">allowPrivilegeEscalation:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">defaultAllowPrivilegeEscalation:</span> <span class="literal">false</span></span><br><span class="line">  <span class="comment"># Capabilities</span></span><br><span class="line">  <span class="attr">allowedCapabilities:</span> <span class="string">['NET_ADMIN',</span> <span class="string">'NET_RAW'</span><span class="string">]</span></span><br><span class="line">  <span class="attr">defaultAddCapabilities:</span> <span class="string">[]</span></span><br><span class="line">  <span class="attr">requiredDropCapabilities:</span> <span class="string">[]</span></span><br><span class="line">  <span class="comment"># Host namespaces</span></span><br><span class="line">  <span class="attr">hostPID:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">hostIPC:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">hostNetwork:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">hostPorts:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">min:</span> <span class="number">0</span></span><br><span class="line">    <span class="attr">max:</span> <span class="number">65535</span></span><br><span class="line">  <span class="comment"># SELinux</span></span><br><span class="line">  <span class="attr">seLinux:</span></span><br><span class="line">    <span class="comment"># SELinux is unused in CaaSP</span></span><br><span class="line">    <span class="attr">rule:</span> <span class="string">'RunAsAny'</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">flannel</span></span><br><span class="line"><span class="attr">rules:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">apiGroups:</span> <span class="string">['extensions']</span></span><br><span class="line">  <span class="attr">resources:</span> <span class="string">['podsecuritypolicies']</span></span><br><span class="line">  <span class="attr">verbs:</span> <span class="string">['use']</span></span><br><span class="line">  <span class="attr">resourceNames:</span> <span class="string">['psp.flannel.unprivileged']</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">apiGroups:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">""</span></span><br><span class="line">  <span class="attr">resources:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">pods</span></span><br><span class="line">  <span class="attr">verbs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">get</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">apiGroups:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">""</span></span><br><span class="line">  <span class="attr">resources:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">nodes</span></span><br><span class="line">  <span class="attr">verbs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">list</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">watch</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">apiGroups:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">""</span></span><br><span class="line">  <span class="attr">resources:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">nodes/status</span></span><br><span class="line">  <span class="attr">verbs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">patch</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRoleBinding</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">flannel</span></span><br><span class="line"><span class="attr">roleRef:</span></span><br><span class="line">  <span class="attr">apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br><span class="line">  <span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">flannel</span></span><br><span class="line"><span class="attr">subjects:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">flannel</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">kube-system</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">flannel</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">kube-system</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ConfigMap</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kube-flannel-cfg</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">kube-system</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">tier:</span> <span class="string">node</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">flannel</span></span><br><span class="line"><span class="attr">data:</span></span><br><span class="line">  <span class="attr">cni-conf.json:</span> <span class="string">|</span></span><br><span class="line">    <span class="string">&#123;</span></span><br><span class="line">      <span class="attr">"name":</span> <span class="string">"cbr0"</span><span class="string">,</span></span><br><span class="line">      <span class="attr">"cniVersion":</span> <span class="string">"0.3.1"</span><span class="string">,</span></span><br><span class="line">      <span class="attr">"plugins":</span> <span class="string">[</span></span><br><span class="line">        <span class="string">&#123;</span></span><br><span class="line">          <span class="attr">"type":</span> <span class="string">"flannel"</span><span class="string">,</span></span><br><span class="line">          <span class="attr">"delegate":</span> <span class="string">&#123;</span></span><br><span class="line">            <span class="attr">"hairpinMode":</span> <span class="literal">true</span><span class="string">,</span></span><br><span class="line">            <span class="attr">"isDefaultGateway":</span> <span class="literal">true</span></span><br><span class="line">          <span class="string">&#125;</span></span><br><span class="line">        <span class="string">&#125;,</span></span><br><span class="line">        <span class="string">&#123;</span></span><br><span class="line">          <span class="attr">"type":</span> <span class="string">"portmap"</span><span class="string">,</span></span><br><span class="line">          <span class="attr">"capabilities":</span> <span class="string">&#123;</span></span><br><span class="line">            <span class="attr">"portMappings":</span> <span class="literal">true</span></span><br><span class="line">          <span class="string">&#125;</span></span><br><span class="line">        <span class="string">&#125;</span></span><br><span class="line">      <span class="string">]</span></span><br><span class="line">    <span class="string">&#125;</span></span><br><span class="line">  <span class="attr">net-conf.json:</span> <span class="string">|</span></span><br><span class="line">    <span class="string">&#123;</span></span><br><span class="line">      <span class="attr">"Network":</span> <span class="string">"10.244.0.0/16"</span><span class="string">,</span></span><br><span class="line">      <span class="attr">"Backend":</span> <span class="string">&#123;</span></span><br><span class="line">        <span class="attr">"Type":</span> <span class="string">"vxlan"</span></span><br><span class="line">      <span class="string">&#125;</span></span><br><span class="line">    <span class="string">&#125;</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">DaemonSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kube-flannel-ds</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">kube-system</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">tier:</span> <span class="string">node</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">flannel</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">flannel</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">tier:</span> <span class="string">node</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">flannel</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">affinity:</span></span><br><span class="line">        <span class="attr">nodeAffinity:</span></span><br><span class="line">          <span class="attr">requiredDuringSchedulingIgnoredDuringExecution:</span></span><br><span class="line">            <span class="attr">nodeSelectorTerms:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">matchExpressions:</span></span><br><span class="line">              <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">kubernetes.io/os</span></span><br><span class="line">                <span class="attr">operator:</span> <span class="string">In</span></span><br><span class="line">                <span class="attr">values:</span></span><br><span class="line">                <span class="bullet">-</span> <span class="string">linux</span></span><br><span class="line">      <span class="attr">hostNetwork:</span> <span class="literal">true</span></span><br><span class="line">      <span class="attr">priorityClassName:</span> <span class="string">system-node-critical</span></span><br><span class="line">      <span class="attr">tolerations:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">operator:</span> <span class="string">Exists</span></span><br><span class="line">        <span class="attr">effect:</span> <span class="string">NoSchedule</span></span><br><span class="line">      <span class="attr">serviceAccountName:</span> <span class="string">flannel</span></span><br><span class="line">      <span class="attr">initContainers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">install-cni</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">quay.io/coreos/flannel:v0.14.0-rc1</span></span><br><span class="line">        <span class="attr">command:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">cp</span></span><br><span class="line">        <span class="attr">args:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">-f</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">/etc/kube-flannel/cni-conf.json</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">/etc/cni/net.d/10-flannel.conflist</span></span><br><span class="line">        <span class="attr">volumeMounts:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cni</span></span><br><span class="line">          <span class="attr">mountPath:</span> <span class="string">/etc/cni/net.d</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">flannel-cfg</span></span><br><span class="line">          <span class="attr">mountPath:</span> <span class="string">/etc/kube-flannel/</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kube-flannel</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">quay.io/coreos/flannel:v0.14.0-rc1</span></span><br><span class="line">        <span class="attr">command:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">/opt/bin/flanneld</span></span><br><span class="line">        <span class="attr">args:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">--ip-masq</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">--kube-subnet-mgr</span></span><br><span class="line">        <span class="attr">resources:</span></span><br><span class="line">          <span class="attr">requests:</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">"100m"</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">"50Mi"</span></span><br><span class="line">          <span class="attr">limits:</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">"100m"</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">"50Mi"</span></span><br><span class="line">        <span class="attr">securityContext:</span></span><br><span class="line">          <span class="attr">privileged:</span> <span class="literal">false</span></span><br><span class="line">          <span class="attr">capabilities:</span></span><br><span class="line">            <span class="attr">add:</span> <span class="string">["NET_ADMIN",</span> <span class="string">"NET_RAW"</span><span class="string">]</span></span><br><span class="line">        <span class="attr">env:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">POD_NAME</span></span><br><span class="line">          <span class="attr">valueFrom:</span></span><br><span class="line">            <span class="attr">fieldRef:</span></span><br><span class="line">              <span class="attr">fieldPath:</span> <span class="string">metadata.name</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">POD_NAMESPACE</span></span><br><span class="line">          <span class="attr">valueFrom:</span></span><br><span class="line">            <span class="attr">fieldRef:</span></span><br><span class="line">              <span class="attr">fieldPath:</span> <span class="string">metadata.namespace</span></span><br><span class="line">        <span class="attr">volumeMounts:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">run</span></span><br><span class="line">          <span class="attr">mountPath:</span> <span class="string">/run/flannel</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">flannel-cfg</span></span><br><span class="line">          <span class="attr">mountPath:</span> <span class="string">/etc/kube-flannel/</span></span><br><span class="line">      <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">run</span></span><br><span class="line">        <span class="attr">hostPath:</span></span><br><span class="line">          <span class="attr">path:</span> <span class="string">/run/flannel</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cni</span></span><br><span class="line">        <span class="attr">hostPath:</span></span><br><span class="line">          <span class="attr">path:</span> <span class="string">/etc/cni/net.d</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">flannel-cfg</span></span><br><span class="line">        <span class="attr">configMap:</span></span><br><span class="line">          <span class="attr">name:</span> <span class="string">kube-flannel-cfg</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl apply -f flannel.yaml</span><br></pre></td></tr></table></figure>
-<h4 id="加入工作节点"><a href="#加入工作节点" class="headerlink" title="加入工作节点"></a>加入工作节点</h4><p>&emsp;&emsp;这一步需要控制平面和工作节点配合完成。</p>
-<blockquote>
-<p>控制平面：用于管理集群的机器<br>工作节点：运行应用服务的机器</p>
-</blockquote>
-<p>&emsp;&emsp;将工作节点加入集群需要令牌认证，令牌默认24小时失效。我们先查询当前未失效的令牌</p>
-<ul>
-<li>控制平面</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm token list</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;如果shell中输出了令牌信息，那么我们就用这个令牌就可以让工作节点加入集群，若没有输出令牌信息，说明已有的令牌都失效了，需要重新生成令牌。</p>
-<ul>
-<li>控制平面</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm token create</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;此外，我们还需要获取ca证书sha256编码hash值</p>
-<ul>
-<li>控制平面</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">openssl x509 -pubkey -<span class="keyword">in</span> /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2&gt;/dev/null | openssl dgst -sha256 -hex | sed <span class="string">'s/^.* //'</span></span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;将工作节点加入集群，命令中的ip地址是控制平面的内网ip，端口是 Kubernetes API 服务器的端口</p>
-<ul>
-<li>工作节点</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm join 172.16.98.2:6443 --token udl1vd.ln1kzbtertnzbfmi --discovery-token-ca-cert-hash sha256:9393b7ecc8c6f81d81eb362e4b74e2635eedda15e749872a74cb6ac77bc8c1e5</span><br></pre></td></tr></table></figure>
-<p><img src="k8s_join_node_to_master.png" alt="加入节点错误"></p>
-<p>&emsp;&emsp;出错了，说明我们工作节点的环境准备不是很充分，此时我们按照提示一步步解决。</p>
-<ul>
-<li>未识别的的主机名,编辑工作节点的 <code>/etc/hosts</code> 文件</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">172.16.98.6 k8s-node-1</span><br></pre></td></tr></table></figure>
-<ul>
-<li>编辑工作节点文件<code>/etc/sysctl.conf</code>，添加设置然后重启系统</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">net.bridge.bridge-nf-call-iptables = 1</span><br></pre></td></tr></table></figure>
-<ul>
-<li>工作节点</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm join 172.16.98.2:6443 --token udl1vd.ln1kzbtertnzbfmi --discovery-token-ca-cert-hash sha256:9393b7ecc8c6f81d81eb362e4b74e2635eedda15e749872a74cb6ac77bc8c1e5</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;依次将所有工作节点加入集群中，接下来在查看集群中的节点信息。</p>
-<ul>
-<li>控制平面</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl get node</span><br></pre></td></tr></table></figure>
-<h3 id="集群参数设置"><a href="#集群参数设置" class="headerlink" title="集群参数设置"></a>集群参数设置</h3><h4 id="kube-proxy模式切换"><a href="#kube-proxy模式切换" class="headerlink" title="kube-proxy模式切换"></a>kube-proxy模式切换</h4><p>&emsp;&emsp;<code>ipvs</code>相比较<code>iptables</code>来说性能更好，我们将<code>kube-proxy</code>的模式切换成<code>ipvs</code>。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl edit cm -n kube-system</span><br></pre></td></tr></table></figure>
-<p>将<code>data.config.conf.mode</code>设置成<code>ipvs</code>保存退出即可。</p>
-]]></content>
-      <categories>
-        <category>kubernetes</category>
-      </categories>
-      <tags>
-        <tag>k8s</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>lambda</title>
     <url>/lambda.html</url>
     <content><![CDATA[<p>&emsp;&emsp;<code>lambda表达式</code>是一个可传递的代码块。</p>
@@ -1658,6 +1332,332 @@
       </categories>
       <tags>
         <tag>lambda</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>kubernetes集群部署</title>
+    <url>/kubernetes.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;<code>Kubernetes</code>(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 <code>Kubernetes</code> 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。 <code>Kubernetes</code> 以更高效的方式跨集群自动分发和调度应用容器。 <code>Kubernetes</code> 是一个开源平台，并且可应用于生产环境。</p>
+<a id="more"></a>
+<p>&emsp;&emsp;一个 <code>Kubernetes</code> 集群包含两种类型的资源:</p>
+<ul>
+<li>Master 控制平面，调度整个集群</li>
+<li>Nodes 工作节点，负责运行应用</li>
+</ul>
+<p>&emsp;&emsp;Master 负责管理整个集群。 Master 协调集群中的所有活动，例如调度应用、维护应用的所需状态、应用扩容以及推出新的更新。Node 是一个虚拟机或者物理机，它在 <code>Kubernetes</code> 集群中充当工作机器的角色 每个Node都有 <code>Kubelet</code> , 它管理 Node 而且是 Node 与 Master 通信的代理。 Node 还应该具有用于​​处理容器操作的工具，例如 <code>Docker</code> 或 <code>rkt</code> 。处理生产级流量的 <code>Kubernetes</code> 集群至少应具有三个 Node 。</p>
+<p>&emsp;&emsp;Master 管理集群，Node 用于托管正在运行的应用。在 Kubernetes 上部署应用时，您告诉 Master 启动应用容器。 Master 就编排容器在集群的 Node 上运行。 Node 使用 Master 暴露的 <code>Kubernetes API</code> 与 Master 通信。终端用户也可以使用 <code>Kubernetes API</code> 与集群交互。</p>
+<p>&emsp;&emsp;<code>Kubernetes</code> 既可以部署在物理机上也可以部署在虚拟机上。您可以使用 <code>Minikube</code> 开始部署 <code>Kubernetes</code> 集群。 <code>Minikube</code> 是一种轻量级的 <code>Kubernetes</code> 实现，可在本地计算机上创建 VM 并部署仅包含一个节点的简单集群。 <code>Minikube</code> 可用于 <code>Linux</code> ， <code>macOS</code> 和 <code>Windows</code> 系统。<code>Minikube CLI</code> 提供了用于引导集群工作的多种操作，包括启动、停止、查看状态和删除。</p>
+<p>&emsp;&emsp;<code>kubernetes</code> 集群搭建有两种方式：</p>
+<ul>
+<li>使用部署工具快速搭建 <code>kubernetes</code> 集群，例如 <code>minikube</code>（快速搭建一个运行在本地的单节点的 <code>kubernetes</code>，一般用于本地学习），<code>kubeadm</code> 等</li>
+<li>从官网下载二进制文件手动部署</li>
+</ul>
+<p>&emsp;&emsp;这里记录两种方式安装 <code>kubernetes</code> 集群，一种是使用 <code>kubeadm</code> 自动部署集群，一种是下载二进制文件手动部署。</p>
+<h3 id="集群机器检查"><a href="#集群机器检查" class="headerlink" title="集群机器检查"></a>集群机器检查</h3><p>&emsp;&emsp;集群内所有节点均需检查是否符合要求。</p>
+<p>&emsp;&emsp;安装要求：</p>
+<blockquote>
+<p>安装 k8s 的节点必须是大于 1 核心的 CPU<br>建议主机内存都是2G及以上<br>使用的物理机操作系统：Ubuntu 16.04+、Debian 9+、CentOS 7、Red Hat Enterprise Linux (RHEL) 7、Fedora 25+、HypriotOS v1.0.1+、Flatcar Container Linux<br>集群中的机器网络能够互联<br>节点之中不可以有重复的主机名、MAC 地址或 product_uuid<br>禁用交换分区。为了保证 kubelet 正常工作，你 必须 禁用交换分区</p>
+</blockquote>
+<p>&emsp;&emsp;集群安装要求查看并修改：</p>
+<ul>
+<li>查看逻辑内核数：</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat /proc/cpuinfo| grep <span class="string">"processor"</span>| wc -l</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看主机名，mac地址，product_uuid</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hostname</span><br><span class="line">ip addr</span><br><span class="line">cat /sys/class/dmi/id/product_uuid</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如果主机名重复，请修改</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hostnamectl <span class="built_in">set</span>-hostname k8s_master</span><br></pre></td></tr></table></figure>
+<ul>
+<li>永久禁用交换分区(/etc/fstab)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># /dev/mapper/centos-swap swap                    swap    defaults        0 0</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看内存大小</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">free -m</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看linux内核版本</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">cat /proc/version</span><br></pre></td></tr></table></figure>
+<ul>
+<li>集群机器网络互联</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ping 172.16.98.2</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置主机映射(/etc/hosts)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">172.16.98.2 k8s-master</span><br></pre></td></tr></table></figure>
+<ul>
+<li>加载模块(<code>/etc/modules-load.d/containerd.conf</code>)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">overlay</span><br><span class="line">br_netfilter</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">modprobe overlay</span><br><span class="line">modprobe br_netfilter</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置sysctl参数(<code>/etc/sysctl.d/99-kubernetes-cri.conf</code>)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">net.bridge.bridge-nf-call-iptables  = 1</span><br><span class="line">net.ipv4.ip_forward                 = 1</span><br><span class="line">net.bridge.bridge-nf-call-ip6tables = 1</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sysctl --system</span><br></pre></td></tr></table></figure>
+<ul>
+<li>端口设置</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>协议</th>
+<th>方向</th>
+<th>端口范围</th>
+<th>作用</th>
+<th>使用者</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>6443</td>
+<td>Kubernetes API 服务器</td>
+<td>所有组件</td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>2379-2380</td>
+<td>etcd 服务器客户端 API</td>
+<td>kube-apiserver, etcd</td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>10250</td>
+<td>Kubelet API</td>
+<td>kubelet 自身、控制平面组件</td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>10251</td>
+<td>kube-scheduler</td>
+<td>kube-scheduler 自身</td>
+</tr>
+<tr>
+<td>TCP</td>
+<td>入站</td>
+<td>10252</td>
+<td>kube-controller-manager</td>
+<td>kube-controller-manager 自身</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">firewall-cmd --zone=public --add-port=6443/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=2379/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=2380/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=10250/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=10251/tcp --permanent</span><br><span class="line">firewall-cmd --zone=public --add-port=10252/tcp --permanent</span><br><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
+<h3 id="使用kubeadm引导集群"><a href="#使用kubeadm引导集群" class="headerlink" title="使用kubeadm引导集群"></a>使用kubeadm引导集群</h3><h4 id="安装容器"><a href="#安装容器" class="headerlink" title="安装容器"></a>安装容器</h4><p>&emsp;&emsp;这一步需要在集群所有节点执行。</p>
+<p>&emsp;&emsp;在linux上结合 <code>Kubernetes</code> 使用的几种通用容器为：<code>containerd</code>、<code>CRI-O</code>、<code>Docker</code>。这里我们选择<code>Docker</code>。</p>
+<p>&emsp;&emsp;这里提供传送门<a href="https://docs.docker.com/engine/install/#server" target="_blank" rel="noopener">docker官网的安装说明</a>,可以查看对应的操作系统安装 <code>Docker</code> 的详细步骤。下面的安装是基于centos7安装 <code>Docker</code> 的</p>
+<ul>
+<li>docker安装</li>
+</ul>
+<p>&emsp;&emsp;我们可以先去<a href="https://github.com/kubernetes/kubernetes/blob/v1.21.1/build/dependencies.yaml" target="_blank" rel="noopener">kubernetes的github仓库依赖关系</a>中看到我们想要安装的k8s集群版本对应的docker版本。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine</span><br><span class="line">yum install -y yum-utils</span><br><span class="line">yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line">yum install -y docker-ce-20.10.6 docker-ce-cli-20.10.6 containerd.io</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
+<ul>
+<li>配置(<code>/etc/docker/daemon.json</code>)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"exec-opts"</span>: [<span class="string">"native.cgroupdriver=systemd"</span>],</span><br><span class="line">  <span class="string">"log-driver"</span>: <span class="string">"json-file"</span>,</span><br><span class="line">  <span class="string">"log-opts"</span>: &#123;</span><br><span class="line">    <span class="string">"max-size"</span>: <span class="string">"100m"</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"storage-driver"</span>: <span class="string">"overlay2"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> docker</span><br><span class="line">systemctl daemon-reload</span><br><span class="line">systemctl restart docker</span><br></pre></td></tr></table></figure>
+<h4 id="安装工具"><a href="#安装工具" class="headerlink" title="安装工具"></a>安装工具</h4><ul>
+<li><code>kubeadm</code>：用来初始化集群的指令。</li>
+<li><code>kubelet</code>：在集群中的每个节点上用来启动 Pod 和容器等。</li>
+<li><code>kubectl</code>：用来与集群通信的命令行工具。</li>
+</ul>
+<p>&emsp;&emsp;在实际安装之前我们还需要了解一下 <code>Kubernetes</code> 版本与版本间的偏差策略</p>
+<h5 id="版本差异"><a href="#版本差异" class="headerlink" title="版本差异"></a>版本差异</h5><p>&emsp;&emsp;<code>Kubernetes</code> 版本号格式为 x.y.z，其中 x 为大版本号，y 为小版本号，z 为补丁版本号。</p>
+<ul>
+<li><code>kube-apiserver</code></li>
+</ul>
+<p>&emsp;&emsp;在 高可用（HA）集群 中， 多个 <code>kube-apiserver</code> 实例小版本号最多差1。也就是说，集群的每一个节点版本可以有差异，但是小版本差异最多为1。举例，k8s_master机器上版本号为1.19,那么集群的其他机器上安装的版本只能在1.18,1.19,1.20之间选择</p>
+<ul>
+<li><code>kubelet</code></li>
+</ul>
+<p>&emsp;&emsp;<code>kubelet</code> 版本号不能高于 <code>kube-apiserver</code>，最多可以比 <code>kube-apiserver</code> 低两个小版本。在集群中，则 <code>kubelet</code> 版本号不能高于集群中 <code>kube-apiserver</code> 最低的版本号，最多可以比集群中 <code>kube-apiserver</code> 最高的版本号低两个小版本。举例，存在 <code>kube-apiserver</code> 版本1.20，那么 <code>kubelet</code> 版本可以选择1.18,1.19,1.20。但如果集群中的 <code>kube-apiserver</code> 版本不一致，存在两个版本1.20,1.19，那么可选的 <code>kubelet</code> 版本为 1.19,1.18。</p>
+<ul>
+<li><code>kube-controller-manager</code>、 <code>kube-scheduler</code> 和 <code>cloud-controller-manager</code></li>
+</ul>
+<p>&emsp;&emsp;<code>kube-controller-manager</code>、<code>kube-scheduler</code> 和 <code>cloud-controller-manager</code> 版本不能高于 <code>kube-apiserver</code> 版本号。 最好它们的版本号与 <code>kube-apiserver</code> 保持一致，但允许比 <code>kube-apiserver</code> 低一个小版本（为了支持在线升级）。如果在 HA 集群中，多个 <code>kube-apiserver</code> 实例版本号不一致，他们也可以跟任意一个 <code>kube-apiserver</code> 实例通信（例如，通过 load balancer）， 但 <code>kube-controller-manager</code>、<code>kube-scheduler</code> 和 <code>cloud-controller-manager</code> 版本可用范围会相应的减小。</p>
+<ul>
+<li><code>kubectl</code></li>
+</ul>
+<p>&emsp;&emsp;<code>kubectl</code> 可以比 <code>kube-apiserver</code> 高一个小版本，也可以低一个小版本。在集群中，<code>kubectl</code> 可以比集群中最高的 <code>kube-apiserver</code> 版本号低一个小版本，可以比最低的 <code>kube-apiserver</code> 版本号高一个小版本。</p>
+<ul>
+<li><code>kube-proxy</code></li>
+</ul>
+<p>&emsp;&emsp;<code>kube-proxy</code> 必须与节点上的 <code>kubelet</code> 的小版本相同;<code>kube-proxy</code> 一定不能比 <code>kube-apiserver</code> 小版本高;<code>kube-proxy</code> 最多只能比 <code>kube-apiserver</code> 低两个小版本</p>
+<h5 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h5><p>&emsp;&emsp;需要在集群所有机器完成这一步。</p>
+<ul>
+<li>k8s的yum源配置(创建文件<code>/etc/yum.repos.d/kubernetes.repo</code>)</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[kubernetes]</span><br><span class="line">name=Kubernetes</span><br><span class="line">baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64</span><br><span class="line">enabled=1</span><br><span class="line">gpgcheck=1</span><br><span class="line">repo_gpgcheck=1</span><br><span class="line">gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查看可安装的版本</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum list kubeadm kubectl kubelet</span><br></pre></td></tr></table></figure>
+<ul>
+<li>安装指定版本</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum install -y kubelet-1.21.1-0 kubeadm-1.21.1-0 kubectl-1.21.1-0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置服务开机自启（这里不设置在初始化集群的时候会报错）</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> kubelet</span><br></pre></td></tr></table></figure>
+<h4 id="初始化集群"><a href="#初始化集群" class="headerlink" title="初始化集群"></a>初始化集群</h4><p>&emsp;&emsp;这一步只需要在控制平面执行即可。</p>
+<p>&emsp;&emsp;在初始化控制平面之前，我们需要验证一下与 gcr.io 容器镜像仓库的连通性。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm config images pull</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如果这一步报错，说没有响应，那么就是无法连接到该仓库，此时，我们需要从国内的镜像仓库获取对应的镜像了。这一步网上有很多的方法，例如从 <code>docker hub</code> 上搜索对应的镜像，下载并重新打标签，这种方式依赖于 <code>docker hub</code>上现存的镜像版本，如果你需要的版本没找到，那就有点尴尬了。下面提供的这种方法虽然繁琐了些，但是他能保证你需要获取的版本一定能获取到。</p>
+<ul>
+<li>查看需要的镜像</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm config images list</span><br></pre></td></tr></table></figure>
+<p><img src="/kubernetes/k8s_need_image_list.png" alt="需要的镜像"></p>
+<p>&emsp;&emsp;代码仓操作：</p>
+<ul>
+<li>登录代码仓创建仓库，将执行 <code>kubeadm config images list</code> 查看到的镜像依次创建了仓库。我这里选择的是github，如果无法访问github也可以选择你能访问的任何私仓，只要这个私仓公网可以访问即可。</li>
+</ul>
+<p><img src="/kubernetes/k8s_create_github_repository.png" alt="创建仓库"></p>
+<ul>
+<li>在仓库中创建 <code>Dockerfile</code> 文件,以 <code>kube-proxy</code> 为例，仓库名为 <code>kube-proxy</code>，<code>Dockerfile</code>内容为<code>FROM k8s.gcr.io/kube-proxy:v1.20.2</code>。</li>
+</ul>
+<p><img src="/kubernetes/k8s_create_github_dockerfile.png" alt="创建dockerfile"></p>
+<ul>
+<li>登录<a href="https://cr.console.aliyun.com/cn-hangzhou/instances/repositories" target="_blank" rel="noopener">阿里云容器镜像服务</a>,创建镜像仓库。容器镜像服务-&gt;默认实例-&gt;镜像仓库-&gt;创建镜像仓库</li>
+</ul>
+<p><img src="/kubernetes/k8s_create_aliyun_docker_repository.png" alt="创建dockerfile"></p>
+<p><img src="/kubernetes/k8s_create_aliyun_docker_repository2.png" alt="创建dockerfile"></p>
+<ul>
+<li>创建规则执行构建,若失败则查看日志，大概率是构建规则选的分支，文件，路径与代码仓中的不匹配</li>
+</ul>
+<p><img src="/kubernetes/k8s_click_aliyun_docker_repository.png" alt="查看镜像仓库"></p>
+<p><img src="/kubernetes/k8s_click_aliyun_create_rule.png" alt="查看构建"></p>
+<p><img src="/kubernetes/k8s_aliyun_create_docker_build_rule.png" alt="创建构建规则"></p>
+<p><img src="/kubernetes/k8s_aliyun_docker_build.png" alt="执行构建"></p>
+<ul>
+<li>设置访问凭证</li>
+</ul>
+<p><img src="/kubernetes/k8s_aliyun_set_password.png" alt="执行构建"></p>
+<ul>
+<li>在控制平面登录阿里云的镜像仓库，用户名为阿里云的账户名，拉取镜像，这里登录的地址一定要看好，镜像仓库所在的区域不同，登录的仓库地址也是有所区别的。具体的登录地址可以点击仓库进入仓库详情页面，基本信息-操作指南中查看</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker login --username=ferry_sy registry.cn-shanghai.aliyuncs.com</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>镜像重命名</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2 k8s.gcr.io/kube-apiserver:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2 k8s.gcr.io/kube-controller-manager:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2 k8s.gcr.io/kube-scheduler:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2 k8s.gcr.io/kube-proxy:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2 k8s.gcr.io/pause:3.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0 k8s.gcr.io/etcd:3.4.13-0</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0 k8s.gcr.io/coredns:1.7.0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除阿里云镜像</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0</span><br></pre></td></tr></table></figure>
+<ul>
+<li>初始化集群，<code>--pod-network-cidr</code> 参数用于配置CIDR，参数值可以填写 “内网ip/16”。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm init --pod-network-cidr=172.10.0.0/16 --service-cidr=10.96.0.0/12</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[init] Using Kubernetes version: v1.20.2</span><br><span class="line">[preflight] Running pre-flight checks</span><br><span class="line">	[WARNING Firewalld]: firewalld is active, please ensure ports [6443 10250] are open or your cluster may not <span class="keyword">function</span> correctly</span><br><span class="line">[preflight] Pulling images required <span class="keyword">for</span> setting up a Kubernetes cluster</span><br><span class="line">[preflight] This might take a minute or two, depending on the speed of your internet connection</span><br><span class="line">[preflight] You can also perform this action <span class="keyword">in</span> beforehand using <span class="string">'kubeadm config images pull'</span></span><br><span class="line">[certs] Using certificateDir folder <span class="string">"/etc/kubernetes/pki"</span></span><br><span class="line">[certs] Generating <span class="string">"ca"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"apiserver"</span> certificate and key</span><br><span class="line">[certs] apiserver serving cert is signed <span class="keyword">for</span> DNS names [k8s-master kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 172.16.98.2]</span><br><span class="line">[certs] Generating <span class="string">"apiserver-kubelet-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"front-proxy-ca"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"front-proxy-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"etcd/ca"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"etcd/server"</span> certificate and key</span><br><span class="line">[certs] etcd/server serving cert is signed <span class="keyword">for</span> DNS names [k8s-master localhost] and IPs [172.16.98.2 127.0.0.1 ::1]</span><br><span class="line">[certs] Generating <span class="string">"etcd/peer"</span> certificate and key</span><br><span class="line">[certs] etcd/peer serving cert is signed <span class="keyword">for</span> DNS names [k8s-master localhost] and IPs [172.16.98.2 127.0.0.1 ::1]</span><br><span class="line">[certs] Generating <span class="string">"etcd/healthcheck-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"apiserver-etcd-client"</span> certificate and key</span><br><span class="line">[certs] Generating <span class="string">"sa"</span> key and public key</span><br><span class="line">[kubeconfig] Using kubeconfig folder <span class="string">"/etc/kubernetes"</span></span><br><span class="line">[kubeconfig] Writing <span class="string">"admin.conf"</span> kubeconfig file</span><br><span class="line">[kubeconfig] Writing <span class="string">"kubelet.conf"</span> kubeconfig file</span><br><span class="line">[kubeconfig] Writing <span class="string">"controller-manager.conf"</span> kubeconfig file</span><br><span class="line">[kubeconfig] Writing <span class="string">"scheduler.conf"</span> kubeconfig file</span><br><span class="line">[kubelet-start] Writing kubelet environment file with flags to file <span class="string">"/var/lib/kubelet/kubeadm-flags.env"</span></span><br><span class="line">[kubelet-start] Writing kubelet configuration to file <span class="string">"/var/lib/kubelet/config.yaml"</span></span><br><span class="line">[kubelet-start] Starting the kubelet</span><br><span class="line">[control-plane] Using manifest folder <span class="string">"/etc/kubernetes/manifests"</span></span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-apiserver"</span></span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-controller-manager"</span></span><br><span class="line">[control-plane] Creating static Pod manifest <span class="keyword">for</span> <span class="string">"kube-scheduler"</span></span><br><span class="line">[etcd] Creating static Pod manifest <span class="keyword">for</span> <span class="built_in">local</span> etcd <span class="keyword">in</span> <span class="string">"/etc/kubernetes/manifests"</span></span><br><span class="line">[<span class="built_in">wait</span>-control-plane] Waiting <span class="keyword">for</span> the kubelet to boot up the control plane as static Pods from directory <span class="string">"/etc/kubernetes/manifests"</span>. This can take up to 4m0s</span><br><span class="line">[apiclient] All control plane components are healthy after 11.503773 seconds</span><br><span class="line">[upload-config] Storing the configuration used <span class="keyword">in</span> ConfigMap <span class="string">"kubeadm-config"</span> <span class="keyword">in</span> the <span class="string">"kube-system"</span> Namespace</span><br><span class="line">[kubelet] Creating a ConfigMap <span class="string">"kubelet-config-1.20"</span> <span class="keyword">in</span> namespace kube-system with the configuration <span class="keyword">for</span> the kubelets <span class="keyword">in</span> the cluster</span><br><span class="line">[upload-certs] Skipping phase. Please see --upload-certs</span><br><span class="line">[mark-control-plane] Marking the node k8s-master as control-plane by adding the labels <span class="string">"node-role.kubernetes.io/master=''"</span> and <span class="string">"node-role.kubernetes.io/control-plane='' (deprecated)"</span></span><br><span class="line">[mark-control-plane] Marking the node k8s-master as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]</span><br><span class="line">[bootstrap-token] Using token: ayqhud.254isto3e88zn9ba</span><br><span class="line">[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to get nodes</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow Node Bootstrap tokens to post CSRs <span class="keyword">in</span> order <span class="keyword">for</span> nodes to get long term certificate credentials</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token</span><br><span class="line">[bootstrap-token] configured RBAC rules to allow certificate rotation <span class="keyword">for</span> all node client certificates <span class="keyword">in</span> the cluster</span><br><span class="line">[bootstrap-token] Creating the <span class="string">"cluster-info"</span> ConfigMap <span class="keyword">in</span> the <span class="string">"kube-public"</span> namespace</span><br><span class="line">[kubelet-finalize] Updating <span class="string">"/etc/kubernetes/kubelet.conf"</span> to point to a rotatable kubelet client certificate and key</span><br><span class="line">[addons] Applied essential addon: CoreDNS</span><br><span class="line">[addons] Applied essential addon: kube-proxy</span><br><span class="line"></span><br><span class="line">Your Kubernetes control-plane has initialized successfully!</span><br><span class="line"></span><br><span class="line">To start using your cluster, you need to run the following as a regular user:</span><br><span class="line"></span><br><span class="line">  mkdir -p <span class="variable">$HOME</span>/.kube</span><br><span class="line">  sudo cp -i /etc/kubernetes/admin.conf <span class="variable">$HOME</span>/.kube/config</span><br><span class="line">  sudo chown $(id -u):$(id -g) <span class="variable">$HOME</span>/.kube/config</span><br><span class="line"></span><br><span class="line">Alternatively, <span class="keyword">if</span> you are the root user, you can run:</span><br><span class="line"></span><br><span class="line">  <span class="built_in">export</span> KUBECONFIG=/etc/kubernetes/admin.conf</span><br><span class="line"></span><br><span class="line">You should now deploy a pod network to the cluster.</span><br><span class="line">Run <span class="string">"kubectl apply -f [podnetwork].yaml"</span> with one of the options listed at:</span><br><span class="line">  https://kubernetes.io/docs/concepts/cluster-administration/addons/</span><br><span class="line"></span><br><span class="line">Then you can join any number of worker nodes by running the following on each as root:</span><br><span class="line"></span><br><span class="line">kubeadm join 172.16.98.2:6443 --token ayqhud.254isto3e88zn9ba \</span><br><span class="line">    --discovery-token-ca-cert-hash sha256:9393b7ecc8c6f81d81eb362e4b74e2635eedda15e749872a74cb6ac77bc8c1e5</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;我们可以从中捕获关键信息，在日志末尾它提示我们，如果想要非root用户使用集群，需要做那些操作，如果是root用户需要怎么做，才能够使用集群，将工作节点加入集群执行怎样的命令。</p>
+<ul>
+<li>root用户下添加环境变量(~/.bash_profile) </li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">export</span> KUBECONFIG=/etc/kubernetes/admin.conf</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bash_profile</span><br></pre></td></tr></table></figure>
+<h4 id="CNI-容器网络接口"><a href="#CNI-容器网络接口" class="headerlink" title="CNI(容器网络接口)"></a>CNI(容器网络接口)</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl get pods --all-namespaces</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;执行上述命令会发现此时集群的 <code>coredns</code> 的状态一直是 <code>Pending</code>，这是因为系统就是这么设计的。 <code>kubeadm</code> 的网络供应商是中立的，因此管理员应该选择 安装 <code>pod</code> 的网络解决方案。 你必须完成 <code>Pod</code> 的网络配置，然后才能完全部署 <code>CoreDNS</code>。 在网络被配置好之前，<code>DNS</code> 组件会一直处于 <code>Pending</code> 状态。</p>
+<h5 id="kube-router"><a href="#kube-router" class="headerlink" title="kube-router"></a>kube-router</h5><p>&emsp;&emsp;CNI的选择有很多，<code>Kube-router</code> 是 <code>Kubernetes</code> 的专用网络解决方案， 旨在提供高性能和易操作性。 <code>Kube-router</code> 提供了一个基于 <code>Linux LVS/IPVS</code> 的服务代理、一个基于 <code>Linux</code> 内核转发的无覆盖 <code>Pod-to-Pod</code> 网络解决方案和基于 <code>iptables/ipset</code> 的网络策略执行器。</p>
+<p>&emsp;&emsp;这里选择采用 <code>Kube-router</code> 代替 <code>Kube-proxy</code> 并且提供网络解决方案。</p>
+<p>&emsp;&emsp;首先需要下载 <code>Kube-router</code> 的yaml文件，我们需要访问 <code>raw.githubusercontent.com</code> 去获取，但是很有可能我们无法访问这个网站，那么我们先<a href="https://site.ip138.com/raw.Githubusercontent.com" target="_blank" rel="noopener">获取该域名对应的ip地址</a>然后在 <code>/etc/hosts</code> 文件中配置域名映射,这样我们就可以访问了。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">wget https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml</span><br><span class="line">wget https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter-all-features.yaml</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;上面两个yaml，第一个是仅提供网络解决方案的，第二个还可以代替 <code>Kube-proxy</code>。</p>
+<ul>
+<li>应用下载的yaml</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl apply -f kubeadm-kuberouter-all-features.yaml</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;应用之后可以看一下状态，不出意外应该是启动不了。</p>
+<p><img src="/kubernetes/k8s_kube-router_apply.png" alt="错误状态"></p>
+<p>&emsp;&emsp;遇到这种情况我们可以和先前下载 <code>kube-proxy</code> 等镜像一样，通过阿里云的镜像仓库服务来下载。</p>
+<p>&emsp;&emsp;下载好之后查看pod状态如果发现状态是 <code>CrashLoopBackOff</code>，此时我们可以查看日志</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl logs kube-router-bxl96 -n kube-system</span><br></pre></td></tr></table></figure>
+<p><img src="/kubernetes/k8s_kube-router_pod_crashloopbackoff.png" alt="错误日志"></p>
+<p>&emsp;&emsp;这说明我们初始化集群 <code>kubeadm init</code> 的时候没有使用参数 <code>--pod-network-cidr</code>，这里我们只能添加一下这个参数配置。</p>
+<ul>
+<li><code>kubeadm-config</code> 增加 <code>podSubnet</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl edit cm kubeadm-config -n kube-system</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">data:</span><br><span class="line">  ClusterConfiguration: |</span><br><span class="line">    networking:</span><br><span class="line">      podSubnet: 172.16.0.0/16</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>kube-controller-manager</code> 修改,增加 <code>allocate-node-cidrs</code> 和 <code>cluster-cidr</code></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vi /etc/kubernetes/manifests/kube-controller-manager.yaml</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">spec:</span><br><span class="line">  containers:</span><br><span class="line">  - <span class="built_in">command</span>:</span><br><span class="line">    - --allocate-node-cidrs=<span class="literal">true</span></span><br><span class="line">    - --cluster-cidr=172.16.0.0/16</span><br></pre></td></tr></table></figure>
+<ul>
+<li>删除 <code>kube-router</code> pod</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl delete pod kube-router-bxl96 -n kube-system</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;删除pod后集群会立刻再创建一个pod，稍等一会可以观察pod的状态，理论上此时就没有什么问题了。<code>kube-router</code> 创建好了那么之前一直在 <code>ContainerCreating</code> 的 <code>coredns</code> 的pod随后状态也会变成 <code>running</code>。</p>
+<p>&emsp;&emsp;由于这里使用的是 <code>kube-router</code> 的全特性，可以代替 <code>kube-proxy</code>, 所以我们删除 <code>kube-proxy</code>。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl delete ds kube-proxy -n kube-system</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;至此，我们工作平面已经初步安装完成，现在需要加入工作节点壮大我们的集群。</p>
+<p>&emsp;&emsp;使用weave插件</p>
+<h5 id="weave"><a href="#weave" class="headerlink" title="weave"></a>weave</h5><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl apply -f <span class="string">"https://cloud.weave.works/k8s/net?k8s-version=<span class="variable">$(kubectl version | base64 | tr -d '\n')</span>"</span></span><br></pre></td></tr></table></figure>
+<h5 id="flannel"><a href="#flannel" class="headerlink" title="flannel"></a>flannel</h5><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">policy/v1beta1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">PodSecurityPolicy</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">psp.flannel.unprivileged</span></span><br><span class="line">  <span class="attr">annotations:</span></span><br><span class="line">    <span class="attr">seccomp.security.alpha.kubernetes.io/allowedProfileNames:</span> <span class="string">docker/default</span></span><br><span class="line">    <span class="attr">seccomp.security.alpha.kubernetes.io/defaultProfileName:</span> <span class="string">docker/default</span></span><br><span class="line">    <span class="attr">apparmor.security.beta.kubernetes.io/allowedProfileNames:</span> <span class="string">runtime/default</span></span><br><span class="line">    <span class="attr">apparmor.security.beta.kubernetes.io/defaultProfileName:</span> <span class="string">runtime/default</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">privileged:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">volumes:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">configMap</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">secret</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">emptyDir</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">hostPath</span></span><br><span class="line">  <span class="attr">allowedHostPaths:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pathPrefix:</span> <span class="string">"/etc/cni/net.d"</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pathPrefix:</span> <span class="string">"/etc/kube-flannel"</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">pathPrefix:</span> <span class="string">"/run/flannel"</span></span><br><span class="line">  <span class="attr">readOnlyRootFilesystem:</span> <span class="literal">false</span></span><br><span class="line">  <span class="comment"># Users and groups</span></span><br><span class="line">  <span class="attr">runAsUser:</span></span><br><span class="line">    <span class="attr">rule:</span> <span class="string">RunAsAny</span></span><br><span class="line">  <span class="attr">supplementalGroups:</span></span><br><span class="line">    <span class="attr">rule:</span> <span class="string">RunAsAny</span></span><br><span class="line">  <span class="attr">fsGroup:</span></span><br><span class="line">    <span class="attr">rule:</span> <span class="string">RunAsAny</span></span><br><span class="line">  <span class="comment"># Privilege Escalation</span></span><br><span class="line">  <span class="attr">allowPrivilegeEscalation:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">defaultAllowPrivilegeEscalation:</span> <span class="literal">false</span></span><br><span class="line">  <span class="comment"># Capabilities</span></span><br><span class="line">  <span class="attr">allowedCapabilities:</span> <span class="string">['NET_ADMIN',</span> <span class="string">'NET_RAW'</span><span class="string">]</span></span><br><span class="line">  <span class="attr">defaultAddCapabilities:</span> <span class="string">[]</span></span><br><span class="line">  <span class="attr">requiredDropCapabilities:</span> <span class="string">[]</span></span><br><span class="line">  <span class="comment"># Host namespaces</span></span><br><span class="line">  <span class="attr">hostPID:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">hostIPC:</span> <span class="literal">false</span></span><br><span class="line">  <span class="attr">hostNetwork:</span> <span class="literal">true</span></span><br><span class="line">  <span class="attr">hostPorts:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">min:</span> <span class="number">0</span></span><br><span class="line">    <span class="attr">max:</span> <span class="number">65535</span></span><br><span class="line">  <span class="comment"># SELinux</span></span><br><span class="line">  <span class="attr">seLinux:</span></span><br><span class="line">    <span class="comment"># SELinux is unused in CaaSP</span></span><br><span class="line">    <span class="attr">rule:</span> <span class="string">'RunAsAny'</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">flannel</span></span><br><span class="line"><span class="attr">rules:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">apiGroups:</span> <span class="string">['extensions']</span></span><br><span class="line">  <span class="attr">resources:</span> <span class="string">['podsecuritypolicies']</span></span><br><span class="line">  <span class="attr">verbs:</span> <span class="string">['use']</span></span><br><span class="line">  <span class="attr">resourceNames:</span> <span class="string">['psp.flannel.unprivileged']</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">apiGroups:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">""</span></span><br><span class="line">  <span class="attr">resources:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">pods</span></span><br><span class="line">  <span class="attr">verbs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">get</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">apiGroups:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">""</span></span><br><span class="line">  <span class="attr">resources:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">nodes</span></span><br><span class="line">  <span class="attr">verbs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">list</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">watch</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">apiGroups:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">""</span></span><br><span class="line">  <span class="attr">resources:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">nodes/status</span></span><br><span class="line">  <span class="attr">verbs:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">patch</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ClusterRoleBinding</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">rbac.authorization.k8s.io/v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">flannel</span></span><br><span class="line"><span class="attr">roleRef:</span></span><br><span class="line">  <span class="attr">apiGroup:</span> <span class="string">rbac.authorization.k8s.io</span></span><br><span class="line">  <span class="attr">kind:</span> <span class="string">ClusterRole</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">flannel</span></span><br><span class="line"><span class="attr">subjects:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">flannel</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">kube-system</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ServiceAccount</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">flannel</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">kube-system</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">ConfigMap</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kube-flannel-cfg</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">kube-system</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">tier:</span> <span class="string">node</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">flannel</span></span><br><span class="line"><span class="attr">data:</span></span><br><span class="line">  <span class="attr">cni-conf.json:</span> <span class="string">|</span></span><br><span class="line">    <span class="string">&#123;</span></span><br><span class="line">      <span class="attr">"name":</span> <span class="string">"cbr0"</span><span class="string">,</span></span><br><span class="line">      <span class="attr">"cniVersion":</span> <span class="string">"0.3.1"</span><span class="string">,</span></span><br><span class="line">      <span class="attr">"plugins":</span> <span class="string">[</span></span><br><span class="line">        <span class="string">&#123;</span></span><br><span class="line">          <span class="attr">"type":</span> <span class="string">"flannel"</span><span class="string">,</span></span><br><span class="line">          <span class="attr">"delegate":</span> <span class="string">&#123;</span></span><br><span class="line">            <span class="attr">"hairpinMode":</span> <span class="literal">true</span><span class="string">,</span></span><br><span class="line">            <span class="attr">"isDefaultGateway":</span> <span class="literal">true</span></span><br><span class="line">          <span class="string">&#125;</span></span><br><span class="line">        <span class="string">&#125;,</span></span><br><span class="line">        <span class="string">&#123;</span></span><br><span class="line">          <span class="attr">"type":</span> <span class="string">"portmap"</span><span class="string">,</span></span><br><span class="line">          <span class="attr">"capabilities":</span> <span class="string">&#123;</span></span><br><span class="line">            <span class="attr">"portMappings":</span> <span class="literal">true</span></span><br><span class="line">          <span class="string">&#125;</span></span><br><span class="line">        <span class="string">&#125;</span></span><br><span class="line">      <span class="string">]</span></span><br><span class="line">    <span class="string">&#125;</span></span><br><span class="line">  <span class="attr">net-conf.json:</span> <span class="string">|</span></span><br><span class="line">    <span class="string">&#123;</span></span><br><span class="line">      <span class="attr">"Network":</span> <span class="string">"10.244.0.0/16"</span><span class="string">,</span></span><br><span class="line">      <span class="attr">"Backend":</span> <span class="string">&#123;</span></span><br><span class="line">        <span class="attr">"Type":</span> <span class="string">"vxlan"</span></span><br><span class="line">      <span class="string">&#125;</span></span><br><span class="line">    <span class="string">&#125;</span></span><br><span class="line"><span class="meta">---</span></span><br><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">DaemonSet</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">kube-flannel-ds</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">kube-system</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">tier:</span> <span class="string">node</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">flannel</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">flannel</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">tier:</span> <span class="string">node</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">flannel</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">affinity:</span></span><br><span class="line">        <span class="attr">nodeAffinity:</span></span><br><span class="line">          <span class="attr">requiredDuringSchedulingIgnoredDuringExecution:</span></span><br><span class="line">            <span class="attr">nodeSelectorTerms:</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">matchExpressions:</span></span><br><span class="line">              <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">kubernetes.io/os</span></span><br><span class="line">                <span class="attr">operator:</span> <span class="string">In</span></span><br><span class="line">                <span class="attr">values:</span></span><br><span class="line">                <span class="bullet">-</span> <span class="string">linux</span></span><br><span class="line">      <span class="attr">hostNetwork:</span> <span class="literal">true</span></span><br><span class="line">      <span class="attr">priorityClassName:</span> <span class="string">system-node-critical</span></span><br><span class="line">      <span class="attr">tolerations:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">operator:</span> <span class="string">Exists</span></span><br><span class="line">        <span class="attr">effect:</span> <span class="string">NoSchedule</span></span><br><span class="line">      <span class="attr">serviceAccountName:</span> <span class="string">flannel</span></span><br><span class="line">      <span class="attr">initContainers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">install-cni</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">quay.io/coreos/flannel:v0.14.0-rc1</span></span><br><span class="line">        <span class="attr">command:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">cp</span></span><br><span class="line">        <span class="attr">args:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">-f</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">/etc/kube-flannel/cni-conf.json</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">/etc/cni/net.d/10-flannel.conflist</span></span><br><span class="line">        <span class="attr">volumeMounts:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cni</span></span><br><span class="line">          <span class="attr">mountPath:</span> <span class="string">/etc/cni/net.d</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">flannel-cfg</span></span><br><span class="line">          <span class="attr">mountPath:</span> <span class="string">/etc/kube-flannel/</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">kube-flannel</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">quay.io/coreos/flannel:v0.14.0-rc1</span></span><br><span class="line">        <span class="attr">command:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">/opt/bin/flanneld</span></span><br><span class="line">        <span class="attr">args:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">--ip-masq</span></span><br><span class="line">        <span class="bullet">-</span> <span class="string">--kube-subnet-mgr</span></span><br><span class="line">        <span class="attr">resources:</span></span><br><span class="line">          <span class="attr">requests:</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">"100m"</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">"50Mi"</span></span><br><span class="line">          <span class="attr">limits:</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">"100m"</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">"50Mi"</span></span><br><span class="line">        <span class="attr">securityContext:</span></span><br><span class="line">          <span class="attr">privileged:</span> <span class="literal">false</span></span><br><span class="line">          <span class="attr">capabilities:</span></span><br><span class="line">            <span class="attr">add:</span> <span class="string">["NET_ADMIN",</span> <span class="string">"NET_RAW"</span><span class="string">]</span></span><br><span class="line">        <span class="attr">env:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">POD_NAME</span></span><br><span class="line">          <span class="attr">valueFrom:</span></span><br><span class="line">            <span class="attr">fieldRef:</span></span><br><span class="line">              <span class="attr">fieldPath:</span> <span class="string">metadata.name</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">POD_NAMESPACE</span></span><br><span class="line">          <span class="attr">valueFrom:</span></span><br><span class="line">            <span class="attr">fieldRef:</span></span><br><span class="line">              <span class="attr">fieldPath:</span> <span class="string">metadata.namespace</span></span><br><span class="line">        <span class="attr">volumeMounts:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">run</span></span><br><span class="line">          <span class="attr">mountPath:</span> <span class="string">/run/flannel</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">flannel-cfg</span></span><br><span class="line">          <span class="attr">mountPath:</span> <span class="string">/etc/kube-flannel/</span></span><br><span class="line">      <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">run</span></span><br><span class="line">        <span class="attr">hostPath:</span></span><br><span class="line">          <span class="attr">path:</span> <span class="string">/run/flannel</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">cni</span></span><br><span class="line">        <span class="attr">hostPath:</span></span><br><span class="line">          <span class="attr">path:</span> <span class="string">/etc/cni/net.d</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">flannel-cfg</span></span><br><span class="line">        <span class="attr">configMap:</span></span><br><span class="line">          <span class="attr">name:</span> <span class="string">kube-flannel-cfg</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl apply -f flannel.yaml</span><br></pre></td></tr></table></figure>
+<h4 id="加入工作节点"><a href="#加入工作节点" class="headerlink" title="加入工作节点"></a>加入工作节点</h4><p>&emsp;&emsp;这一步需要控制平面和工作节点配合完成。</p>
+<blockquote>
+<p>控制平面：用于管理集群的机器<br>工作节点：运行应用服务的机器</p>
+</blockquote>
+<p>&emsp;&emsp;将工作节点加入集群需要令牌认证，令牌默认24小时失效。我们先查询当前未失效的令牌</p>
+<ul>
+<li>控制平面</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm token list</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;如果shell中输出了令牌信息，那么我们就用这个令牌就可以让工作节点加入集群，若没有输出令牌信息，说明已有的令牌都失效了，需要重新生成令牌。</p>
+<ul>
+<li>控制平面</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm token create</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;此外，我们还需要获取ca证书sha256编码hash值</p>
+<ul>
+<li>控制平面</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">openssl x509 -pubkey -<span class="keyword">in</span> /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2&gt;/dev/null | openssl dgst -sha256 -hex | sed <span class="string">'s/^.* //'</span></span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;将工作节点加入集群，命令中的ip地址是控制平面的内网ip，端口是 Kubernetes API 服务器的端口</p>
+<ul>
+<li>工作节点</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm join 172.16.98.2:6443 --token udl1vd.ln1kzbtertnzbfmi --discovery-token-ca-cert-hash sha256:9393b7ecc8c6f81d81eb362e4b74e2635eedda15e749872a74cb6ac77bc8c1e5</span><br></pre></td></tr></table></figure>
+<p><img src="k8s_join_node_to_master.png" alt="加入节点错误"></p>
+<p>&emsp;&emsp;出错了，说明我们工作节点的环境准备不是很充分，此时我们按照提示一步步解决。</p>
+<ul>
+<li>未识别的的主机名,编辑工作节点的 <code>/etc/hosts</code> 文件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">172.16.98.6 k8s-node-1</span><br></pre></td></tr></table></figure>
+<ul>
+<li>编辑工作节点文件<code>/etc/sysctl.conf</code>，添加设置然后重启系统</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">net.bridge.bridge-nf-call-iptables = 1</span><br></pre></td></tr></table></figure>
+<ul>
+<li>工作节点</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubeadm join 172.16.98.2:6443 --token udl1vd.ln1kzbtertnzbfmi --discovery-token-ca-cert-hash sha256:9393b7ecc8c6f81d81eb362e4b74e2635eedda15e749872a74cb6ac77bc8c1e5</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;依次将所有工作节点加入集群中，接下来在查看集群中的节点信息。</p>
+<ul>
+<li>控制平面</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl get node</span><br></pre></td></tr></table></figure>
+<h3 id="集群参数设置"><a href="#集群参数设置" class="headerlink" title="集群参数设置"></a>集群参数设置</h3><h4 id="kube-proxy模式切换"><a href="#kube-proxy模式切换" class="headerlink" title="kube-proxy模式切换"></a>kube-proxy模式切换</h4><p>&emsp;&emsp;<code>ipvs</code>相比较<code>iptables</code>来说性能更好，我们将<code>kube-proxy</code>的模式切换成<code>ipvs</code>。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kubectl edit cm -n kube-system</span><br></pre></td></tr></table></figure>
+<p>将<code>data.config.conf.mode</code>设置成<code>ipvs</code>保存退出即可。</p>
+]]></content>
+      <categories>
+        <category>kubernetes</category>
+      </categories>
+      <tags>
+        <tag>k8s</tag>
       </tags>
   </entry>
   <entry>
@@ -2182,6 +2182,58 @@
       </tags>
   </entry>
   <entry>
+    <title>oracle sql 调优</title>
+    <url>/oracle-sql-optimize.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;oracle数据库sql调优学习记录笔记。</p>
+<a id="more"></a>
+<h1 id="核心思想"><a href="#核心思想" class="headerlink" title="核心思想"></a>核心思想</h1><h2 id="只有大表才会产生性能"><a href="#只有大表才会产生性能" class="headerlink" title="只有大表才会产生性能"></a>只有大表才会产生性能</h2><h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><h2 id="基数"><a href="#基数" class="headerlink" title="基数"></a>基数</h2><p>&emsp;&emsp;某个列唯一键的数量叫做基数。主键列的基数等于行数。性别列的基数等于2。</p>
+<p>&emsp;&emsp;基数的高低影响列的数据分布。</p>
+<p>&emsp;&emsp;当查询结果返回表中5%以内的数据时，应该走索引；当查询结果返回表中超过5%的数据时，应该走全表扫描。</p>
+<ul>
+<li><strong>查询性别列的基数</strong></li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(<span class="keyword">distinct</span> t.sex) <span class="keyword">from</span> <span class="keyword">user</span> t</span><br></pre></td></tr></table></figure>
+<h2 id="选择性"><a href="#选择性" class="headerlink" title="选择性"></a>选择性</h2><p>&emsp;&emsp;基数/表的总行数*100%。</p>
+<p>&emsp;&emsp;什么样的列必须创建索引？当一个列出现在 where 条件中，该列没有创建索引并且选择性大于20%，那么该列就必须创建索引。</p>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(<span class="keyword">distinct</span> t.sex) / <span class="keyword">count</span>(*) <span class="keyword">from</span> <span class="keyword">user</span> t</span><br></pre></td></tr></table></figure>
+<h2 id="直方图"><a href="#直方图" class="headerlink" title="直方图"></a>直方图</h2><p>&emsp;&emsp;当某个列的基数很低，该列的数据分布就会不均衡。数据分布不均衡，就会导致在查询该列时要么走索引，要么走全表扫描，这时候很容易走错执行计划。</p>
+<p>&emsp;&emsp;<strong>如果没有对基数低的列收集直方图统计信息，基于成本的优化器（CBO）会认为该列的数据分布是均衡的。</strong></p>
+<p>&emsp;&emsp;<strong>直方图是用来帮助CBO在对基数很低、数据分布不均衡的列进行Rows估算的时候，可以得到更精确的Rows。</strong></p>
+<p>&emsp;&emsp;什么样的列应该收集直方图？该列出现在where条件中，列的选择性小于1%并且该列没有收集过直方图。</p>
+<h2 id="回表"><a href="#回表" class="headerlink" title="回表"></a>回表</h2><p>&emsp;&emsp;当对一个列创建索引之后，索引会包含该列的键值以及键值对应行所在的rowid。</p>
+<p>&emsp;&emsp;<strong>通过索引中记录的rowid访问表中的数据就叫回表。回表一般是单块读（一个rowid对应一个数据块），回表次数太多会严重影响SQL性能。如果回表次数太多，就不应该走索引，应该直接走全表扫描。</strong></p>
+<p>&emsp;&emsp;<code>arraysize</code>参数：表示Oracle服务器每次传输多少行数据到客户端。假设<code>arraysize=15</code>，如果一个数据块有150行数据，那么每次传输15行，需要读取这个数据块10次才能读完，此时逻辑读被放大了。为了消除arraysize对逻辑读的影响，可以将参数调大。</p>
+<h1 id="全自动优化脚本"><a href="#全自动优化脚本" class="headerlink" title="全自动优化脚本"></a>全自动优化脚本</h1><h2 id="抓住必须创建索引的列"><a href="#抓住必须创建索引的列" class="headerlink" title="抓住必须创建索引的列"></a>抓住必须创建索引的列</h2><ul>
+<li>刷行数据库监控信息</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">begin</span></span><br><span class="line">  dbms_stats.flush_database_monitoring_info;</span><br><span class="line"><span class="keyword">end</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>查询指定用户指定表出现在where条件中的列信息</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> r.name <span class="keyword">as</span> owner,</span><br><span class="line">       o.name <span class="keyword">as</span> table_name,</span><br><span class="line">       c.name <span class="keyword">as</span> column_name,</span><br><span class="line">       u.equality_preds,     <span class="comment">-- 等值过滤</span></span><br><span class="line">       u.equijoin_preds,     <span class="comment">-- 等值join，ex: where a.id=b.id</span></span><br><span class="line">       u.nonequijoin_preds,  <span class="comment">-- 不等于join</span></span><br><span class="line">       u.range_preds,        <span class="comment">-- 返回过滤次数</span></span><br><span class="line">       u.like_preds,         <span class="comment">-- like过滤</span></span><br><span class="line">       u.null_preds,         <span class="comment">-- null过滤</span></span><br><span class="line">       u.timestamp</span><br><span class="line"><span class="keyword">from</span> sys.col_usage$ u,</span><br><span class="line">     sys.obj$ o,</span><br><span class="line">     sys.col$ c,</span><br><span class="line">     sys.user$ r</span><br><span class="line"><span class="keyword">where</span> u.obj<span class="comment"># = o.obj#</span></span><br><span class="line">  <span class="keyword">and</span> u.obj<span class="comment"># = c.obj#</span></span><br><span class="line">  <span class="keyword">and</span> u.intcol<span class="comment"># = c.col#</span></span><br><span class="line">  <span class="keyword">and</span> r.name = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> o.name = <span class="string">'CON_CONTRACT'</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>查询指定用户指定表的索引信息</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> c.table_owner, c.table_name, c.column_name, c.index_name</span><br><span class="line"><span class="keyword">from</span> dba_ind_columns c</span><br><span class="line"><span class="keyword">where</span> c.table_owner = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> c.table_name = <span class="string">'CON_CONTRACT'</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>指定用户指定表的选择性大于20%的列</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> a.owner, a.table_name, a.column_name, <span class="keyword">round</span>(a.num_distinct / b.num_rows * <span class="number">100</span>, <span class="number">2</span>) selectivity</span><br><span class="line"><span class="keyword">from</span> dba_tab_col_statistics a,</span><br><span class="line">     dba_tables b</span><br><span class="line"><span class="keyword">where</span> a.owner = b.owner</span><br><span class="line">  <span class="keyword">and</span> a.table_name = b.table_name</span><br><span class="line">  <span class="keyword">and</span> a.owner = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> a.table_name = <span class="string">'CON_CONTRACT'</span></span><br><span class="line">  <span class="keyword">and</span> a.num_distinct / b.num_rows &gt;= <span class="number">0.2</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>最终的脚本</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> t1.owner, t1.table_name, t1.column_name, t1.num_rows, t1.Cardinality, t1.selectivity, <span class="string">'Need index'</span> <span class="keyword">as</span> <span class="keyword">notice</span></span><br><span class="line"><span class="keyword">from</span> (<span class="keyword">select</span> b.owner,</span><br><span class="line">             a.table_name,</span><br><span class="line">             a.column_name,</span><br><span class="line">             b.num_rows,</span><br><span class="line">             a.num_distinct                              Cardinality,</span><br><span class="line">             <span class="keyword">round</span>(a.num_distinct / b.num_rows * <span class="number">100</span>, <span class="number">2</span>) selectivity</span><br><span class="line">      <span class="keyword">from</span> dba_tab_col_statistics a,</span><br><span class="line">           dba_tables b</span><br><span class="line">      <span class="keyword">where</span> a.owner = b.owner</span><br><span class="line">        <span class="keyword">and</span> a.table_name = b.table_name</span><br><span class="line">        <span class="keyword">and</span> a.owner = <span class="string">'RETAIL'</span></span><br><span class="line">        <span class="keyword">and</span> a.table_name = <span class="string">'CON_CONTRACT'</span>) t1</span><br><span class="line"><span class="keyword">where</span> t1.selectivity &gt;= <span class="number">20</span></span><br><span class="line">  <span class="keyword">and</span> <span class="keyword">not</span> <span class="keyword">exists</span>(<span class="keyword">select</span> <span class="number">1</span></span><br><span class="line">                 <span class="keyword">from</span> dba_ind_columns t2</span><br><span class="line">                 <span class="keyword">where</span> t2.table_owner = t1.owner</span><br><span class="line">                   <span class="keyword">and</span> t2.table_name = t1.table_name</span><br><span class="line">                   <span class="keyword">and</span> t2.column_name = t1.column_name)</span><br><span class="line">  <span class="keyword">and</span> <span class="keyword">exists</span>(<span class="keyword">select</span> <span class="number">1</span></span><br><span class="line">             <span class="keyword">from</span> sys.col_usage$ u,</span><br><span class="line">                  sys.obj$ o,</span><br><span class="line">                  sys.col$ c,</span><br><span class="line">                  sys.user$ r</span><br><span class="line">             <span class="keyword">where</span> o.obj<span class="comment"># = u.obj#</span></span><br><span class="line">               <span class="keyword">and</span> c.obj<span class="comment"># = u.obj#</span></span><br><span class="line">               <span class="keyword">and</span> c.col<span class="comment"># = u.intcol#</span></span><br><span class="line">               <span class="keyword">and</span> r.name = t1.owner</span><br><span class="line">               <span class="keyword">and</span> o.name = t1.table_name</span><br><span class="line">               <span class="keyword">and</span> c.name = t1.column_name);</span><br></pre></td></tr></table></figure>
+<h2 id="抓住必须创建直方图的列"><a href="#抓住必须创建直方图的列" class="headerlink" title="抓住必须创建直方图的列"></a>抓住必须创建直方图的列</h2><figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> a.owner,</span><br><span class="line">       a.table_name,</span><br><span class="line">       a.column_name,</span><br><span class="line">       b.num_rows,</span><br><span class="line">       a.num_distinct,</span><br><span class="line">       trunc(a.num_distinct / b.num_rows * <span class="number">100</span>, <span class="number">2</span>) selectivity,</span><br><span class="line">       <span class="string">'Need Gather Histogram'</span>                     <span class="keyword">notice</span></span><br><span class="line"><span class="keyword">from</span> dba_tab_col_statistics a,</span><br><span class="line">     dba_tables b</span><br><span class="line"><span class="keyword">where</span> a.owner = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> a.table_name = <span class="string">'CON_CONTRACT'</span></span><br><span class="line">  <span class="keyword">and</span> a.owner = b.owner</span><br><span class="line">  <span class="keyword">and</span> a.table_name = b.table_name</span><br><span class="line">  <span class="keyword">and</span> a.num_distinct / b.num_rows &lt; <span class="number">0.01</span></span><br><span class="line">  <span class="keyword">and</span> (a.owner, a.table_name, a.column_name) <span class="keyword">in</span></span><br><span class="line">      (<span class="keyword">select</span> r.name owner, o.name table_name, c.name column_name</span><br><span class="line">       <span class="keyword">from</span> sys.col_usage$ u,</span><br><span class="line">            sys.obj$ o,</span><br><span class="line">            sys.col$ c,</span><br><span class="line">            sys.user$ r</span><br><span class="line">       <span class="keyword">where</span> o.obj<span class="comment"># = u.obj#</span></span><br><span class="line">         <span class="keyword">and</span> c.obj<span class="comment"># = u.obj#</span></span><br><span class="line">         <span class="keyword">and</span> c.col<span class="comment"># = u.intcol#</span></span><br><span class="line">         <span class="keyword">and</span> r.name = a.owner</span><br><span class="line">         <span class="keyword">and</span> o.name = a.table_name)</span><br><span class="line">  <span class="keyword">and</span> a.histogram = <span class="string">'NONE'</span>;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>oracle</category>
+      </categories>
+      <tags>
+        <tag>oracle</tag>
+        <tag>sql</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>mysql</title>
     <url>/mysql.html</url>
     <content><![CDATA[<p>&emsp;&emsp;记录一下mysql中常用的语法吧，也算是通用的sql语法。</p>
@@ -2462,58 +2514,6 @@
         <tag>创建用户</tag>
         <tag>分配权限</tag>
         <tag>安装mysql5.7</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>oracle sql 调优</title>
-    <url>/oracle-sql-optimize.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;oracle数据库sql调优学习记录笔记。</p>
-<a id="more"></a>
-<h1 id="核心思想"><a href="#核心思想" class="headerlink" title="核心思想"></a>核心思想</h1><h2 id="只有大表才会产生性能"><a href="#只有大表才会产生性能" class="headerlink" title="只有大表才会产生性能"></a>只有大表才会产生性能</h2><h1 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h1><h2 id="基数"><a href="#基数" class="headerlink" title="基数"></a>基数</h2><p>&emsp;&emsp;某个列唯一键的数量叫做基数。主键列的基数等于行数。性别列的基数等于2。</p>
-<p>&emsp;&emsp;基数的高低影响列的数据分布。</p>
-<p>&emsp;&emsp;当查询结果返回表中5%以内的数据时，应该走索引；当查询结果返回表中超过5%的数据时，应该走全表扫描。</p>
-<ul>
-<li><strong>查询性别列的基数</strong></li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(<span class="keyword">distinct</span> t.sex) <span class="keyword">from</span> <span class="keyword">user</span> t</span><br></pre></td></tr></table></figure>
-<h2 id="选择性"><a href="#选择性" class="headerlink" title="选择性"></a>选择性</h2><p>&emsp;&emsp;基数/表的总行数*100%。</p>
-<p>&emsp;&emsp;什么样的列必须创建索引？当一个列出现在 where 条件中，该列没有创建索引并且选择性大于20%，那么该列就必须创建索引。</p>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">count</span>(<span class="keyword">distinct</span> t.sex) / <span class="keyword">count</span>(*) <span class="keyword">from</span> <span class="keyword">user</span> t</span><br></pre></td></tr></table></figure>
-<h2 id="直方图"><a href="#直方图" class="headerlink" title="直方图"></a>直方图</h2><p>&emsp;&emsp;当某个列的基数很低，该列的数据分布就会不均衡。数据分布不均衡，就会导致在查询该列时要么走索引，要么走全表扫描，这时候很容易走错执行计划。</p>
-<p>&emsp;&emsp;<strong>如果没有对基数低的列收集直方图统计信息，基于成本的优化器（CBO）会认为该列的数据分布是均衡的。</strong></p>
-<p>&emsp;&emsp;<strong>直方图是用来帮助CBO在对基数很低、数据分布不均衡的列进行Rows估算的时候，可以得到更精确的Rows。</strong></p>
-<p>&emsp;&emsp;什么样的列应该收集直方图？该列出现在where条件中，列的选择性小于1%并且该列没有收集过直方图。</p>
-<h2 id="回表"><a href="#回表" class="headerlink" title="回表"></a>回表</h2><p>&emsp;&emsp;当对一个列创建索引之后，索引会包含该列的键值以及键值对应行所在的rowid。</p>
-<p>&emsp;&emsp;<strong>通过索引中记录的rowid访问表中的数据就叫回表。回表一般是单块读（一个rowid对应一个数据块），回表次数太多会严重影响SQL性能。如果回表次数太多，就不应该走索引，应该直接走全表扫描。</strong></p>
-<p>&emsp;&emsp;<code>arraysize</code>参数：表示Oracle服务器每次传输多少行数据到客户端。假设<code>arraysize=15</code>，如果一个数据块有150行数据，那么每次传输15行，需要读取这个数据块10次才能读完，此时逻辑读被放大了。为了消除arraysize对逻辑读的影响，可以将参数调大。</p>
-<h1 id="全自动优化脚本"><a href="#全自动优化脚本" class="headerlink" title="全自动优化脚本"></a>全自动优化脚本</h1><h2 id="抓住必须创建索引的列"><a href="#抓住必须创建索引的列" class="headerlink" title="抓住必须创建索引的列"></a>抓住必须创建索引的列</h2><ul>
-<li>刷行数据库监控信息</li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">begin</span></span><br><span class="line">  dbms_stats.flush_database_monitoring_info;</span><br><span class="line"><span class="keyword">end</span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>查询指定用户指定表出现在where条件中的列信息</li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> r.name <span class="keyword">as</span> owner,</span><br><span class="line">       o.name <span class="keyword">as</span> table_name,</span><br><span class="line">       c.name <span class="keyword">as</span> column_name,</span><br><span class="line">       u.equality_preds,     <span class="comment">-- 等值过滤</span></span><br><span class="line">       u.equijoin_preds,     <span class="comment">-- 等值join，ex: where a.id=b.id</span></span><br><span class="line">       u.nonequijoin_preds,  <span class="comment">-- 不等于join</span></span><br><span class="line">       u.range_preds,        <span class="comment">-- 返回过滤次数</span></span><br><span class="line">       u.like_preds,         <span class="comment">-- like过滤</span></span><br><span class="line">       u.null_preds,         <span class="comment">-- null过滤</span></span><br><span class="line">       u.timestamp</span><br><span class="line"><span class="keyword">from</span> sys.col_usage$ u,</span><br><span class="line">     sys.obj$ o,</span><br><span class="line">     sys.col$ c,</span><br><span class="line">     sys.user$ r</span><br><span class="line"><span class="keyword">where</span> u.obj<span class="comment"># = o.obj#</span></span><br><span class="line">  <span class="keyword">and</span> u.obj<span class="comment"># = c.obj#</span></span><br><span class="line">  <span class="keyword">and</span> u.intcol<span class="comment"># = c.col#</span></span><br><span class="line">  <span class="keyword">and</span> r.name = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> o.name = <span class="string">'CON_CONTRACT'</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>查询指定用户指定表的索引信息</li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> c.table_owner, c.table_name, c.column_name, c.index_name</span><br><span class="line"><span class="keyword">from</span> dba_ind_columns c</span><br><span class="line"><span class="keyword">where</span> c.table_owner = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> c.table_name = <span class="string">'CON_CONTRACT'</span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>指定用户指定表的选择性大于20%的列</li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> a.owner, a.table_name, a.column_name, <span class="keyword">round</span>(a.num_distinct / b.num_rows * <span class="number">100</span>, <span class="number">2</span>) selectivity</span><br><span class="line"><span class="keyword">from</span> dba_tab_col_statistics a,</span><br><span class="line">     dba_tables b</span><br><span class="line"><span class="keyword">where</span> a.owner = b.owner</span><br><span class="line">  <span class="keyword">and</span> a.table_name = b.table_name</span><br><span class="line">  <span class="keyword">and</span> a.owner = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> a.table_name = <span class="string">'CON_CONTRACT'</span></span><br><span class="line">  <span class="keyword">and</span> a.num_distinct / b.num_rows &gt;= <span class="number">0.2</span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>最终的脚本</li>
-</ul>
-<figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> t1.owner, t1.table_name, t1.column_name, t1.num_rows, t1.Cardinality, t1.selectivity, <span class="string">'Need index'</span> <span class="keyword">as</span> <span class="keyword">notice</span></span><br><span class="line"><span class="keyword">from</span> (<span class="keyword">select</span> b.owner,</span><br><span class="line">             a.table_name,</span><br><span class="line">             a.column_name,</span><br><span class="line">             b.num_rows,</span><br><span class="line">             a.num_distinct                              Cardinality,</span><br><span class="line">             <span class="keyword">round</span>(a.num_distinct / b.num_rows * <span class="number">100</span>, <span class="number">2</span>) selectivity</span><br><span class="line">      <span class="keyword">from</span> dba_tab_col_statistics a,</span><br><span class="line">           dba_tables b</span><br><span class="line">      <span class="keyword">where</span> a.owner = b.owner</span><br><span class="line">        <span class="keyword">and</span> a.table_name = b.table_name</span><br><span class="line">        <span class="keyword">and</span> a.owner = <span class="string">'RETAIL'</span></span><br><span class="line">        <span class="keyword">and</span> a.table_name = <span class="string">'CON_CONTRACT'</span>) t1</span><br><span class="line"><span class="keyword">where</span> t1.selectivity &gt;= <span class="number">20</span></span><br><span class="line">  <span class="keyword">and</span> <span class="keyword">not</span> <span class="keyword">exists</span>(<span class="keyword">select</span> <span class="number">1</span></span><br><span class="line">                 <span class="keyword">from</span> dba_ind_columns t2</span><br><span class="line">                 <span class="keyword">where</span> t2.table_owner = t1.owner</span><br><span class="line">                   <span class="keyword">and</span> t2.table_name = t1.table_name</span><br><span class="line">                   <span class="keyword">and</span> t2.column_name = t1.column_name)</span><br><span class="line">  <span class="keyword">and</span> <span class="keyword">exists</span>(<span class="keyword">select</span> <span class="number">1</span></span><br><span class="line">             <span class="keyword">from</span> sys.col_usage$ u,</span><br><span class="line">                  sys.obj$ o,</span><br><span class="line">                  sys.col$ c,</span><br><span class="line">                  sys.user$ r</span><br><span class="line">             <span class="keyword">where</span> o.obj<span class="comment"># = u.obj#</span></span><br><span class="line">               <span class="keyword">and</span> c.obj<span class="comment"># = u.obj#</span></span><br><span class="line">               <span class="keyword">and</span> c.col<span class="comment"># = u.intcol#</span></span><br><span class="line">               <span class="keyword">and</span> r.name = t1.owner</span><br><span class="line">               <span class="keyword">and</span> o.name = t1.table_name</span><br><span class="line">               <span class="keyword">and</span> c.name = t1.column_name);</span><br></pre></td></tr></table></figure>
-<h2 id="抓住必须创建直方图的列"><a href="#抓住必须创建直方图的列" class="headerlink" title="抓住必须创建直方图的列"></a>抓住必须创建直方图的列</h2><figure class="highlight sql"><table><tr><td class="code"><pre><span class="line"><span class="keyword">select</span> a.owner,</span><br><span class="line">       a.table_name,</span><br><span class="line">       a.column_name,</span><br><span class="line">       b.num_rows,</span><br><span class="line">       a.num_distinct,</span><br><span class="line">       trunc(a.num_distinct / b.num_rows * <span class="number">100</span>, <span class="number">2</span>) selectivity,</span><br><span class="line">       <span class="string">'Need Gather Histogram'</span>                     <span class="keyword">notice</span></span><br><span class="line"><span class="keyword">from</span> dba_tab_col_statistics a,</span><br><span class="line">     dba_tables b</span><br><span class="line"><span class="keyword">where</span> a.owner = <span class="string">'RETAIL'</span></span><br><span class="line">  <span class="keyword">and</span> a.table_name = <span class="string">'CON_CONTRACT'</span></span><br><span class="line">  <span class="keyword">and</span> a.owner = b.owner</span><br><span class="line">  <span class="keyword">and</span> a.table_name = b.table_name</span><br><span class="line">  <span class="keyword">and</span> a.num_distinct / b.num_rows &lt; <span class="number">0.01</span></span><br><span class="line">  <span class="keyword">and</span> (a.owner, a.table_name, a.column_name) <span class="keyword">in</span></span><br><span class="line">      (<span class="keyword">select</span> r.name owner, o.name table_name, c.name column_name</span><br><span class="line">       <span class="keyword">from</span> sys.col_usage$ u,</span><br><span class="line">            sys.obj$ o,</span><br><span class="line">            sys.col$ c,</span><br><span class="line">            sys.user$ r</span><br><span class="line">       <span class="keyword">where</span> o.obj<span class="comment"># = u.obj#</span></span><br><span class="line">         <span class="keyword">and</span> c.obj<span class="comment"># = u.obj#</span></span><br><span class="line">         <span class="keyword">and</span> c.col<span class="comment"># = u.intcol#</span></span><br><span class="line">         <span class="keyword">and</span> r.name = a.owner</span><br><span class="line">         <span class="keyword">and</span> o.name = a.table_name)</span><br><span class="line">  <span class="keyword">and</span> a.histogram = <span class="string">'NONE'</span>;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>oracle</category>
-      </categories>
-      <tags>
-        <tag>oracle</tag>
-        <tag>sql</tag>
       </tags>
   </entry>
   <entry>
