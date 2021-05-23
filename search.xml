@@ -1238,7 +1238,7 @@
 <li>docker安装</li>
 </ul>
 <p>&emsp;&emsp;我们可以先去<a href="https://github.com/kubernetes/kubernetes/blob/v1.21.1/build/dependencies.yaml" target="_blank" rel="noopener">kubernetes的github仓库依赖关系</a>中看到我们想要安装的k8s集群版本对应的docker版本。</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine</span><br><span class="line">yum install -y yum-utils</span><br><span class="line">yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line">yum install -y docker-ce-20.10 docker-ce-cli-20.10 containerd.io</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine</span><br><span class="line">yum install -y yum-utils</span><br><span class="line">yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line">yum install -y docker-ce-20.10.6 docker-ce-cli-20.10.6 containerd.io</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
 <ul>
 <li>配置(<code>/etc/docker/daemon.json</code>)</li>
 </ul>

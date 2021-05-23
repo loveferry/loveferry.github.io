@@ -41,7 +41,7 @@
 <meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_kube-router_apply.png">
 <meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_kube-router_pod_crashloopbackoff.png">
 <meta property="og:image" content="https://ferry.org.cn/k8s_join_node_to_master.png">
-<meta property="og:updated_time" content="2021-05-23T05:29:39.226Z">
+<meta property="og:updated_time" content="2021-05-23T05:48:49.061Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes集群部署">
 <meta name="twitter:description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
@@ -210,7 +210,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-05-23 13:29:39" itemprop="dateModified" datetime="2021-05-23T13:29:39+08:00">2021-05-23</time>
+                <time title="修改时间：2021-05-23 13:48:49" itemprop="dateModified" datetime="2021-05-23T13:48:49+08:00">2021-05-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -354,7 +354,7 @@
 <li>docker安装</li>
 </ul>
 <p>&emsp;&emsp;我们可以先去<a href="https://github.com/kubernetes/kubernetes/blob/v1.21.1/build/dependencies.yaml" target="_blank" rel="noopener">kubernetes的github仓库依赖关系</a>中看到我们想要安装的k8s集群版本对应的docker版本。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine</span><br><span class="line">yum install -y yum-utils</span><br><span class="line">yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line">yum install -y docker-ce-20.10 docker-ce-cli-20.10 containerd.io</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine</span><br><span class="line">yum install -y yum-utils</span><br><span class="line">yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo</span><br><span class="line">yum install -y docker-ce-20.10.6 docker-ce-cli-20.10.6 containerd.io</span><br><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
 <ul>
 <li>配置(<code>/etc/docker/daemon.json</code>)</li>
 </ul>
