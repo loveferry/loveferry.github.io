@@ -33,7 +33,6 @@
 <meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_github_dockerfile.png">
 <meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_aliyun_docker_repository.png">
 <meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_aliyun_docker_repository2.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_click_aliyun_docker_repository.png">
 <meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_click_aliyun_create_rule.png">
 <meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_create_docker_build_rule.png">
 <meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_docker_build.png">
@@ -41,7 +40,7 @@
 <meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_kube-router_apply.png">
 <meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_kube-router_pod_crashloopbackoff.png">
 <meta property="og:image" content="https://ferry.org.cn/k8s_join_node_to_master.png">
-<meta property="og:updated_time" content="2021-05-23T06:00:42.916Z">
+<meta property="og:updated_time" content="2021-05-23T08:59:32.244Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes集群部署">
 <meta name="twitter:description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
@@ -210,7 +209,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-05-23 14:00:42" itemprop="dateModified" datetime="2021-05-23T14:00:42+08:00">2021-05-23</time>
+                <time title="修改时间：2021-05-23 16:59:32" itemprop="dateModified" datetime="2021-05-23T16:59:32+08:00">2021-05-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -414,12 +413,10 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubeadm config images list</span><br></pre></td></tr></table></figure>
 <p><img src="/kubernetes/k8s_need_image_list.png" alt="需要的镜像"></p>
 <p>&emsp;&emsp;代码仓操作：</p>
-<ul>
-<li>登录代码仓创建仓库，将执行 <code>kubeadm config images list</code> 查看到的镜像依次创建了仓库。我这里选择的是github，如果无法访问github也可以选择你能访问的任何私仓，只要这个私仓公网可以访问即可。</li>
-</ul>
+<p>&emsp;&emsp;这里我使用github创建一个仓库专门用来创建dockerfile。</p>
 <p><img src="/kubernetes/k8s_create_github_repository.png" alt="创建仓库"></p>
 <ul>
-<li>在仓库中创建 <code>Dockerfile</code> 文件,以 <code>kube-proxy</code> 为例，仓库名为 <code>kube-proxy</code>，<code>Dockerfile</code>内容为<code>FROM k8s.gcr.io/kube-proxy:v1.20.2</code>。</li>
+<li>在仓库中创建各个组件的dockerfile文件。</li>
 </ul>
 <p><img src="/kubernetes/k8s_create_github_dockerfile.png" alt="创建dockerfile"></p>
 <ul>
@@ -430,7 +427,6 @@
 <ul>
 <li>创建规则执行构建,若失败则查看日志，大概率是构建规则选的分支，文件，路径与代码仓中的不匹配</li>
 </ul>
-<p><img src="/kubernetes/k8s_click_aliyun_docker_repository.png" alt="查看镜像仓库"></p>
 <p><img src="/kubernetes/k8s_click_aliyun_create_rule.png" alt="查看构建"></p>
 <p><img src="/kubernetes/k8s_aliyun_create_docker_build_rule.png" alt="创建构建规则"></p>
 <p><img src="/kubernetes/k8s_aliyun_docker_build.png" alt="执行构建"></p>
@@ -442,15 +438,15 @@
 <li>在控制平面登录阿里云的镜像仓库，用户名为阿里云的账户名，拉取镜像，这里登录的地址一定要看好，镜像仓库所在的区域不同，登录的仓库地址也是有所区别的。具体的登录地址可以点击仓库进入仓库详情页面，基本信息-操作指南中查看</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker login --username=ferry_sy registry.cn-shanghai.aliyuncs.com</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-controller-manager_v1.21.1</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-apiserver_v1.21.1</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:coredns_v1.8.0</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-proxy_v1.21.1</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:pause_3.4.1</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-scheduler_v1.21.1</span><br><span class="line">docker pull registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:etcd_3.4.13-0</span><br></pre></td></tr></table></figure>
 <ul>
 <li>镜像重命名</li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2 k8s.gcr.io/kube-apiserver:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2 k8s.gcr.io/kube-controller-manager:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2 k8s.gcr.io/kube-scheduler:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2 k8s.gcr.io/kube-proxy:v1.20.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2 k8s.gcr.io/pause:3.2</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0 k8s.gcr.io/etcd:3.4.13-0</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0 k8s.gcr.io/coredns:1.7.0</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-apiserver_v1.21.1 k8s.gcr.io/kube-apiserver:v1.21.1</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-controller-manager_v1.21.1 k8s.gcr.io/kube-controller-manager:v1.21.1</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-scheduler_v1.21.1 k8s.gcr.io/kube-scheduler:v1.21.1</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-proxy_v1.21.1 k8s.gcr.io/kube-proxy:v1.21.1</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:pause_3.4.1 k8s.gcr.io/pause:3.4.1</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:etcd_3.4.13-0 k8s.gcr.io/etcd:3.4.13-0</span><br><span class="line">docker tag registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:coredns_v1.8.0 k8s.gcr.io/coredns:1.8.0</span><br></pre></td></tr></table></figure>
 <ul>
 <li>删除阿里云镜像</li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-apiserver:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-controller-manager:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-scheduler:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/kube-proxy:v1.20.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/pause:3.2</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/etcd:3.4.13-0</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/coredns:1.7.0</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-controller-manager_v1.21.1</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-apiserver_v1.21.1</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:coredns_v1.8.0</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-proxy_v1.21.1</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:pause_3.4.1</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:kube-scheduler_v1.21.1</span><br><span class="line">docker image rm registry.cn-shanghai.aliyuncs.com/ferry/docker-repository:etcd_3.4.13-0</span><br></pre></td></tr></table></figure>
 <ul>
 <li>初始化集群，<code>--pod-network-cidr</code> 参数用于配置CIDR，参数值可以填写 “内网ip/16”。</li>
 </ul>
