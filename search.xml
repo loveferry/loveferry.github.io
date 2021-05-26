@@ -1115,226 +1115,6 @@
       </tags>
   </entry>
   <entry>
-    <title>lambda</title>
-    <url>/lambda.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;<code>lambda表达式</code>是一个可传递的代码块。</p>
-<a id="more"></a>
-<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><ul>
-<li>基本语法：参数，箭头（-&gt;）以及一个表达式或者代码块。</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; <span class="keyword">return</span> msg.length()&gt;str.length()</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span>(msg.length()&gt;str.length() &gt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(msg.length()&gt;str.length() == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;<em>如果代码块在有些分支有返回值，有些分支没有返回值是不合法的。返回值的类型无需指定，lambda表达式的返回值类型总是有上下文推导而出。lambda表达式可以捕获外围作用域中变量的值，但是所捕获的变量必须实际上是最终变量</em></p>
-<ul>
-<li>无参表达式：提供空括号</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">() -&gt; System.out.println(<span class="string">"no arguments lambda"</span>)</span><br></pre></td></tr></table></figure>
-<ul>
-<li>忽略参数类型：若参数类型可推导，可忽略参数类型。若只有一个参数且参数类型可推导，可省略括号。</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(msg, str) -&gt; <span class="keyword">return</span> msg.length() &gt; str.length()</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">msg -&gt; System.out.println(msg)</span><br></pre></td></tr></table></figure>
-<h3 id="函数式接口"><a href="#函数式接口" class="headerlink" title="函数式接口"></a>函数式接口</h3><ul>
-<li><p>定义：只有一个抽象方法的接口。自己设计接口时，如果接口只有一个抽象方法，那么可以使用注解<code>@FunctionalInterface</code>标记这个接口。这样，当你向这个接口再次添加一个抽象方法时，编译器会产生一个错误。另外javadoc页会指出此接口为函数式接口。</p>
-</li>
-<li><p>demo：返回指定字符串10倍的长度</p>
-</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 函数式接口</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">LengthInterface</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 匿名内部类方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">innerClass</span><span class="params">()</span></span>&#123;</span><br><span class="line">    System.out.println(<span class="keyword">new</span> LengthInterface() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> msg.length()*<span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* lambda表达式方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lambda</span><span class="params">()</span></span>&#123;</span><br><span class="line">    LengthInterface lengthInterface = msg -&gt; msg.length()*<span class="number">10</span>;</span><br><span class="line">    System.out.println(lengthInterface.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/lambda/lambda_functionalInterface.png" alt="初始化git项目方式2"></p>
-<p>&emsp;&emsp;定义一个函数式接口，这个接口只有一个抽象方法，这个抽象方法的用途是希望获取到指定的字符串进过渲染后的长度。在lambda表达式出现之前，我们想要实现这样的功能，最好的做法是通过匿名内部类来实现，但是在这里，我们可以让函数式接口的引用指向一个lambda表达式，通过lambda表达式定义渲染长度规则，然后在通过引用调用函数式接口的抽象方法。很显然，虽然内部类和lambda都可以实现功能，但是不管是从代码的简洁度，可读性还是从性能对比上（内部类的类加载，解析，初始化等高于lambda表达式的性能开销）lambda表达式都是我们的首选方案。</p>
-<ul>
-<li>常用函数式接口</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>函数式接口</th>
-<th>参数类型</th>
-<th>返回类型</th>
-<th>抽象方法</th>
-<th>描述</th>
-<th>其他方法</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Runnable</td>
-<td>无</td>
-<td>void</td>
-<td>run</td>
-<td>作为无参数或返回值的动作运行</td>
-<td></td>
-</tr>
-<tr>
-<td>Supplier<t></t></td>
-<td>无</td>
-<td>T</td>
-<td>get</td>
-<td>提供一个T类型的值</td>
-<td></td>
-</tr>
-<tr>
-<td>Consumer<t></t></td>
-<td>T</td>
-<td>void</td>
-<td>accept</td>
-<td>处理一个T类铟的值</td>
-<td>andThen</td>
-</tr>
-<tr>
-<td>BiConsumer&lt;T,U&gt;</td>
-<td>T,U</td>
-<td>void</td>
-<td>accept</td>
-<td>处理T和U类型的值</td>
-<td>andThen</td>
-</tr>
-<tr>
-<td>Function&lt;T,R&gt;</td>
-<td>T</td>
-<td>R</td>
-<td>apply</td>
-<td>有一个T类型参数的函数</td>
-<td>compose, andThen, identity</td>
-</tr>
-<tr>
-<td>BiFunction&lt;T,U,R&gt;</td>
-<td>T,U</td>
-<td>R</td>
-<td>apply</td>
-<td>有T和U类型参数的函数</td>
-<td>andThen</td>
-</tr>
-<tr>
-<td>UnaryOperator<t></t></td>
-<td>T</td>
-<td>T</td>
-<td>apply</td>
-<td>类型T上的一元操作符</td>
-<td>compose, andThen, identity</td>
-</tr>
-<tr>
-<td>BinaryOperator<t></t></td>
-<td>T,T</td>
-<td>T</td>
-<td>apply</td>
-<td>类型T上的二元操作符</td>
-<td>andThen, maxBy, minBy</td>
-</tr>
-<tr>
-<td>Predicate<t></t></td>
-<td>T</td>
-<td>boolean</td>
-<td>test</td>
-<td>布尔值函数</td>
-<td>and, or, negate, isEqual</td>
-</tr>
-<tr>
-<td>BiPredicate&lt;T,U&gt;</td>
-<td>T,U</td>
-<td>boolean</td>
-<td>test</td>
-<td>有两个参数的布尔值函数</td>
-<td>and, or, negate</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>基本类型的函数式接口</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>函数式接口</th>
-<th>参数类型</th>
-<th>返回类型</th>
-<th>抽象方法 </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>BooleanSupplier</td>
-<td>none</td>
-<td>boolean</td>
-<td>getAsBoolean</td>
-</tr>
-<tr>
-<td>PSupplier</td>
-<td>none</td>
-<td>p</td>
-<td>getAsP</td>
-</tr>
-<tr>
-<td>PConsumer</td>
-<td>p</td>
-<td>void</td>
-<td>accept</td>
-</tr>
-<tr>
-<td>ObjPConsumer&lt; T&gt;</td>
-<td>T,p</td>
-<td>void</td>
-<td>accept</td>
-</tr>
-<tr>
-<td>PFunction<t></t></td>
-<td>p</td>
-<td>T</td>
-<td>apply</td>
-</tr>
-<tr>
-<td>PToQFunction</td>
-<td>p</td>
-<td>q</td>
-<td>applyAsQ</td>
-</tr>
-<tr>
-<td>ToPFunction<t></t></td>
-<td>T</td>
-<td>p</td>
-<td>applyAsP</td>
-</tr>
-<tr>
-<td>ToPBiFunction&lt;T,U&gt;</td>
-<td>T,U</td>
-<td>p</td>
-<td>applyAsP</td>
-</tr>
-<tr>
-<td>PUnaryOperator</td>
-<td>p</td>
-<td>p</td>
-<td>testAsP</td>
-</tr>
-<tr>
-<td>PBinaryOperator</td>
-<td>p,p</td>
-<td>p</td>
-<td>testAsP</td>
-</tr>
-<tr>
-<td>PPredicate</td>
-<td>p</td>
-<td>boolean</td>
-<td>test</td>
-</tr>
-</tbody>
-</table>
-<p><em>注：p,q为int, long, double;P, Q为Integer, Long, Double</em></p>
-<h3 id="方法引用"><a href="#方法引用" class="headerlink" title="方法引用"></a>方法引用</h3><p>&emsp;&emsp;将现有的方法传递给函数式接口，等价于lambda表达式</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String::length  &lt;==&gt; msg -&gt; msg.length()</span><br><span class="line">(String msg) -&gt; System.out.println(msg)  &lt;==&gt; System.out::println</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;语法：用操作符<code>::</code>分割对象名或类名与方法名，有三种用法，第一：对象::非静态方法名；第二：类名::静态方法名；第三：类名::非静态方法名。前两种方式，方法引用等价于提供方法参数的lambda表达式。第三种情况，第一个参数将成为方法的目标，例如，(msg, str) -&gt; msg.equals(str) 等同于 String::equals。</p>
-<h3 id="构造器引用"><a href="#构造器引用" class="headerlink" title="构造器引用"></a>构造器引用</h3><p>&emsp;&emsp;和方法引用很类似，只不过方法名为new，具体方式为：类名::new，例如：String::new，具体使用类的哪一个构造器取决于上下文。数组的构造器引用：String[]::new，它有一个参数，即数组的长度，等价于length -&gt; new String[length]。</p>
-]]></content>
-      <categories>
-        <category>java</category>
-      </categories>
-      <tags>
-        <tag>lambda</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>kubernetes集群部署</title>
     <url>/kubernetes.html</url>
     <content><![CDATA[<p>&emsp;&emsp;<code>Kubernetes</code>(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 <code>Kubernetes</code> 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。 <code>Kubernetes</code> 以更高效的方式跨集群自动分发和调度应用容器。 <code>Kubernetes</code> 是一个开源平台，并且可应用于生产环境。</p>
@@ -1677,14 +1457,237 @@
 <blockquote>
 <p>定义Deployment来创建Pod和ReplicaSet<br>滚动升级和回滚应用<br>扩容和缩容<br>暂停和继续Deployment</p>
 </blockquote>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span>  <span class="comment"># 指定api版本，此值必须在kubectl api-versions中  </span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span>  <span class="comment"># 指定创建资源的角色/类型   </span></span><br><span class="line"><span class="attr">metadata:</span>  <span class="comment"># 资源的元数据/属性 </span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">demo</span>  <span class="comment"># 资源的名字，在同一个namespace中必须唯一</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">default</span> <span class="comment"># 部署在哪个namespace中</span></span><br><span class="line">  <span class="attr">labels:</span>  <span class="comment"># 设定资源的标签</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">demo</span></span><br><span class="line">    <span class="attr">version:</span> <span class="string">stable</span></span><br><span class="line"><span class="attr">spec:</span> <span class="comment"># 资源规范字段</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">1</span> <span class="comment"># 声明副本数目</span></span><br><span class="line">  <span class="attr">revisionHistoryLimit:</span> <span class="number">3</span> <span class="comment"># 保留历史版本</span></span><br><span class="line">  <span class="attr">selector:</span> <span class="comment"># 选择器</span></span><br><span class="line">    <span class="attr">matchLabels:</span> <span class="comment"># 匹配标签</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">demo</span></span><br><span class="line">      <span class="attr">version:</span> <span class="string">stable</span></span><br><span class="line">  <span class="attr">strategy:</span> <span class="comment"># 策略</span></span><br><span class="line">    <span class="attr">rollingUpdate:</span> <span class="comment"># 滚动更新</span></span><br><span class="line">      <span class="attr">maxSurge:</span> <span class="number">30</span><span class="string">%</span> <span class="comment"># 最大额外可以存在的副本数，可以为百分比，也可以为整数</span></span><br><span class="line">      <span class="attr">maxUnavailable:</span> <span class="number">30</span><span class="string">%</span> <span class="comment"># 示在更新过程中能够进入不可用状态的 Pod 的最大值，可以为百分比，也可以为整数</span></span><br><span class="line">    <span class="attr">type:</span> <span class="string">RollingUpdate</span> <span class="comment"># 滚动更新策略</span></span><br><span class="line">  <span class="attr">template:</span> <span class="comment"># 模版</span></span><br><span class="line">    <span class="attr">metadata:</span> <span class="comment"># 资源的元数据/属性 </span></span><br><span class="line">      <span class="attr">annotations:</span> <span class="comment"># 自定义注解列表</span></span><br><span class="line">        <span class="attr">sidecar.istio.io/inject:</span> <span class="string">"false"</span> <span class="comment"># 自定义注解名字</span></span><br><span class="line">      <span class="attr">labels:</span> <span class="comment"># 设定资源的标签</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">demo</span></span><br><span class="line">        <span class="attr">version:</span> <span class="string">stable</span></span><br><span class="line">    <span class="attr">spec:</span> <span class="comment"># 资源规范字段</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">demo</span> <span class="comment"># 容器的名字   </span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">demo:v1</span> <span class="comment"># 容器使用的镜像地址   </span></span><br><span class="line">        <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span> <span class="comment"># 每次Pod启动拉取镜像策略，三个选择 Always、Never、IfNotPresent</span></span><br><span class="line">                                      <span class="comment"># Always，每次都检查；Never，每次都不检查（不管本地是否有）；IfNotPresent，如果本地有就不检查，如果没有就拉取 </span></span><br><span class="line">        <span class="attr">resources:</span> <span class="comment"># 资源管理</span></span><br><span class="line">          <span class="attr">limits:</span> <span class="comment"># 最大使用</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">300m</span> <span class="comment"># CPU，1核心 = 1000m</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">500Mi</span> <span class="comment"># 内存，1G = 1000Mi</span></span><br><span class="line">          <span class="attr">requests:</span>  <span class="comment"># 容器运行时，最低资源需求，也就是说最少需要多少资源容器才能正常运行</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">100m</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">100Mi</span></span><br><span class="line">        <span class="attr">livenessProbe:</span> <span class="comment"># pod 内部健康检查的设置</span></span><br><span class="line">          <span class="attr">httpGet:</span> <span class="comment"># 通过httpget检查健康，返回200-399之间，则认为容器正常</span></span><br><span class="line">            <span class="attr">path:</span> <span class="string">/healthCheck</span> <span class="comment"># URI地址</span></span><br><span class="line">            <span class="attr">port:</span> <span class="number">8080</span> <span class="comment"># 端口</span></span><br><span class="line">            <span class="attr">scheme:</span> <span class="string">HTTP</span> <span class="comment"># 协议</span></span><br><span class="line">            <span class="comment"># host: 127.0.0.1 # 主机地址</span></span><br><span class="line">          <span class="attr">initialDelaySeconds:</span> <span class="number">30</span> <span class="comment"># 表明第一次检测在容器启动后多长时间后开始</span></span><br><span class="line">          <span class="attr">timeoutSeconds:</span> <span class="number">5</span> <span class="comment"># 检测的超时时间</span></span><br><span class="line">          <span class="attr">periodSeconds:</span> <span class="number">30</span> <span class="comment"># 检查间隔时间</span></span><br><span class="line">          <span class="attr">successThreshold:</span> <span class="number">1</span> <span class="comment"># 成功门槛</span></span><br><span class="line">          <span class="attr">failureThreshold:</span> <span class="number">5</span> <span class="comment"># 失败门槛，连接失败5次，pod杀掉，重启一个新的pod</span></span><br><span class="line">        <span class="attr">readinessProbe:</span> <span class="comment"># Pod 准备服务健康检查设置</span></span><br><span class="line">          <span class="attr">httpGet:</span></span><br><span class="line">            <span class="attr">path:</span> <span class="string">/healthCheck</span></span><br><span class="line">            <span class="attr">port:</span> <span class="number">8080</span></span><br><span class="line">            <span class="attr">scheme:</span> <span class="string">HTTP</span></span><br><span class="line">          <span class="attr">initialDelaySeconds:</span> <span class="number">30</span></span><br><span class="line">          <span class="attr">timeoutSeconds:</span> <span class="number">5</span></span><br><span class="line">          <span class="attr">periodSeconds:</span> <span class="number">10</span></span><br><span class="line">          <span class="attr">successThreshold:</span> <span class="number">1</span></span><br><span class="line">          <span class="attr">failureThreshold:</span> <span class="number">5</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span> <span class="comment"># 名称</span></span><br><span class="line">          <span class="attr">containerPort:</span> <span class="number">8080</span> <span class="comment"># 容器开发对外的端口 </span></span><br><span class="line">          <span class="attr">protocol:</span> <span class="string">TCP</span> <span class="comment"># 协议</span></span><br><span class="line">      <span class="attr">imagePullSecrets:</span> <span class="comment"># 镜像仓库拉取密钥</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">harbor-certification</span></span><br><span class="line">      <span class="attr">affinity:</span> <span class="comment"># 亲和性调试</span></span><br><span class="line">        <span class="attr">nodeAffinity:</span> <span class="comment"># 节点亲和力</span></span><br><span class="line">          <span class="attr">requiredDuringSchedulingIgnoredDuringExecution:</span> <span class="comment"># pod 必须部署到满足条件的节点上</span></span><br><span class="line">            <span class="attr">nodeSelectorTerms:</span> <span class="comment"># 节点满足任何一个条件就可以</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">matchExpressions:</span> <span class="comment"># 有多个选项，则只有同时满足这些逻辑选项的节点才能运行 pod</span></span><br><span class="line">              <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">beta.kubernetes.io/arch</span></span><br><span class="line">                <span class="attr">operator:</span> <span class="string">In</span></span><br><span class="line">                <span class="attr">values:</span></span><br><span class="line">                <span class="bullet">-</span> <span class="string">amd64</span></span><br></pre></td></tr></table></figure>
 <h5 id="创建Deployment"><a href="#创建Deployment" class="headerlink" title="创建Deployment"></a>创建Deployment</h5><p>&emsp;&emsp;创建<code>Deployment</code>可以通过命令行创建一个简单的<code>Deployment</code>或者通过文件创建复杂的<code>Deployment</code>。这里只介绍通过文件创建的方式。</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span>  <span class="comment"># 指定api版本，此值必须在kubectl api-versions中  </span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span>  <span class="comment"># 指定创建资源的角色/类型   </span></span><br><span class="line"><span class="attr">metadata:</span>  <span class="comment"># 资源的元数据/属性 </span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">demo</span>  <span class="comment"># 资源的名字，在同一个namespace中必须唯一</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">default</span> <span class="comment"># 部署在哪个namespace中</span></span><br><span class="line">  <span class="attr">labels:</span>  <span class="comment"># 设定资源的标签</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">demo</span></span><br><span class="line">    <span class="attr">version:</span> <span class="string">stable</span></span><br><span class="line"><span class="attr">spec:</span> <span class="comment"># 资源规范字段</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">1</span> <span class="comment"># 声明副本数目</span></span><br><span class="line">  <span class="attr">revisionHistoryLimit:</span> <span class="number">3</span> <span class="comment"># 保留历史版本</span></span><br><span class="line">  <span class="attr">selector:</span> <span class="comment"># 选择器</span></span><br><span class="line">    <span class="attr">matchLabels:</span> <span class="comment"># 匹配标签</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">demo</span></span><br><span class="line">      <span class="attr">version:</span> <span class="string">stable</span></span><br><span class="line">  <span class="attr">strategy:</span> <span class="comment"># 策略</span></span><br><span class="line">    <span class="attr">rollingUpdate:</span> <span class="comment"># 滚动更新</span></span><br><span class="line">      <span class="attr">maxSurge:</span> <span class="number">30</span><span class="string">%</span> <span class="comment"># 最大额外可以存在的副本数，可以为百分比，也可以为整数</span></span><br><span class="line">      <span class="attr">maxUnavailable:</span> <span class="number">30</span><span class="string">%</span> <span class="comment"># 示在更新过程中能够进入不可用状态的 Pod 的最大值，可以为百分比，也可以为整数</span></span><br><span class="line">    <span class="attr">type:</span> <span class="string">RollingUpdate</span> <span class="comment"># 滚动更新策略</span></span><br><span class="line">  <span class="attr">template:</span> <span class="comment"># 模版</span></span><br><span class="line">    <span class="attr">metadata:</span> <span class="comment"># 资源的元数据/属性 </span></span><br><span class="line">      <span class="attr">annotations:</span> <span class="comment"># 自定义注解列表</span></span><br><span class="line">        <span class="attr">sidecar.istio.io/inject:</span> <span class="string">"false"</span> <span class="comment"># 自定义注解名字</span></span><br><span class="line">      <span class="attr">labels:</span> <span class="comment"># 设定资源的标签</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">demo</span></span><br><span class="line">        <span class="attr">version:</span> <span class="string">stable</span></span><br><span class="line">    <span class="attr">spec:</span> <span class="comment"># 资源规范字段</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">demo</span> <span class="comment"># 容器的名字   </span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">demo:v1</span> <span class="comment"># 容器使用的镜像地址   </span></span><br><span class="line">        <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span> <span class="comment"># 每次Pod启动拉取镜像策略，三个选择 Always、Never、IfNotPresent</span></span><br><span class="line">                                      <span class="comment"># Always，每次都检查；Never，每次都不检查（不管本地是否有）；IfNotPresent，如果本地有就不检查，如果没有就拉取 </span></span><br><span class="line">        <span class="attr">resources:</span> <span class="comment"># 资源管理</span></span><br><span class="line">          <span class="attr">limits:</span> <span class="comment"># 最大使用</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">300m</span> <span class="comment"># CPU，1核心 = 1000m</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">500Mi</span> <span class="comment"># 内存，1G = 1000Mi</span></span><br><span class="line">          <span class="attr">requests:</span>  <span class="comment"># 容器运行时，最低资源需求，也就是说最少需要多少资源容器才能正常运行</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">100m</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">100Mi</span></span><br><span class="line">        <span class="attr">livenessProbe:</span> <span class="comment"># pod 内部健康检查的设置</span></span><br><span class="line">          <span class="attr">httpGet:</span> <span class="comment"># 通过httpget检查健康，返回200-399之间，则认为容器正常</span></span><br><span class="line">            <span class="attr">path:</span> <span class="string">/healthCheck</span> <span class="comment"># URI地址</span></span><br><span class="line">            <span class="attr">port:</span> <span class="number">8080</span> <span class="comment"># 端口</span></span><br><span class="line">            <span class="attr">scheme:</span> <span class="string">HTTP</span> <span class="comment"># 协议</span></span><br><span class="line">            <span class="comment"># host: 127.0.0.1 # 主机地址</span></span><br><span class="line">          <span class="attr">initialDelaySeconds:</span> <span class="number">30</span> <span class="comment"># 表明第一次检测在容器启动后多长时间后开始</span></span><br><span class="line">          <span class="attr">timeoutSeconds:</span> <span class="number">5</span> <span class="comment"># 检测的超时时间</span></span><br><span class="line">          <span class="attr">periodSeconds:</span> <span class="number">30</span> <span class="comment"># 检查间隔时间</span></span><br><span class="line">          <span class="attr">successThreshold:</span> <span class="number">1</span> <span class="comment"># 成功门槛</span></span><br><span class="line">          <span class="attr">failureThreshold:</span> <span class="number">5</span> <span class="comment"># 失败门槛，连接失败5次，pod杀掉，重启一个新的pod</span></span><br><span class="line">        <span class="attr">readinessProbe:</span> <span class="comment"># Pod 准备服务健康检查设置</span></span><br><span class="line">          <span class="attr">httpGet:</span></span><br><span class="line">            <span class="attr">path:</span> <span class="string">/healthCheck</span></span><br><span class="line">            <span class="attr">port:</span> <span class="number">8080</span></span><br><span class="line">            <span class="attr">scheme:</span> <span class="string">HTTP</span></span><br><span class="line">          <span class="attr">initialDelaySeconds:</span> <span class="number">30</span></span><br><span class="line">          <span class="attr">timeoutSeconds:</span> <span class="number">5</span></span><br><span class="line">          <span class="attr">periodSeconds:</span> <span class="number">10</span></span><br><span class="line">          <span class="attr">successThreshold:</span> <span class="number">1</span></span><br><span class="line">          <span class="attr">failureThreshold:</span> <span class="number">5</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">          <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">http</span> <span class="comment"># 名称</span></span><br><span class="line">            <span class="attr">containerPort:</span> <span class="number">8080</span> <span class="comment"># 容器开发对外的端口 </span></span><br><span class="line">            <span class="attr">protocol:</span> <span class="string">TCP</span> <span class="comment"># 协议</span></span><br><span class="line">      <span class="attr">imagePullSecrets:</span> <span class="comment"># 镜像仓库拉取密钥</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">harbor-certification</span></span><br><span class="line">      <span class="attr">affinity:</span> <span class="comment"># 亲和性调试</span></span><br><span class="line">        <span class="attr">nodeAffinity:</span> <span class="comment"># 节点亲和力</span></span><br><span class="line">          <span class="attr">requiredDuringSchedulingIgnoredDuringExecution:</span> <span class="comment"># pod 必须部署到满足条件的节点上</span></span><br><span class="line">            <span class="attr">nodeSelectorTerms:</span> <span class="comment"># 节点满足任何一个条件就可以</span></span><br><span class="line">            <span class="bullet">-</span> <span class="attr">matchExpressions:</span> <span class="comment"># 有多个选项，则只有同时满足这些逻辑选项的节点才能运行 pod</span></span><br><span class="line">              <span class="bullet">-</span> <span class="attr">key:</span> <span class="string">beta.kubernetes.io/arch</span></span><br><span class="line">                <span class="attr">operator:</span> <span class="string">In</span></span><br><span class="line">                <span class="attr">values:</span></span><br><span class="line">                <span class="bullet">-</span> <span class="string">amd64</span></span><br></pre></td></tr></table></figure>
-]]></content>
+<p>&emsp;&emsp;样例,创建一个只有一个副本(replicas: 1)，在ferry空间下的<code>Deployment</code>,其中限制了资源的大小，并指定容器对外开放的端口。</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">apps/v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Deployment</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">demo</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">ferry</span></span><br><span class="line">  <span class="attr">labels:</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">demo</span></span><br><span class="line"><span class="attr">spec:</span></span><br><span class="line">  <span class="attr">replicas:</span> <span class="number">1</span></span><br><span class="line">  <span class="attr">revisionHistoryLimit:</span> <span class="number">5</span></span><br><span class="line">  <span class="attr">selector:</span></span><br><span class="line">    <span class="attr">matchLabels:</span></span><br><span class="line">      <span class="attr">app:</span> <span class="string">demo</span></span><br><span class="line">  <span class="attr">strategy:</span></span><br><span class="line">    <span class="attr">type:</span> <span class="string">RollingUpdate</span></span><br><span class="line">  <span class="attr">template:</span></span><br><span class="line">    <span class="attr">metadata:</span></span><br><span class="line">      <span class="attr">labels:</span></span><br><span class="line">        <span class="attr">app:</span> <span class="string">demo</span></span><br><span class="line">    <span class="attr">spec:</span></span><br><span class="line">      <span class="attr">containers:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">demo</span></span><br><span class="line">        <span class="attr">image:</span> <span class="string">registry.cn-shanghai.aliyuncs.com/ferry/demo:0.0.1</span></span><br><span class="line">        <span class="attr">imagePullPolicy:</span> <span class="string">IfNotPresent</span></span><br><span class="line">        <span class="attr">resources:</span></span><br><span class="line">          <span class="attr">limits:</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">500m</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">1G</span></span><br><span class="line">          <span class="attr">requests:</span></span><br><span class="line">            <span class="attr">cpu:</span> <span class="string">100m</span></span><br><span class="line">            <span class="attr">memory:</span> <span class="string">100Mi</span></span><br><span class="line">        <span class="attr">ports:</span></span><br><span class="line">        <span class="bullet">-</span> <span class="attr">containerPort:</span> <span class="number">8080</span></span><br><span class="line">          <span class="attr">protocol:</span> <span class="string">TCP</span></span><br><span class="line">      <span class="attr">imagePullSecrets:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">aliyun-docker-registry</span></span><br></pre></td></tr></table></figure>
+<h4 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h4><p>&emsp;&emsp;Kubernete Service 是一个定义了一组Pod的策略的抽象，我们也有时候叫做宏观服务。</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span> <span class="comment"># 指定api版本，此值必须在kubectl api-versions中 </span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Service</span> <span class="comment"># 指定创建资源的角色/类型 </span></span><br><span class="line"><span class="attr">metadata:</span> <span class="comment"># 资源的元数据/属性</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">demo</span> <span class="comment"># 资源的名字，在同一个namespace中必须唯一</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">default</span> <span class="comment"># 部署在哪个namespace中</span></span><br><span class="line">  <span class="attr">labels:</span> <span class="comment"># 设定资源的标签</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">demo</span></span><br><span class="line"><span class="attr">spec:</span> <span class="comment"># 资源规范字段</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">ClusterIP</span> <span class="comment"># ClusterIP 类型</span></span><br><span class="line">  <span class="attr">ports:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">port:</span> <span class="number">8080</span> <span class="comment"># service 端口</span></span><br><span class="line">      <span class="attr">targetPort:</span> <span class="string">http</span> <span class="comment"># 容器暴露的端口</span></span><br><span class="line">      <span class="attr">protocol:</span> <span class="string">TCP</span> <span class="comment"># 协议</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">http</span> <span class="comment"># 端口名称</span></span><br><span class="line">  <span class="attr">selector:</span> <span class="comment"># 选择器</span></span><br><span class="line">    <span class="attr">app:</span> <span class="string">demo</span></span><br></pre></td></tr></table></figure>]]></content>
       <categories>
         <category>kubernetes</category>
       </categories>
       <tags>
         <tag>k8s</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>lambda</title>
+    <url>/lambda.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;<code>lambda表达式</code>是一个可传递的代码块。</p>
+<a id="more"></a>
+<h3 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h3><ul>
+<li>基本语法：参数，箭头（-&gt;）以及一个表达式或者代码块。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; <span class="keyword">return</span> msg.length()&gt;str.length()</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(String msg, String str) -&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span>(msg.length()&gt;str.length() &gt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(msg.length()&gt;str.length() == <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<em>如果代码块在有些分支有返回值，有些分支没有返回值是不合法的。返回值的类型无需指定，lambda表达式的返回值类型总是有上下文推导而出。lambda表达式可以捕获外围作用域中变量的值，但是所捕获的变量必须实际上是最终变量</em></p>
+<ul>
+<li>无参表达式：提供空括号</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">() -&gt; System.out.println(<span class="string">"no arguments lambda"</span>)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>忽略参数类型：若参数类型可推导，可忽略参数类型。若只有一个参数且参数类型可推导，可省略括号。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">(msg, str) -&gt; <span class="keyword">return</span> msg.length() &gt; str.length()</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">msg -&gt; System.out.println(msg)</span><br></pre></td></tr></table></figure>
+<h3 id="函数式接口"><a href="#函数式接口" class="headerlink" title="函数式接口"></a>函数式接口</h3><ul>
+<li><p>定义：只有一个抽象方法的接口。自己设计接口时，如果接口只有一个抽象方法，那么可以使用注解<code>@FunctionalInterface</code>标记这个接口。这样，当你向这个接口再次添加一个抽象方法时，编译器会产生一个错误。另外javadoc页会指出此接口为函数式接口。</p>
+</li>
+<li><p>demo：返回指定字符串10倍的长度</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 函数式接口</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">LengthInterface</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 匿名内部类方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">innerClass</span><span class="params">()</span></span>&#123;</span><br><span class="line">    System.out.println(<span class="keyword">new</span> LengthInterface() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">renderLength</span><span class="params">(String msg)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> msg.length()*<span class="number">10</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* lambda表达式方式实现</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lambda</span><span class="params">()</span></span>&#123;</span><br><span class="line">    LengthInterface lengthInterface = msg -&gt; msg.length()*<span class="number">10</span>;</span><br><span class="line">    System.out.println(lengthInterface.renderLength(<span class="string">"ferry"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/lambda/lambda_functionalInterface.png" alt="初始化git项目方式2"></p>
+<p>&emsp;&emsp;定义一个函数式接口，这个接口只有一个抽象方法，这个抽象方法的用途是希望获取到指定的字符串进过渲染后的长度。在lambda表达式出现之前，我们想要实现这样的功能，最好的做法是通过匿名内部类来实现，但是在这里，我们可以让函数式接口的引用指向一个lambda表达式，通过lambda表达式定义渲染长度规则，然后在通过引用调用函数式接口的抽象方法。很显然，虽然内部类和lambda都可以实现功能，但是不管是从代码的简洁度，可读性还是从性能对比上（内部类的类加载，解析，初始化等高于lambda表达式的性能开销）lambda表达式都是我们的首选方案。</p>
+<ul>
+<li>常用函数式接口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>函数式接口</th>
+<th>参数类型</th>
+<th>返回类型</th>
+<th>抽象方法</th>
+<th>描述</th>
+<th>其他方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Runnable</td>
+<td>无</td>
+<td>void</td>
+<td>run</td>
+<td>作为无参数或返回值的动作运行</td>
+<td></td>
+</tr>
+<tr>
+<td>Supplier<t></t></td>
+<td>无</td>
+<td>T</td>
+<td>get</td>
+<td>提供一个T类型的值</td>
+<td></td>
+</tr>
+<tr>
+<td>Consumer<t></t></td>
+<td>T</td>
+<td>void</td>
+<td>accept</td>
+<td>处理一个T类铟的值</td>
+<td>andThen</td>
+</tr>
+<tr>
+<td>BiConsumer&lt;T,U&gt;</td>
+<td>T,U</td>
+<td>void</td>
+<td>accept</td>
+<td>处理T和U类型的值</td>
+<td>andThen</td>
+</tr>
+<tr>
+<td>Function&lt;T,R&gt;</td>
+<td>T</td>
+<td>R</td>
+<td>apply</td>
+<td>有一个T类型参数的函数</td>
+<td>compose, andThen, identity</td>
+</tr>
+<tr>
+<td>BiFunction&lt;T,U,R&gt;</td>
+<td>T,U</td>
+<td>R</td>
+<td>apply</td>
+<td>有T和U类型参数的函数</td>
+<td>andThen</td>
+</tr>
+<tr>
+<td>UnaryOperator<t></t></td>
+<td>T</td>
+<td>T</td>
+<td>apply</td>
+<td>类型T上的一元操作符</td>
+<td>compose, andThen, identity</td>
+</tr>
+<tr>
+<td>BinaryOperator<t></t></td>
+<td>T,T</td>
+<td>T</td>
+<td>apply</td>
+<td>类型T上的二元操作符</td>
+<td>andThen, maxBy, minBy</td>
+</tr>
+<tr>
+<td>Predicate<t></t></td>
+<td>T</td>
+<td>boolean</td>
+<td>test</td>
+<td>布尔值函数</td>
+<td>and, or, negate, isEqual</td>
+</tr>
+<tr>
+<td>BiPredicate&lt;T,U&gt;</td>
+<td>T,U</td>
+<td>boolean</td>
+<td>test</td>
+<td>有两个参数的布尔值函数</td>
+<td>and, or, negate</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>基本类型的函数式接口</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>函数式接口</th>
+<th>参数类型</th>
+<th>返回类型</th>
+<th>抽象方法 </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BooleanSupplier</td>
+<td>none</td>
+<td>boolean</td>
+<td>getAsBoolean</td>
+</tr>
+<tr>
+<td>PSupplier</td>
+<td>none</td>
+<td>p</td>
+<td>getAsP</td>
+</tr>
+<tr>
+<td>PConsumer</td>
+<td>p</td>
+<td>void</td>
+<td>accept</td>
+</tr>
+<tr>
+<td>ObjPConsumer&lt; T&gt;</td>
+<td>T,p</td>
+<td>void</td>
+<td>accept</td>
+</tr>
+<tr>
+<td>PFunction<t></t></td>
+<td>p</td>
+<td>T</td>
+<td>apply</td>
+</tr>
+<tr>
+<td>PToQFunction</td>
+<td>p</td>
+<td>q</td>
+<td>applyAsQ</td>
+</tr>
+<tr>
+<td>ToPFunction<t></t></td>
+<td>T</td>
+<td>p</td>
+<td>applyAsP</td>
+</tr>
+<tr>
+<td>ToPBiFunction&lt;T,U&gt;</td>
+<td>T,U</td>
+<td>p</td>
+<td>applyAsP</td>
+</tr>
+<tr>
+<td>PUnaryOperator</td>
+<td>p</td>
+<td>p</td>
+<td>testAsP</td>
+</tr>
+<tr>
+<td>PBinaryOperator</td>
+<td>p,p</td>
+<td>p</td>
+<td>testAsP</td>
+</tr>
+<tr>
+<td>PPredicate</td>
+<td>p</td>
+<td>boolean</td>
+<td>test</td>
+</tr>
+</tbody>
+</table>
+<p><em>注：p,q为int, long, double;P, Q为Integer, Long, Double</em></p>
+<h3 id="方法引用"><a href="#方法引用" class="headerlink" title="方法引用"></a>方法引用</h3><p>&emsp;&emsp;将现有的方法传递给函数式接口，等价于lambda表达式</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">String::length  &lt;==&gt; msg -&gt; msg.length()</span><br><span class="line">(String msg) -&gt; System.out.println(msg)  &lt;==&gt; System.out::println</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;语法：用操作符<code>::</code>分割对象名或类名与方法名，有三种用法，第一：对象::非静态方法名；第二：类名::静态方法名；第三：类名::非静态方法名。前两种方式，方法引用等价于提供方法参数的lambda表达式。第三种情况，第一个参数将成为方法的目标，例如，(msg, str) -&gt; msg.equals(str) 等同于 String::equals。</p>
+<h3 id="构造器引用"><a href="#构造器引用" class="headerlink" title="构造器引用"></a>构造器引用</h3><p>&emsp;&emsp;和方法引用很类似，只不过方法名为new，具体方式为：类名::new，例如：String::new，具体使用类的哪一个构造器取决于上下文。数组的构造器引用：String[]::new，它有一个参数，即数组的长度，等价于length -&gt; new String[length]。</p>
+]]></content>
+      <categories>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>lambda</tag>
       </tags>
   </entry>
   <entry>
@@ -3334,140 +3337,6 @@
       </tags>
   </entry>
   <entry>
-    <title>使用javaconfig配置spring项目</title>
-    <url>/spring-javaconfig.html</url>
-    <content><![CDATA[<p>&emsp;&emsp;使用javaconfig对spring项目进行配置，记录一下常用的注解及其含义，以方便后期回顾。此项目是使用maven搭建的非web项目，是我学习spring练手用的，是向web项目的过渡阶段产物。</p>
-<a id="more"></a>
-<h3 id="Maven依赖"><a href="#Maven依赖" class="headerlink" title="Maven依赖"></a>Maven依赖</h3><ul>
-<li>先添加spring需要的依赖</li>
-</ul>
-<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-context<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.0.6.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.0.6.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--测试依赖--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.12<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--日志依赖--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.slf4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>slf4j-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--lombok--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.18.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>javax.persistence<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>persistence-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="自动化装配bean"><a href="#自动化装配bean" class="headerlink" title="自动化装配bean"></a>自动化装配bean</h3><p>&emsp;&emsp;新建一个javaconfig包，所有的配置类都放在这个包下面。</p>
-<h4 id="Configuration-配置类声明"><a href="#Configuration-配置类声明" class="headerlink" title="@Configuration 配置类声明"></a>@Configuration 配置类声明</h4><ul>
-<li>新建一个类，这里我的类名为<code>BaseBeanJavaConfig</code></li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;<code>@Configuration</code>注解声明这是一个配置类,所有的配置类都必须使用这个注解，否则spring又怎么会知道他是一个配置类呢。</p>
-<h4 id="ComponentScan-组件扫描"><a href="#ComponentScan-组件扫描" class="headerlink" title="@ComponentScan 组件扫描"></a>@ComponentScan 组件扫描</h4><p>&emsp;&emsp;组件扫描有多种方式可供选择：</p>
-<p>1.没有使用<code>@ComponentScan</code>注解，那么将按照默认规则扫描该配置类所在包。</p>
-<p>2.使用<code>@ComponentScan</code>注解，形如下面代码块所示，那么spring将扫描<code>service.impl</code>包及向下所有包中含有<code>@Component</code>注解的类,在{}中可以使用<code>,</code>分隔设置多个包，这样可以扫描多个包啦。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackages = &#123;<span class="string">"cn.org.ferry.sys.service.impl"</span>&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>3.使用class类型，这种方式spring将扫描该类所在包及向下所有包，当然，这种方式也可以用<code>,</code>分隔设置多个类。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;SysUserServiceImpl<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;一般情况下，我们都是将配置类单独放在一个包中的，毕竟如果业务代码包中多了一个配置类感觉上也怪怪的，所以第一种方式放弃，第二种和第三种方式相比较，如果你重构了代码，包路径改变了，那么使用第二种方式就会出现问题，所以一般情况下采取第三种方案来实现组件扫描。</p>
-<p>&emsp;&emsp;值得一提的是，不管使用那种方式扫描包，你需要装配的bean都需要在类级别上加上注解，毕竟spring扫描的时候也只是扫描指定的包下面含有该注解的类。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 说一下我对这四种注解的简单看法，目前的理解就是在不同的类中使用特定的注解让人更容易理解这个类的作用</span></span><br><span class="line"><span class="meta">@Component</span>  <span class="comment">// 不管什么情况，用它都不会报错</span></span><br><span class="line"><span class="comment">// @Controller 控制器中使用该注解</span></span><br><span class="line"><span class="comment">// @Service service.impl中使用该注解</span></span><br><span class="line"><span class="comment">// @Repository  与mybatis框架整合时 mapper 包中使用此注解</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="装配bean"><a href="#装配bean" class="headerlink" title="装配bean"></a>装配bean</h4><p>&emsp;&emsp;以上操作即可通过spring生成bean，那么接下来就是装配bean了，简单说就是如何使用这个bean。</p>
-<ul>
-<li>就拿上面那个<code>Student</code>类来举例，添加一个方法。</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>在测试类中进行测试这个类有没有实现自动装配</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= BaseBeanJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">StudentTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Student student;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(student.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/spring-javaconfig/spring_auto_bean_test.png" alt="测试结果"></p>
-<p>&emsp;&emsp;当然bean的使用不局限于设置属性这一种方法，也可以通过构造器或者是任意一个方法的形参列表传递。下面的代码结果与上述图片展示结果一样。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StudentUse</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Student student;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StudentUse</span><span class="params">(Student student)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.student = student;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">info</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(student.toString()); <span class="comment">// 使用这个bean</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;通过给<code>@Autowired</code>注解加上属性<code>required = false</code>来避免当没有匹配的bean时spring抛出异常，但是这样设置就得在使用这个bean时进行判空了，因为它有可能没有匹配的bean而是个空值。</p>
-<h3 id="显式装配bean"><a href="#显式装配bean" class="headerlink" title="显式装配bean"></a>显式装配bean</h3><p>&emsp;&emsp;有时候，自动化配置方案行不通，就只能够显式的配置，例如，你希望将第三方类库中的类配置为bean，但是你没有办法对该类进行修改添加<code>@Component</code>注解,那么可以采用显式装配方式进行配置。</p>
-<h4 id="简单bean配置"><a href="#简单bean配置" class="headerlink" title="简单bean配置"></a>简单bean配置</h4><p>&emsp;&emsp;基于一些因素，现在有一个Apple类无法通过自动装配完成bean的装配，现在需要明确的配置该bean。</p>
-<ul>
-<li>Apple类样例</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>配置</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Apple <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;通过上面代码，在一个配置类中的方法上使用<code>@Bean</code>注解，返回值类型是你希望注册的Bean的类型，在该方法中，你可以使用一切java所能实现的技术来满足你的需求以便返回实例。值得一提的是，你可以在该方法的形参列表中传递其他的bean来配合你完成工作。</p>
-<ul>
-<li>测试</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">AppleTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Apple apple;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(apple.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/spring-javaconfig/spring_bean_test2.png" alt="测试结果"></p>
-<p>&emsp;&emsp;显而易见，这样装配是没有问题的，在实际应用中，我们可能会使用到第三方类库中的类，例如数据源，那么我们就可以使用这种显式装配的方式将他配置起来。</p>
-<h4 id="给bean设置id"><a href="#给bean设置id" class="headerlink" title="给bean设置id"></a>给bean设置id</h4><p>&emsp;&emsp;在默认的情况下，bean的id是和带有<code>@Bean</code>注解的方法名一样的，如上例，bean的id为apple。在实际应用中，我们有可能需要自定义bean的id，那么可以通过下面方式完成操作。</p>
-<ul>
-<li>设置bean的id</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(name = <span class="string">"appleBean"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Apple <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;通过在<code>@Bean</code>注解上添加<code>name</code>属性值为bean赋上id。</p>
-<h3 id="混合配置"><a href="#混合配置" class="headerlink" title="混合配置"></a>混合配置</h3><p>&emsp;&emsp;项目的配置需要视情况而定，有时候使用xml配置项目是最佳方案，而在spring中，xml配置和javaconfig配置并不是互斥的，那么就可以同时使用这两种方案来实现项目的最优配置。</p>
-<p>&emsp;&emsp;在自动装配过程中，spring并不会在意你使用的bean是怎么来的，如果你引用了一个外部的配置中的bean，那么你只需要引用一下那个配置类/配置文件即可。</p>
-<h4 id="配置类组合"><a href="#配置类组合" class="headerlink" title="配置类组合"></a>配置类组合</h4><p>&emsp;&emsp;在实际应用中，我们可能根据功能的区分定义多个配置类，这样便于维护以及理解，使得配置类不会过于臃肿。那么问题来了，如何整合众多的配置类呢？</p>
-<ul>
-<li>配置类</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Student<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(name = <span class="string">"sysUserServiceImpl"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> ISysUserService <span class="title">sysUserServiceImpl</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> SysUserServiceImpl();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DataDourceConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>整合配置类</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;BaseBeanConfig<span class="class">.<span class="keyword">class</span>,<span class="title">DataDourceConfig</span>.<span class="title">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;使用<code>@Import</code>注解引入一个配置类，在括号中填入需要引入的配置类的class类型，更通用的方法是建立一个根配置类，在这个配置类中引入所有的配置类。</p>
-<h4 id="配置类引入xml配置文件"><a href="#配置类引入xml配置文件" class="headerlink" title="配置类引入xml配置文件"></a>配置类引入xml配置文件</h4><ul>
-<li>引入配置文件</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;BaseBeanConfig<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class">@<span class="title">ImportResource</span>(</span>&#123;<span class="string">"classpath:/spring/applicationContext-spring.xml"</span>&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>&emsp;&emsp;使用<code>@ImportResource</code>注解，后面跟上字符串类型的配置文件的相对路径即可引入对应的配置文件，同样的，也可以使用<code>,</code>分隔然后引入多个配置文件。</p>
-<h3 id="高级装配"><a href="#高级装配" class="headerlink" title="高级装配"></a>高级装配</h3><p>&emsp;&emsp;spring的bean装配技术还有许多技巧，借助它们可以实现更为高级的bean装配功能.</p>
-<h4 id="profile"><a href="#profile" class="headerlink" title="profile"></a>profile</h4><p>&emsp;&emsp;在实际开发中，我们在项目开发到一定程度时需要迁移环境，例如开发环境，测试环境，生产环境等之间的切换。在不同的环境可能需要创建不同的bean，那么我们可以借助<code>@Profile</code>注解来实现这个功能。<code>@Profile</code>注解有两种使用方式，下面列举。</p>
-<ul>
-<li>例子</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">info</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Banana</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">     <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>类级别使用<code>@Profile</code>注解</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Fruits<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line">@Profile("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"apple"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>测试，在测试类中使用<code>@ActiveProfiles</code>注解来选择激活的环境。</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line">@ActiveProfiles("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FruitTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Fruits fruits;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(fruits.info());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法级别使用<code>@Profile</code>注解</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Fruits<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"apple"</span>)</span><br><span class="line">    <span class="meta">@Profile</span>(<span class="string">"dev"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"banana"</span>)</span><br><span class="line">    <span class="meta">@Profile</span>(<span class="string">"test"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">banana</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Banana();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>测试，此时激活dev环境，那么控制台会打印出Apple</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line">@ActiveProfiles("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FruitTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Fruits fruits;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(fruits.info());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="/spring-javaconfig/spring_bean_test2.png" alt="测试结果"></p>
-<h4 id="激活profile"><a href="#激活profile" class="headerlink" title="激活profile"></a>激活profile</h4><p>&emsp;&emsp;spring在确定哪个profile处于激活状态时，依赖于两个属性：<code>spring.profiles.active</code>和<code>spring.profiles.default</code>（<code>spring.profiles.active</code>的优先级更高一点）。设置这两个属性值有下列几种办法。</p>
-<ul>
-<li>作为<code>DispatcherServlet</code>的初始化参数；</li>
-<li>作为Web应用的上下文参数；</li>
-<li>作为JDNI条目；</li>
-<li>作为环境变量；</li>
-<li>作为JVM的系统属性；</li>
-<li>集成测试类中，使用<code>@ActiveProfiles</code>注解设置。</li>
-</ul>
-<h4 id="处理自动装配的歧义性"><a href="#处理自动装配的歧义性" class="headerlink" title="处理自动装配的歧义性"></a>处理自动装配的歧义性</h4><p>&emsp;&emsp;在使用自动装配的时候，可能一个接口下面有很多实现类，我们为此都实现了<code>@Component</code>注解，那么在自动装配的时候，spring就会无法判断到底要选择哪个实现类进行装配。</p>
-<ul>
-<li><code>@Primary</code>注解，首选标记</li>
-</ul>
-<p>&emsp;&emsp;可以在你希望装配的实现类上除了<code>@Component</code>注解再加上<code>@Primary</code>注解，这表明当接口下有很多实现类都实现了<code>@Component</code>注解时将首选使用了<code>@Primary</code>注解的实现类进行装配。</p>
-<ul>
-<li><code>@Qualifier</code>注解，使用限定符来限定注入的bean的具体实现</li>
-</ul>
-<p>&emsp;&emsp;也可以不使用<code>@Primary</code>注解，那么在注入bean的地方可以使用<code>@Qualifier</code>注解表明本次注入的bean。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="meta">@Qualifier</span>(<span class="string">"apple"</span>)</span><br><span class="line"><span class="keyword">private</span> Fruits fruits;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>限定符默认为这个bean的ID，也可以自定义限定符</li>
-</ul>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Qualifier</span>(<span class="string">"apple"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-]]></content>
-      <categories>
-        <category>java</category>
-      </categories>
-      <tags>
-        <tag>spring</tag>
-        <tag>javaconfig</tag>
-        <tag>自动装配</tag>
-        <tag>高级装配</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>常用软件安装</title>
     <url>/software-install.html</url>
     <content><![CDATA[<p>&emsp;&emsp;记录一下常用的软件的安装以及环境变量的配置，省的以后百度浪费时间。</p>
@@ -3884,6 +3753,140 @@
       </categories>
       <tags>
         <tag>jdk的安装</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>使用javaconfig配置spring项目</title>
+    <url>/spring-javaconfig.html</url>
+    <content><![CDATA[<p>&emsp;&emsp;使用javaconfig对spring项目进行配置，记录一下常用的注解及其含义，以方便后期回顾。此项目是使用maven搭建的非web项目，是我学习spring练手用的，是向web项目的过渡阶段产物。</p>
+<a id="more"></a>
+<h3 id="Maven依赖"><a href="#Maven依赖" class="headerlink" title="Maven依赖"></a>Maven依赖</h3><ul>
+<li>先添加spring需要的依赖</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-context<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.0.6.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.0.6.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--测试依赖--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.12<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--日志依赖--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.slf4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>slf4j-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.25<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--lombok--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.18.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>javax.persistence<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>persistence-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="自动化装配bean"><a href="#自动化装配bean" class="headerlink" title="自动化装配bean"></a>自动化装配bean</h3><p>&emsp;&emsp;新建一个javaconfig包，所有的配置类都放在这个包下面。</p>
+<h4 id="Configuration-配置类声明"><a href="#Configuration-配置类声明" class="headerlink" title="@Configuration 配置类声明"></a>@Configuration 配置类声明</h4><ul>
+<li>新建一个类，这里我的类名为<code>BaseBeanJavaConfig</code></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;<code>@Configuration</code>注解声明这是一个配置类,所有的配置类都必须使用这个注解，否则spring又怎么会知道他是一个配置类呢。</p>
+<h4 id="ComponentScan-组件扫描"><a href="#ComponentScan-组件扫描" class="headerlink" title="@ComponentScan 组件扫描"></a>@ComponentScan 组件扫描</h4><p>&emsp;&emsp;组件扫描有多种方式可供选择：</p>
+<p>1.没有使用<code>@ComponentScan</code>注解，那么将按照默认规则扫描该配置类所在包。</p>
+<p>2.使用<code>@ComponentScan</code>注解，形如下面代码块所示，那么spring将扫描<code>service.impl</code>包及向下所有包中含有<code>@Component</code>注解的类,在{}中可以使用<code>,</code>分隔设置多个包，这样可以扫描多个包啦。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackages = &#123;<span class="string">"cn.org.ferry.sys.service.impl"</span>&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>3.使用class类型，这种方式spring将扫描该类所在包及向下所有包，当然，这种方式也可以用<code>,</code>分隔设置多个类。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;SysUserServiceImpl<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;一般情况下，我们都是将配置类单独放在一个包中的，毕竟如果业务代码包中多了一个配置类感觉上也怪怪的，所以第一种方式放弃，第二种和第三种方式相比较，如果你重构了代码，包路径改变了，那么使用第二种方式就会出现问题，所以一般情况下采取第三种方案来实现组件扫描。</p>
+<p>&emsp;&emsp;值得一提的是，不管使用那种方式扫描包，你需要装配的bean都需要在类级别上加上注解，毕竟spring扫描的时候也只是扫描指定的包下面含有该注解的类。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 说一下我对这四种注解的简单看法，目前的理解就是在不同的类中使用特定的注解让人更容易理解这个类的作用</span></span><br><span class="line"><span class="meta">@Component</span>  <span class="comment">// 不管什么情况，用它都不会报错</span></span><br><span class="line"><span class="comment">// @Controller 控制器中使用该注解</span></span><br><span class="line"><span class="comment">// @Service service.impl中使用该注解</span></span><br><span class="line"><span class="comment">// @Repository  与mybatis框架整合时 mapper 包中使用此注解</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="装配bean"><a href="#装配bean" class="headerlink" title="装配bean"></a>装配bean</h4><p>&emsp;&emsp;以上操作即可通过spring生成bean，那么接下来就是装配bean了，简单说就是如何使用这个bean。</p>
+<ul>
+<li>就拿上面那个<code>Student</code>类来举例，添加一个方法。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Student</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>在测试类中进行测试这个类有没有实现自动装配</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= BaseBeanJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">StudentTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Student student;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(student.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/spring-javaconfig/spring_auto_bean_test.png" alt="测试结果"></p>
+<p>&emsp;&emsp;当然bean的使用不局限于设置属性这一种方法，也可以通过构造器或者是任意一个方法的形参列表传递。下面的代码结果与上述图片展示结果一样。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StudentUse</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Student student;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">StudentUse</span><span class="params">(Student student)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.student = student;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">info</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(student.toString()); <span class="comment">// 使用这个bean</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;通过给<code>@Autowired</code>注解加上属性<code>required = false</code>来避免当没有匹配的bean时spring抛出异常，但是这样设置就得在使用这个bean时进行判空了，因为它有可能没有匹配的bean而是个空值。</p>
+<h3 id="显式装配bean"><a href="#显式装配bean" class="headerlink" title="显式装配bean"></a>显式装配bean</h3><p>&emsp;&emsp;有时候，自动化配置方案行不通，就只能够显式的配置，例如，你希望将第三方类库中的类配置为bean，但是你没有办法对该类进行修改添加<code>@Component</code>注解,那么可以采用显式装配方式进行配置。</p>
+<h4 id="简单bean配置"><a href="#简单bean配置" class="headerlink" title="简单bean配置"></a>简单bean配置</h4><p>&emsp;&emsp;基于一些因素，现在有一个Apple类无法通过自动装配完成bean的装配，现在需要明确的配置该bean。</p>
+<ul>
+<li>Apple类样例</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>配置</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Apple <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;通过上面代码，在一个配置类中的方法上使用<code>@Bean</code>注解，返回值类型是你希望注册的Bean的类型，在该方法中，你可以使用一切java所能实现的技术来满足你的需求以便返回实例。值得一提的是，你可以在该方法的形参列表中传递其他的bean来配合你完成工作。</p>
+<ul>
+<li>测试</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">AppleTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Apple apple;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(apple.toString());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/spring-javaconfig/spring_bean_test2.png" alt="测试结果"></p>
+<p>&emsp;&emsp;显而易见，这样装配是没有问题的，在实际应用中，我们可能会使用到第三方类库中的类，例如数据源，那么我们就可以使用这种显式装配的方式将他配置起来。</p>
+<h4 id="给bean设置id"><a href="#给bean设置id" class="headerlink" title="给bean设置id"></a>给bean设置id</h4><p>&emsp;&emsp;在默认的情况下，bean的id是和带有<code>@Bean</code>注解的方法名一样的，如上例，bean的id为apple。在实际应用中，我们有可能需要自定义bean的id，那么可以通过下面方式完成操作。</p>
+<ul>
+<li>设置bean的id</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(name = <span class="string">"appleBean"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Apple <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;通过在<code>@Bean</code>注解上添加<code>name</code>属性值为bean赋上id。</p>
+<h3 id="混合配置"><a href="#混合配置" class="headerlink" title="混合配置"></a>混合配置</h3><p>&emsp;&emsp;项目的配置需要视情况而定，有时候使用xml配置项目是最佳方案，而在spring中，xml配置和javaconfig配置并不是互斥的，那么就可以同时使用这两种方案来实现项目的最优配置。</p>
+<p>&emsp;&emsp;在自动装配过程中，spring并不会在意你使用的bean是怎么来的，如果你引用了一个外部的配置中的bean，那么你只需要引用一下那个配置类/配置文件即可。</p>
+<h4 id="配置类组合"><a href="#配置类组合" class="headerlink" title="配置类组合"></a>配置类组合</h4><p>&emsp;&emsp;在实际应用中，我们可能根据功能的区分定义多个配置类，这样便于维护以及理解，使得配置类不会过于臃肿。那么问题来了，如何整合众多的配置类呢？</p>
+<ul>
+<li>配置类</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Student<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(name = <span class="string">"sysUserServiceImpl"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> ISysUserService <span class="title">sysUserServiceImpl</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> SysUserServiceImpl();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DataDourceConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>整合配置类</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;BaseBeanConfig<span class="class">.<span class="keyword">class</span>,<span class="title">DataDourceConfig</span>.<span class="title">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;使用<code>@Import</code>注解引入一个配置类，在括号中填入需要引入的配置类的class类型，更通用的方法是建立一个根配置类，在这个配置类中引入所有的配置类。</p>
+<h4 id="配置类引入xml配置文件"><a href="#配置类引入xml配置文件" class="headerlink" title="配置类引入xml配置文件"></a>配置类引入xml配置文件</h4><ul>
+<li>引入配置文件</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;BaseBeanConfig<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class">@<span class="title">ImportResource</span>(</span>&#123;<span class="string">"classpath:/spring/applicationContext-spring.xml"</span>&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RootJavaConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>&emsp;&emsp;使用<code>@ImportResource</code>注解，后面跟上字符串类型的配置文件的相对路径即可引入对应的配置文件，同样的，也可以使用<code>,</code>分隔然后引入多个配置文件。</p>
+<h3 id="高级装配"><a href="#高级装配" class="headerlink" title="高级装配"></a>高级装配</h3><p>&emsp;&emsp;spring的bean装配技术还有许多技巧，借助它们可以实现更为高级的bean装配功能.</p>
+<h4 id="profile"><a href="#profile" class="headerlink" title="profile"></a>profile</h4><p>&emsp;&emsp;在实际开发中，我们在项目开发到一定程度时需要迁移环境，例如开发环境，测试环境，生产环境等之间的切换。在不同的环境可能需要创建不同的bean，那么我们可以借助<code>@Profile</code>注解来实现这个功能。<code>@Profile</code>注解有两种使用方式，下面列举。</p>
+<ul>
+<li>例子</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function">String <span class="title">info</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Banana</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">     <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>类级别使用<code>@Profile</code>注解</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Fruits<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line">@Profile("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"apple"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>测试，在测试类中使用<code>@ActiveProfiles</code>注解来选择激活的环境。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line">@ActiveProfiles("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FruitTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Fruits fruits;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(fruits.info());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法级别使用<code>@Profile</code>注解</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(basePackageClasses = &#123;Fruits<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">BaseBeanConfig</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"apple"</span>)</span><br><span class="line">    <span class="meta">@Profile</span>(<span class="string">"dev"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">apple</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Apple();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Bean</span>(<span class="string">"banana"</span>)</span><br><span class="line">    <span class="meta">@Profile</span>(<span class="string">"test"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Fruits <span class="title">banana</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Banana();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>测试，此时激活dev环境，那么控制台会打印出Apple</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">ContextConfiguration</span>(<span class="title">classes</span> </span>= RootJavaConfig<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line">@ActiveProfiles("dev")</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FruitTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Fruits fruits;</span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(fruits.info());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/spring-javaconfig/spring_bean_test2.png" alt="测试结果"></p>
+<h4 id="激活profile"><a href="#激活profile" class="headerlink" title="激活profile"></a>激活profile</h4><p>&emsp;&emsp;spring在确定哪个profile处于激活状态时，依赖于两个属性：<code>spring.profiles.active</code>和<code>spring.profiles.default</code>（<code>spring.profiles.active</code>的优先级更高一点）。设置这两个属性值有下列几种办法。</p>
+<ul>
+<li>作为<code>DispatcherServlet</code>的初始化参数；</li>
+<li>作为Web应用的上下文参数；</li>
+<li>作为JDNI条目；</li>
+<li>作为环境变量；</li>
+<li>作为JVM的系统属性；</li>
+<li>集成测试类中，使用<code>@ActiveProfiles</code>注解设置。</li>
+</ul>
+<h4 id="处理自动装配的歧义性"><a href="#处理自动装配的歧义性" class="headerlink" title="处理自动装配的歧义性"></a>处理自动装配的歧义性</h4><p>&emsp;&emsp;在使用自动装配的时候，可能一个接口下面有很多实现类，我们为此都实现了<code>@Component</code>注解，那么在自动装配的时候，spring就会无法判断到底要选择哪个实现类进行装配。</p>
+<ul>
+<li><code>@Primary</code>注解，首选标记</li>
+</ul>
+<p>&emsp;&emsp;可以在你希望装配的实现类上除了<code>@Component</code>注解再加上<code>@Primary</code>注解，这表明当接口下有很多实现类都实现了<code>@Component</code>注解时将首选使用了<code>@Primary</code>注解的实现类进行装配。</p>
+<ul>
+<li><code>@Qualifier</code>注解，使用限定符来限定注入的bean的具体实现</li>
+</ul>
+<p>&emsp;&emsp;也可以不使用<code>@Primary</code>注解，那么在注入bean的地方可以使用<code>@Qualifier</code>注解表明本次注入的bean。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Autowired</span></span><br><span class="line"><span class="meta">@Qualifier</span>(<span class="string">"apple"</span>)</span><br><span class="line"><span class="keyword">private</span> Fruits fruits;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>限定符默认为这个bean的ID，也可以自定义限定符</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@Qualifier</span>(<span class="string">"apple"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Apple</span> <span class="keyword">implements</span> <span class="title">Fruits</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">info</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.getClass().getSimpleName();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>java</category>
+      </categories>
+      <tags>
+        <tag>spring</tag>
+        <tag>javaconfig</tag>
+        <tag>自动装配</tag>
+        <tag>高级装配</tag>
       </tags>
   </entry>
 </search>
