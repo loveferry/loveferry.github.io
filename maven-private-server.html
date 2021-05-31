@@ -17,41 +17,41 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="&amp;emsp;&amp;emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。">
 <meta name="keywords" content="maven">
 <meta property="og:type" content="article">
 <meta property="og:title" content="搭建maven私服">
-<meta property="og:url" content="http://yoursite.com/maven-private-server.html">
+<meta property="og:url" content="https://ferry.org.cn/maven-private-server.html">
 <meta property="og:site_name" content="儿女意向来痴">
 <meta property="og:description" content="&amp;emsp;&amp;emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。">
 <meta property="og:locale" content="zh-CH">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-home.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-anonymous-permission.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-repository.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-proxy.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-proxy2.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-repository.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-hosted.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-hosted2.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-repository.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-group.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-group2.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-role.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-role2.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-user.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-user2.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-create-hosted2.png">
-<meta property="og:image" content="http://yoursite.com/maven-private-server/nexus-browse.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-home.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-anonymous-permission.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-repository.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-proxy.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-proxy2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-repository.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-hosted.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-hosted2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-repository.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-group.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-group2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-role.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-role2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-user.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-user2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-create-hosted2.png">
+<meta property="og:image" content="https://ferry.org.cn/maven-private-server/nexus-browse.png">
 <meta property="og:updated_time" content="2020-11-22T14:02:57.217Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="搭建maven私服">
 <meta name="twitter:description" content="&amp;emsp;&amp;emsp;私服是一种特殊的远程仓库，它是架设在局域网内的仓库服务，私服代理广域网上的远程仓库，供局域网内的Maven用户使用。当Maven需要下载构件的时候，它从私服请求，如果私服上不存在该构件，则从外部的远程仓库下载，缓存在私服上之后，再为Maven的下载请求提供服务。">
-<meta name="twitter:image" content="http://yoursite.com/maven-private-server/nexus-home.png">
+<meta name="twitter:image" content="https://ferry.org.cn/maven-private-server/nexus-home.png">
 
-<link rel="canonical" href="http://yoursite.com/maven-private-server.html">
+<link rel="canonical" href="https://ferry.org.cn/maven-private-server.html">
 
 
 <script id="page-configurations">
@@ -184,7 +184,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/maven-private-server.html">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/maven-private-server.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/ferry-215x215.gif">

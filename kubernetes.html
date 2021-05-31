@@ -17,38 +17,38 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
 <meta name="keywords" content="k8s">
 <meta property="og:type" content="article">
 <meta property="og:title" content="kubernetes集群部署">
-<meta property="og:url" content="http://yoursite.com/kubernetes.html">
+<meta property="og:url" content="https://ferry.org.cn/kubernetes.html">
 <meta property="og:site_name" content="儿女意向来痴">
 <meta property="og:description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
 <meta property="og:locale" content="zh-CH">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_need_image_list.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_create_github_repository.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_create_github_dockerfile.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_create_aliyun_docker_repository.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_create_aliyun_docker_repository2.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_click_aliyun_create_rule.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_aliyun_create_docker_build_rule.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_aliyun_docker_build.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_aliyun_set_password.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_kube-router_apply.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_kube-router_pod_crashloopbackoff.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_join_node_to_master.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_api_resource.png">
-<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_create_namesapces.png">
-<meta property="og:updated_time" content="2021-05-26T12:28:42.533Z">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_need_image_list.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_github_repository.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_github_dockerfile.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_aliyun_docker_repository.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_aliyun_docker_repository2.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_click_aliyun_create_rule.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_create_docker_build_rule.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_docker_build.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_set_password.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_kube-router_apply.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_kube-router_pod_crashloopbackoff.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_join_node_to_master.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_api_resource.png">
+<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_namesapces.png">
+<meta property="og:updated_time" content="2021-05-31T14:33:47.477Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes集群部署">
 <meta name="twitter:description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
-<meta name="twitter:image" content="http://yoursite.com/kubernetes/k8s_need_image_list.png">
+<meta name="twitter:image" content="https://ferry.org.cn/kubernetes/k8s_need_image_list.png">
 
-<link rel="canonical" href="http://yoursite.com/kubernetes.html">
+<link rel="canonical" href="https://ferry.org.cn/kubernetes.html">
 
 
 <script id="page-configurations">
@@ -181,7 +181,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/kubernetes.html">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/kubernetes.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/ferry-215x215.gif">
@@ -211,7 +211,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-05-26 20:28:42" itemprop="dateModified" datetime="2021-05-26T20:28:42+08:00">2021-05-26</time>
+                <time title="修改时间：2021-05-31 22:33:47" itemprop="dateModified" datetime="2021-05-31T22:33:47+08:00">2021-05-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -564,12 +564,15 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl get ns</span><br></pre></td></tr></table></figure>
 <h4 id="Secret"><a href="#Secret" class="headerlink" title="Secret"></a>Secret</h4><p>&emsp;&emsp;<code>Secret</code>用来配置一些敏感数据，诸如密码，密钥等。<code>Secret</code>有三种类型，下面分别介绍。</p>
+<h5 id="Opaque"><a href="#Opaque" class="headerlink" title="Opaque"></a>Opaque</h5><p>&emsp;&emsp;这种类型是普通的键值对存储，用来存放用户名密码等敏感信息的。<strong>这种类型的值必须是base64加密过后的，否则创建的时候会报错。</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">apiVersion:</span> <span class="string">v1</span></span><br><span class="line"><span class="attr">kind:</span> <span class="string">Secret</span></span><br><span class="line"><span class="attr">metadata:</span></span><br><span class="line">  <span class="attr">name:</span> <span class="string">ferry</span></span><br><span class="line">  <span class="attr">namespace:</span> <span class="string">ferry</span></span><br><span class="line"><span class="attr">type:</span> <span class="string">Opaque</span></span><br><span class="line"><span class="attr">data:</span></span><br><span class="line">  <span class="attr">mysql.username:</span> <span class="string">ferry</span></span><br><span class="line">  <span class="attr">mysql.password:</span> <span class="string">love</span></span><br></pre></td></tr></table></figure>
 <h5 id="kubernetes-io-dockerconfigjson"><a href="#kubernetes-io-dockerconfigjson" class="headerlink" title="kubernetes.io/dockerconfigjson"></a>kubernetes.io/dockerconfigjson</h5><p>&emsp;&emsp;这种类型是用来存储docker的认证信息的，比如你的pod使用的镜像仓库的用户名密码信息。</p>
 <ul>
 <li>创建</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kubectl create secret docker-registry aliyun-docker-registry --docker-server=registry.cn-shanghai.aliyuncs.com --docker-username=ferry_sy --docker-password=123456 --docker-email=ferry_sy@163.com -n ferry</span><br></pre></td></tr></table></figure>
 <p>&emsp;&emsp;<code>aliyun-docker-registry</code>这个就是自定义的secret名称，在引用这个secret的时候就需要使用它；<code>--docker-server</code>指定镜像仓库地址；<code>--docker-username</code>指定镜像仓库登录名称；<code>--docker-password</code>指定镜像仓库登录密码；<code>--docker-email</code>指定邮箱，这个参数是可选的；<code>-n ferry</code>指定在哪个命名空间创建，没有就默认创建在<code>default</code>空间下面。</p>
+<h5 id="kubernetes-io-service-account-token"><a href="#kubernetes-io-service-account-token" class="headerlink" title="kubernetes.io/service-account-token"></a>kubernetes.io/service-account-token</h5><p>&emsp;&emsp;Service Account用来访问Kubernetes API，由Kubernetes自动创建，并且会自动挂载到Pod的/run/secrets/kubernetes.io/serviceaccount目录中。</p>
 <h4 id="Deployment"><a href="#Deployment" class="headerlink" title="Deployment"></a>Deployment</h4><p>&emsp;&emsp;Deployment为Pod和ReplicaSet提供了一个声明式定义(declarative)方法，用来替代以前的ReplicationController来方便的管理应用。典型的应用场景包括：</p>
 <blockquote>
 <p>定义Deployment来创建Pod和ReplicaSet<br>滚动升级和回滚应用<br>扩容和缩容<br>暂停和继续Deployment</p>
@@ -660,7 +663,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#集群机器检查"><span class="nav-number">1.</span> <span class="nav-text">集群机器检查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用kubeadm引导集群"><span class="nav-number">2.</span> <span class="nav-text">使用kubeadm引导集群</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安装容器"><span class="nav-number">2.1.</span> <span class="nav-text">安装容器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装工具"><span class="nav-number">2.2.</span> <span class="nav-text">安装工具</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#版本差异"><span class="nav-number">2.2.1.</span> <span class="nav-text">版本差异</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装"><span class="nav-number">2.2.2.</span> <span class="nav-text">安装</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化集群"><span class="nav-number">2.3.</span> <span class="nav-text">初始化集群</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CNI-容器网络接口"><span class="nav-number">2.4.</span> <span class="nav-text">CNI(容器网络接口)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#kube-router"><span class="nav-number">2.4.1.</span> <span class="nav-text">kube-router</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#weave"><span class="nav-number">2.4.2.</span> <span class="nav-text">weave</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#flannel"><span class="nav-number">2.4.3.</span> <span class="nav-text">flannel</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#加入工作节点"><span class="nav-number">2.5.</span> <span class="nav-text">加入工作节点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集群参数设置"><span class="nav-number">3.</span> <span class="nav-text">集群参数设置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#kube-proxy模式切换"><span class="nav-number">3.1.</span> <span class="nav-text">kube-proxy模式切换</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常见资源"><span class="nav-number">4.</span> <span class="nav-text">常见资源</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#命名空间"><span class="nav-number">4.1.</span> <span class="nav-text">命名空间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Secret"><span class="nav-number">4.2.</span> <span class="nav-text">Secret</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#kubernetes-io-dockerconfigjson"><span class="nav-number">4.2.1.</span> <span class="nav-text">kubernetes.io/dockerconfigjson</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Deployment"><span class="nav-number">4.3.</span> <span class="nav-text">Deployment</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建Deployment"><span class="nav-number">4.3.1.</span> <span class="nav-text">创建Deployment</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Service"><span class="nav-number">4.4.</span> <span class="nav-text">Service</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#集群机器检查"><span class="nav-number">1.</span> <span class="nav-text">集群机器检查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用kubeadm引导集群"><span class="nav-number">2.</span> <span class="nav-text">使用kubeadm引导集群</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#安装容器"><span class="nav-number">2.1.</span> <span class="nav-text">安装容器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#安装工具"><span class="nav-number">2.2.</span> <span class="nav-text">安装工具</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#版本差异"><span class="nav-number">2.2.1.</span> <span class="nav-text">版本差异</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#安装"><span class="nav-number">2.2.2.</span> <span class="nav-text">安装</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#初始化集群"><span class="nav-number">2.3.</span> <span class="nav-text">初始化集群</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CNI-容器网络接口"><span class="nav-number">2.4.</span> <span class="nav-text">CNI(容器网络接口)</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#kube-router"><span class="nav-number">2.4.1.</span> <span class="nav-text">kube-router</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#weave"><span class="nav-number">2.4.2.</span> <span class="nav-text">weave</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#flannel"><span class="nav-number">2.4.3.</span> <span class="nav-text">flannel</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#加入工作节点"><span class="nav-number">2.5.</span> <span class="nav-text">加入工作节点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集群参数设置"><span class="nav-number">3.</span> <span class="nav-text">集群参数设置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#kube-proxy模式切换"><span class="nav-number">3.1.</span> <span class="nav-text">kube-proxy模式切换</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常见资源"><span class="nav-number">4.</span> <span class="nav-text">常见资源</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#命名空间"><span class="nav-number">4.1.</span> <span class="nav-text">命名空间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Secret"><span class="nav-number">4.2.</span> <span class="nav-text">Secret</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Opaque"><span class="nav-number">4.2.1.</span> <span class="nav-text">Opaque</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#kubernetes-io-dockerconfigjson"><span class="nav-number">4.2.2.</span> <span class="nav-text">kubernetes.io/dockerconfigjson</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#kubernetes-io-service-account-token"><span class="nav-number">4.2.3.</span> <span class="nav-text">kubernetes.io/service-account-token</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Deployment"><span class="nav-number">4.3.</span> <span class="nav-text">Deployment</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#创建Deployment"><span class="nav-number">4.3.1.</span> <span class="nav-text">创建Deployment</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Service"><span class="nav-number">4.4.</span> <span class="nav-text">Service</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

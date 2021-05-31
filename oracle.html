@@ -17,58 +17,58 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="&amp;emsp;&amp;emsp;Oracle数据库是目前世界上使用最为广泛的数据库管理系统，作为一个通用的数据库系统，它具有完整的数据管理功能；作为一个关系数据库，它是一个完备关系的产品；作为分布式数据库它实现了分布式处理功能。">
 <meta name="keywords" content="docker中安装oracle,oracle数据迁移">
 <meta property="og:type" content="article">
 <meta property="og:title" content="oracle">
-<meta property="og:url" content="http://yoursite.com/oracle.html">
+<meta property="og:url" content="https://ferry.org.cn/oracle.html">
 <meta property="og:site_name" content="儿女意向来痴">
 <meta property="og:description" content="&amp;emsp;&amp;emsp;Oracle数据库是目前世界上使用最为广泛的数据库管理系统，作为一个通用的数据库系统，它具有完整的数据管理功能；作为一个关系数据库，它是一个完备关系的产品；作为分布式数据库它实现了分布式处理功能。">
 <meta property="og:locale" content="zh-CH">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-linux.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-test.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-run.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-1.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-2.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-3.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-4.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-5.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-6.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-7.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-8.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-9.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-10.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-11.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-12.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-13.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-14.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-15.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-16.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-17.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-18.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-19.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-20.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-21.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-install-22.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-docker-hub.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-show-proceed.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-docker-info.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-docker-show-detail.png">
-<meta property="og:image" content="http://yoursite.com/oracle/docker-image.png">
-<meta property="og:image" content="http://yoursite.com/oracle/docker-start-image.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-docker-conn.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-directories-1.png">
-<meta property="og:image" content="http://yoursite.com/oracle/oracle-directories-2.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-linux.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-test.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-run.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-1.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-2.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-3.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-4.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-5.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-6.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-7.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-8.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-9.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-10.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-11.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-12.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-13.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-14.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-15.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-16.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-17.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-18.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-19.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-20.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-21.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-install-22.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-docker-hub.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-show-proceed.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-docker-info.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-docker-show-detail.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/docker-image.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/docker-start-image.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-docker-conn.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-directories-1.png">
+<meta property="og:image" content="https://ferry.org.cn/oracle/oracle-directories-2.png">
 <meta property="og:updated_time" content="2020-09-04T07:13:49.078Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="oracle">
 <meta name="twitter:description" content="&amp;emsp;&amp;emsp;Oracle数据库是目前世界上使用最为广泛的数据库管理系统，作为一个通用的数据库系统，它具有完整的数据管理功能；作为一个关系数据库，它是一个完备关系的产品；作为分布式数据库它实现了分布式处理功能。">
-<meta name="twitter:image" content="http://yoursite.com/oracle/oracle-install-linux.png">
+<meta name="twitter:image" content="https://ferry.org.cn/oracle/oracle-install-linux.png">
 
-<link rel="canonical" href="http://yoursite.com/oracle.html">
+<link rel="canonical" href="https://ferry.org.cn/oracle.html">
 
 
 <script id="page-configurations">
@@ -201,7 +201,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/oracle.html">
+    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/oracle.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/ferry-215x215.gif">
