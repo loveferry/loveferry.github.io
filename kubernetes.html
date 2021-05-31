@@ -17,38 +17,38 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"ferry.org.cn","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
 <meta name="keywords" content="k8s">
 <meta property="og:type" content="article">
 <meta property="og:title" content="kubernetes集群部署">
-<meta property="og:url" content="https://ferry.org.cn/kubernetes.html">
+<meta property="og:url" content="http://yoursite.com/kubernetes.html">
 <meta property="og:site_name" content="儿女意向来痴">
 <meta property="og:description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
 <meta property="og:locale" content="zh-CH">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_need_image_list.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_github_repository.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_github_dockerfile.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_aliyun_docker_repository.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_aliyun_docker_repository2.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_click_aliyun_create_rule.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_create_docker_build_rule.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_docker_build.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_aliyun_set_password.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_kube-router_apply.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_kube-router_pod_crashloopbackoff.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_join_node_to_master.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_api_resource.png">
-<meta property="og:image" content="https://ferry.org.cn/kubernetes/k8s_create_namesapces.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_need_image_list.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_create_github_repository.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_create_github_dockerfile.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_create_aliyun_docker_repository.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_create_aliyun_docker_repository2.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_click_aliyun_create_rule.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_aliyun_create_docker_build_rule.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_aliyun_docker_build.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_aliyun_set_password.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_kube-router_apply.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_kube-router_pod_crashloopbackoff.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_join_node_to_master.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_api_resource.png">
+<meta property="og:image" content="http://yoursite.com/kubernetes/k8s_create_namesapces.png">
 <meta property="og:updated_time" content="2021-05-26T12:28:42.533Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="kubernetes集群部署">
 <meta name="twitter:description" content="&amp;emsp;&amp;emsp;Kubernetes(简称k8s) 协调一个高可用计算机集群，每个计算机作为独立单元互相连接工作。 Kubernetes 中的抽象允许您将容器化的应用部署到集群，而无需将它们绑定到某个特定的独立计算机。为了使用这种新的部署模型，应用需要以将应用与单个主机分离的方式打包：它们需要被容器化。与过去的那种应用直接以包的方式深度与主机集成的部署模型相比，容器化应用更灵活、更可用。">
-<meta name="twitter:image" content="https://ferry.org.cn/kubernetes/k8s_need_image_list.png">
+<meta name="twitter:image" content="http://yoursite.com/kubernetes/k8s_need_image_list.png">
 
-<link rel="canonical" href="https://ferry.org.cn/kubernetes.html">
+<link rel="canonical" href="http://yoursite.com/kubernetes.html">
 
 
 <script id="page-configurations">
@@ -181,7 +181,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
-    <link itemprop="mainEntityOfPage" href="https://ferry.org.cn/kubernetes.html">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/kubernetes.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/ferry-215x215.gif">
