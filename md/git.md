@@ -50,9 +50,9 @@ helper = store/cache
 
 &emsp;&emsp;这时，你在git pull时会要求你输入用户名密码，输入正确后该用户名密码会被记录在本地，下次就不用输入了。store永久存储密码，cache临时记忆密码，可以通过`git config --global credential.helper ‘cache –timeout=3600’`来指定临时记忆密码的时间，单位秒
 
-### 本文编辑器
+### 文本编辑器
 
-&&emsp;&emsp;设置文本编辑器以便git在调用文本编辑器时调用我们指定的编辑器工作。
+&emsp;&emsp;设置文本编辑器以便git在调用文本编辑器时调用我们指定的编辑器工作。
 
 - 方式一：命令行
 
@@ -67,7 +67,7 @@ git config --global core.editor "subl -w"
 	editor = subl -w
 ```
 
-&emsp;&emsp;这里使用`-w`参数是为了让git等待编辑器完成编辑操作并且保存退出后才可以进行下一步操作。在window是使用sublime可能还需要将sublime配置环境变量，且如果exe文件中有空格是需要使用单引号将括起来（`git config --global core.editor “‘sublime text.exe’ -w”`）。使用其他的文本编辑器作为git的默认编辑器方法大致相同。
+&emsp;&emsp;这里使用`-w`参数是为了让git等待编辑器完成编辑操作并且保存退出后才可以进行下一步操作。在window是使用sublime可能还需要将sublime配置环境变量，且如果exe文件中有空格是需要使用单引号将括起来（`git config --global core.editor "'sublime text.exe' -w"`）。使用其他的文本编辑器作为git的默认编辑器方法大致相同。
 
 ### 设置别名
 
