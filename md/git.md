@@ -106,7 +106,7 @@ git init
 ls -al
 ```
 
-![初始化git项目方式1](/git/git_init_1.png)
+![初始化git项目方式1](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_init_1.png)
 
 
 - 方式二：
@@ -117,7 +117,7 @@ cd git_study/
 ls -al
 ```
 
-![初始化git项目方式2](/git/git_init_2.png)
+![初始化git项目方式2](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_init_2.png)
 
 &emsp;&emsp;方式一是先创建项目目录，然后进入项目根目录创建git的管理目录`.git`；方式二是在当前目录创建项目目录的同时在项目根目录中生成`.git`目录。
 
@@ -174,7 +174,7 @@ git commit -am'提交信息'
 
 &emsp;&emsp;使用`--amend`参数表示本次提交是一次增补提交，git会将当前提交清除，在父节点上再此生成一次提交记录。
 
-![增补提交](/git/amend.png)
+![增补提交](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/amend.png)
 
 - 指定文件(目录)提交
 
@@ -190,7 +190,7 @@ git commit test -m'submit test'
 git log
 ```
 
-![无参数查看历史](/git/git_log_none_param.png)
+![无参数查看历史](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_log_none_param.png)
 
 &emsp;&emsp;按 q 键退出
 
@@ -236,7 +236,7 @@ git log --stat
 git log --oneline -n10 --all --graph --no-merges
 ```
 
-![定制化查看历史](/git/git_log_params.png)
+![定制化查看历史](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_log_params.png)
 
 ### git show
 
@@ -273,7 +273,7 @@ gitk
 
 &emsp;&emsp;新建一个项目并创建三次提交来演示reset。
 
-![创建项目演示reset](/git/create_test_project.png)
+![创建项目演示reset](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/create_test_project.png)
 
 - `git reset --soft commit_id`
 
@@ -281,7 +281,7 @@ gitk
 git reset --soft de08188aa
 ```
 
-![--soft](/git/reset--soft.png)
+![--soft](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/reset--soft.png)
 
 &emsp;&emsp;此时git将 HEAD 指向 de08188aa 提交上，但是工作区和暂存区不变。
 
@@ -291,7 +291,7 @@ git reset --soft de08188aa
 git reset HEAD
 ```
 
-![--mixed](/git/reset--mixed.png)
+![--mixed](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/reset--mixed.png)
 
 &emsp;&emsp;基于刚才的重置HEAD，此时再重置暂存区，此步操作将暂存区重置，与HEAD保持一致。
 
@@ -311,7 +311,7 @@ git reset --hard HEAD
 
 > 带路径: `git checkout commit_id`是检出指定文件的指定的提交版本。
 
-![检出](/git/git_checkout.png)
+![检出](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_checkout.png)
 
 ### git branch
 
@@ -321,7 +321,7 @@ git reset --hard HEAD
 git branch tmp HEAD
 ```
 
-![新建分支](/git/git_branch_new.png)
+![新建分支](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_branch_new.png)
 
 &emsp;&emsp;语法为`git branch 分支名 commit_id`，缺省commit_id默认为HEAD。
 
@@ -331,7 +331,7 @@ git branch tmp HEAD
 git branch
 ```
 
-![查看分支](/git/git_branch.png)
+![查看分支](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_branch.png)
 
 &emsp;&emsp;分支名前有`*`号的就是当前HEAD所在分支。
 
@@ -341,7 +341,7 @@ git branch
 git branch -a
 ```
 
-![查看分支](/git/git_branch-a.png)
+![查看分支](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_branch-a.png)
 
 - 查看分支并显示分支最新的提交信息
 
@@ -349,7 +349,7 @@ git branch -a
 git branch -v
 ```
 
-![查看分支](/git/git_branch-v.png)
+![查看分支](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_branch-v.png)
 
 - 显示其他与当前分支合并关系
 
@@ -358,7 +358,7 @@ git branch --merged
 git branch --no-merged
 ```
 
-![查看分支](/git/git_branch-merged.png)
+![查看分支](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_branch-merged.png)
 
 - 删除分支
 
@@ -367,7 +367,7 @@ git branch -d tmp
 git branch -D tmp
 ```
 
-![删除分支](/git/git_branch-d.png)
+![删除分支](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_branch-d.png)
 
 &emsp;&emsp;在删除分支的时候，如果git检测出待删除的分支上还有提交没有合并到其他分支，那么就会弹出提示，如果一定要删除，那么使用-D强制删除该分支。
 
@@ -377,14 +377,14 @@ git branch -D tmp
 
 &emsp;&emsp;在这里先创建三次提交，然后使用reset回退到第二次提交，然后恢复。
 
-![演示背景](/git/git-reflog-bg.png)
+![演示背景](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git-reflog-bg.png)
 
 ```bash
 git reflog
 git checkout HEAD@{0}
 ```
 
-![演示](/git/git-reflog-checkout.png)
+![演示](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git-reflog-checkout.png)
 
 &emsp;&emsp;`git reflog`查看HEAD的变动记录，**最前面的一段哈希值是本次操作返回的HEAD所指向的commit_id；括号中的是返回的提交所处的分支或者标签位置；HEAD@{n}表示HEAD更改历史记录,可以通过HEAD@{n}引用存在reflog中的提交；后面的内容则是展示HEAD变更的行为**。使用`git checkout`检出到指定的提交上，此时处于分离头指针状态。
 
@@ -486,7 +486,7 @@ git merge commit_id --squash
 
 &emsp;&emsp;为了演示，这里创建一个文件，修改一个文件，再`git add`一个修改内容。
 
-![修改内容](/git/git_stash_init.png)
+![修改内容](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_stash_init.png)
 
 &emsp;&emsp;此时，我们要去修改另一个分支的bug，但是又不想提交修改或者放弃本次修改，那就暂存起来，等改完bug回来可以继续工作。
 
@@ -496,7 +496,7 @@ git merge commit_id --squash
 git stash
 ```
 
-![暂存结果](/git/git_stash_status.png)
+![暂存结果](https://github.com/loveferry/loveferry.github.io/blob/main/md/git/git_stash_status.png)
 
 &emsp;&emsp;shell会输出一句内容，告知工作目录和index已经保存了，此时再`git status`查看会发现工作目录和index是干净的，但是我们新建的文件并没有暂存起来，这是因为新建的文件是untracked的，也就是未被git跟踪的，所以它不会被stash。
 
